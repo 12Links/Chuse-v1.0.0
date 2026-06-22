@@ -1,0 +1,8 @@
+{
+  "name": "Chuse",
+  "description": "Compare grocery and retail prices across popular South African stores like Checkers, Woolworths, Pick n Pay, Shoprite, Spar, and Takealot",
+  "requestFramePermissions": [
+    "camera"
+  ],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

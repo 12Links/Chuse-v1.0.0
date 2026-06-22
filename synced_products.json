@@ -1,0 +1,798 @@
+[
+  {
+    "id": "prod-bread",
+    "name": "Sasko White Bread",
+    "category": "Groceries",
+    "unit": "700g Loaf",
+    "isPopular": true,
+    "barcode": "6001234567890",
+    "imageUrl": "https://images.unsplash.com/photo-1509440159596-0249088772ff?w=400&auto=format&fit=crop&q=80",
+    "prices": [
+      {
+        "storeId": "woolworths",
+        "price": 21.99,
+        "inStock": true
+      },
+      {
+        "storeId": "checkers",
+        "price": 17.49,
+        "onSpecial": true,
+        "specialDetail": "Save R2 with Xtra Savings",
+        "inStock": true
+      },
+      {
+        "storeId": "pnp",
+        "price": 18.29,
+        "inStock": true
+      },
+      {
+        "storeId": "shoprite",
+        "price": 15.99,
+        "inStock": true
+      },
+      {
+        "storeId": "foodlovers",
+        "price": 17.99,
+        "inStock": true
+      },
+      {
+        "storeId": "boxer",
+        "price": 14.99,
+        "onSpecial": true,
+        "specialDetail": "Boxer Best Value",
+        "inStock": true
+      },
+      {
+        "storeId": "spar",
+        "price": 18.07,
+        "inStock": true,
+        "onSpecial": false,
+        "specialDetail": "SPAR Fresh Deal"
+      }
+    ]
+  },
+  {
+    "id": "prod-milk",
+    "name": "Clover Fresh Full Cream Milk",
+    "category": "Groceries",
+    "unit": "2 Litre",
+    "isPopular": true,
+    "barcode": "6009876543210",
+    "imageUrl": "https://images.unsplash.com/photo-1550583724-b2692b85b150?w=400&auto=format&fit=crop&q=80",
+    "prices": [
+      {
+        "storeId": "woolworths",
+        "price": 42.99,
+        "inStock": true
+      },
+      {
+        "storeId": "checkers",
+        "price": 34.99,
+        "inStock": true
+      },
+      {
+        "storeId": "pnp",
+        "price": 35.99,
+        "inStock": true
+      },
+      {
+        "storeId": "shoprite",
+        "price": 32.99,
+        "inStock": true
+      },
+      {
+        "storeId": "foodlovers",
+        "price": 34.99,
+        "inStock": true
+      },
+      {
+        "storeId": "boxer",
+        "price": 31.99,
+        "inStock": true
+      },
+      {
+        "storeId": "spar",
+        "price": 35.84,
+        "inStock": true,
+        "onSpecial": false,
+        "specialDetail": "SPAR Fresh Deal"
+      }
+    ]
+  },
+  {
+    "id": "prod-eggs",
+    "name": "Nulaid Large Eggs (Grade A)",
+    "category": "Groceries",
+    "unit": "30 Pack",
+    "isPopular": true,
+    "barcode": "6002135468790",
+    "imageUrl": "https://images.unsplash.com/photo-1516448186835-15e353c97aa7?w=400&auto=format&fit=crop&q=80",
+    "prices": [
+      {
+        "storeId": "woolworths",
+        "price": 104.99,
+        "onSpecial": true,
+        "specialDetail": "Free Range Grade A",
+        "inStock": true
+      },
+      {
+        "storeId": "checkers",
+        "price": 89.99,
+        "inStock": true
+      },
+      {
+        "storeId": "pnp",
+        "price": 92.5,
+        "inStock": true
+      },
+      {
+        "storeId": "shoprite",
+        "price": 84.99,
+        "inStock": true
+      },
+      {
+        "storeId": "foodlovers",
+        "price": 87.99,
+        "inStock": true
+      },
+      {
+        "storeId": "boxer",
+        "price": 82.99,
+        "onSpecial": true,
+        "specialDetail": "Staple Promo Price",
+        "inStock": true
+      },
+      {
+        "storeId": "spar",
+        "price": 92.16,
+        "inStock": true,
+        "onSpecial": false,
+        "specialDetail": "SPAR Fresh Deal"
+      }
+    ]
+  },
+  {
+    "id": "prod-oil",
+    "name": "Sunfoil Sunflower Oil",
+    "category": "Pantry",
+    "unit": "2 Litre",
+    "isPopular": true,
+    "barcode": "6003214569870",
+    "imageUrl": "https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?w=400&auto=format&fit=crop&q=80",
+    "prices": [
+      {
+        "storeId": "woolworths",
+        "price": 84.99,
+        "inStock": true
+      },
+      {
+        "storeId": "checkers",
+        "price": 74.99,
+        "onSpecial": true,
+        "specialDetail": "2 for R140 Promo",
+        "inStock": true
+      },
+      {
+        "storeId": "pnp",
+        "price": 77.99,
+        "inStock": true
+      },
+      {
+        "storeId": "shoprite",
+        "price": 69.99,
+        "inStock": true
+      },
+      {
+        "storeId": "foodlovers",
+        "price": 72.99,
+        "inStock": true
+      },
+      {
+        "storeId": "boxer",
+        "price": 68.99,
+        "inStock": true
+      },
+      {
+        "storeId": "spar",
+        "price": 77.25,
+        "inStock": true,
+        "onSpecial": false,
+        "specialDetail": "SPAR Fresh Deal"
+      }
+    ]
+  },
+  {
+    "id": "prod-butter",
+    "name": "Kerrygold Pure Irish Butter",
+    "category": "Groceries",
+    "unit": "500g",
+    "isPopular": false,
+    "barcode": "6005544332210",
+    "imageUrl": "https://images.unsplash.com/photo-1589985270826-4b7bb135bc9d?w=400&auto=format&fit=crop&q=80",
+    "prices": [
+      {
+        "storeId": "woolworths",
+        "price": 119.99,
+        "inStock": true
+      },
+      {
+        "storeId": "checkers",
+        "price": 99.99,
+        "onSpecial": true,
+        "specialDetail": "Save R15 on Gold Card",
+        "inStock": true
+      },
+      {
+        "storeId": "pnp",
+        "price": 104.99,
+        "inStock": true
+      },
+      {
+        "storeId": "shoprite",
+        "price": 94.99,
+        "inStock": true
+      },
+      {
+        "storeId": "foodlovers",
+        "price": 99.99,
+        "inStock": true
+      },
+      {
+        "storeId": "boxer",
+        "price": 93.99,
+        "inStock": true
+      },
+      {
+        "storeId": "spar",
+        "price": 103.51,
+        "inStock": true,
+        "onSpecial": true,
+        "specialDetail": "SPAR Fresh Deal"
+      }
+    ]
+  },
+  {
+    "id": "prod-sugar",
+    "name": "Huletts White Sugar",
+    "category": "Pantry",
+    "unit": "2.5kg",
+    "isPopular": true,
+    "barcode": "6006677889900",
+    "imageUrl": "https://images.unsplash.com/photo-1581781870027-0421cae94042?w=400&auto=format&fit=crop&q=80",
+    "prices": [
+      {
+        "storeId": "woolworths",
+        "price": 62.99,
+        "inStock": true
+      },
+      {
+        "storeId": "checkers",
+        "price": 54.99,
+        "inStock": true
+      },
+      {
+        "storeId": "pnp",
+        "price": 56.49,
+        "inStock": true
+      },
+      {
+        "storeId": "shoprite",
+        "price": 51.99,
+        "inStock": true
+      },
+      {
+        "storeId": "foodlovers",
+        "price": 53.99,
+        "inStock": true
+      },
+      {
+        "storeId": "boxer",
+        "price": 49.99,
+        "onSpecial": true,
+        "specialDetail": "Boxer low price",
+        "inStock": true
+      },
+      {
+        "storeId": "spar",
+        "price": 56.3,
+        "inStock": true,
+        "onSpecial": false,
+        "specialDetail": "SPAR Fresh Deal"
+      }
+    ]
+  },
+  {
+    "id": "prod-coffee",
+    "name": "Nescafé Gold Instant Coffee",
+    "category": "Pantry",
+    "unit": "200g Jar",
+    "isPopular": true,
+    "barcode": "6001122334455",
+    "imageUrl": "https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=400&auto=format&fit=crop&q=80",
+    "prices": [
+      {
+        "storeId": "woolworths",
+        "price": 174.99,
+        "inStock": true
+      },
+      {
+        "storeId": "checkers",
+        "price": 139.99,
+        "onSpecial": true,
+        "specialDetail": "R139.99 Special Price",
+        "inStock": true
+      },
+      {
+        "storeId": "pnp",
+        "price": 149.99,
+        "inStock": true
+      },
+      {
+        "storeId": "shoprite",
+        "price": 134.99,
+        "inStock": true
+      },
+      {
+        "storeId": "foodlovers",
+        "price": 144.99,
+        "inStock": true
+      },
+      {
+        "storeId": "boxer",
+        "price": 131.99,
+        "inStock": true
+      },
+      {
+        "storeId": "spar",
+        "price": 146.44,
+        "inStock": true,
+        "onSpecial": false,
+        "specialDetail": "SPAR Fresh Deal"
+      }
+    ]
+  },
+  {
+    "id": "prod-toiletpaper",
+    "name": "Baby Soft Double Ply Toilet Paper",
+    "category": "Household",
+    "unit": "18 Rolls",
+    "isPopular": true,
+    "barcode": "6007788991122",
+    "imageUrl": "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=400&auto=format&fit=crop&q=80",
+    "prices": [
+      {
+        "storeId": "woolworths",
+        "price": 169.99,
+        "inStock": true
+      },
+      {
+        "storeId": "checkers",
+        "price": 139.99,
+        "inStock": true
+      },
+      {
+        "storeId": "pnp",
+        "price": 144.99,
+        "inStock": true
+      },
+      {
+        "storeId": "shoprite",
+        "price": 129.99,
+        "inStock": true
+      },
+      {
+        "storeId": "foodlovers",
+        "price": 137.99,
+        "inStock": true
+      },
+      {
+        "storeId": "boxer",
+        "price": 124.99,
+        "onSpecial": true,
+        "specialDetail": "Bulk Saver",
+        "inStock": true
+      },
+      {
+        "storeId": "spar",
+        "price": 143.91,
+        "inStock": true,
+        "onSpecial": true,
+        "specialDetail": "SPAR Fresh Deal"
+      }
+    ]
+  },
+  {
+    "id": "prod-bananas",
+    "name": "Organic Bananas",
+    "category": "Fresh Produce",
+    "unit": "1kg Bag",
+    "isPopular": false,
+    "barcode": "6002233445566",
+    "imageUrl": "https://images.unsplash.com/photo-1571771894821-ce9b6c11b08e?w=400&auto=format&fit=crop&q=80",
+    "prices": [
+      {
+        "storeId": "woolworths",
+        "price": 29.99,
+        "inStock": true
+      },
+      {
+        "storeId": "checkers",
+        "price": 21.99,
+        "inStock": true
+      },
+      {
+        "storeId": "pnp",
+        "price": 22.99,
+        "inStock": true
+      },
+      {
+        "storeId": "shoprite",
+        "price": 19.99,
+        "inStock": true
+      },
+      {
+        "storeId": "foodlovers",
+        "price": 18.99,
+        "onSpecial": true,
+        "specialDetail": "Fresh Market Deal",
+        "inStock": true
+      },
+      {
+        "storeId": "boxer",
+        "price": 19.49,
+        "inStock": true
+      },
+      {
+        "storeId": "spar",
+        "price": 22.71,
+        "inStock": true,
+        "onSpecial": false,
+        "specialDetail": "SPAR Fresh Deal"
+      }
+    ]
+  },
+  {
+    "id": "prod-potatoes",
+    "name": "First Grade Potatoes",
+    "category": "Fresh Produce",
+    "unit": "2kg Bag",
+    "isPopular": false,
+    "barcode": "6003344556677",
+    "imageUrl": "https://images.unsplash.com/photo-1518977676601-b53f82aba655?w=400&auto=format&fit=crop&q=80",
+    "prices": [
+      {
+        "storeId": "woolworths",
+        "price": 44.99,
+        "inStock": true
+      },
+      {
+        "storeId": "checkers",
+        "price": 34.99,
+        "inStock": true
+      },
+      {
+        "storeId": "pnp",
+        "price": 36.99,
+        "inStock": true
+      },
+      {
+        "storeId": "shoprite",
+        "price": 29.99,
+        "inStock": true
+      },
+      {
+        "storeId": "foodlovers",
+        "price": 27.99,
+        "onSpecial": true,
+        "specialDetail": "Veg Combo Bargain",
+        "inStock": true
+      },
+      {
+        "storeId": "boxer",
+        "price": 28.99,
+        "inStock": true
+      },
+      {
+        "storeId": "spar",
+        "price": 36.35,
+        "inStock": true,
+        "onSpecial": true,
+        "specialDetail": "SPAR Fresh Deal"
+      }
+    ]
+  },
+  {
+    "id": "prod-chicken",
+    "name": "Fresh Chicken Breast Fillets",
+    "category": "Fresh Produce",
+    "unit": "1kg Pack",
+    "isPopular": true,
+    "barcode": "6004455667788",
+    "imageUrl": "https://images.unsplash.com/photo-1604503468506-a8da13d82791?w=400&auto=format&fit=crop&q=80",
+    "prices": [
+      {
+        "storeId": "woolworths",
+        "price": 124.99,
+        "inStock": true
+      },
+      {
+        "storeId": "checkers",
+        "price": 98.99,
+        "onSpecial": true,
+        "specialDetail": "Sizzling Summer Savings",
+        "inStock": true
+      },
+      {
+        "storeId": "pnp",
+        "price": 102.99,
+        "inStock": true
+      },
+      {
+        "storeId": "shoprite",
+        "price": 89.99,
+        "inStock": true
+      },
+      {
+        "storeId": "foodlovers",
+        "price": 92.99,
+        "inStock": true
+      },
+      {
+        "storeId": "boxer",
+        "price": 87.99,
+        "inStock": true
+      },
+      {
+        "storeId": "spar",
+        "price": 102,
+        "inStock": true,
+        "onSpecial": false,
+        "specialDetail": "SPAR Fresh Deal"
+      }
+    ]
+  },
+  {
+    "id": "prod-coke",
+    "name": "Coca-Cola Original Soft Drink",
+    "category": "Groceries",
+    "unit": "2 Litre",
+    "isPopular": true,
+    "barcode": "6005566778899",
+    "imageUrl": "https://images.unsplash.com/photo-1622483767028-3f66f32aef97?w=400&auto=format&fit=crop&q=80",
+    "prices": [
+      {
+        "storeId": "woolworths",
+        "price": 28.99,
+        "inStock": true
+      },
+      {
+        "storeId": "checkers",
+        "price": 24.99,
+        "inStock": true
+      },
+      {
+        "storeId": "pnp",
+        "price": 25.99,
+        "inStock": true
+      },
+      {
+        "storeId": "shoprite",
+        "price": 23.99,
+        "inStock": true
+      },
+      {
+        "storeId": "foodlovers",
+        "price": 24.99,
+        "inStock": true
+      },
+      {
+        "storeId": "boxer",
+        "price": 22.99,
+        "onSpecial": true,
+        "specialDetail": "Boxer Beat the Price",
+        "inStock": true
+      },
+      {
+        "storeId": "spar",
+        "price": 25.74,
+        "inStock": true,
+        "onSpecial": false,
+        "specialDetail": "SPAR Fresh Deal"
+      }
+    ]
+  },
+  {
+    "id": "prod-flakes",
+    "name": "Kellogg’s Corn Flakes",
+    "category": "Pantry",
+    "unit": "1kg",
+    "isPopular": true,
+    "barcode": "6006677889911",
+    "imageUrl": "https://images.unsplash.com/photo-1521483137561-497993a54d5d?w=400&auto=format&fit=crop&q=80",
+    "prices": [
+      {
+        "storeId": "woolworths",
+        "price": 89.99,
+        "inStock": true
+      },
+      {
+        "storeId": "checkers",
+        "price": 74.99,
+        "inStock": true
+      },
+      {
+        "storeId": "pnp",
+        "price": 78.99,
+        "inStock": true
+      },
+      {
+        "storeId": "shoprite",
+        "price": 69.99,
+        "inStock": true
+      },
+      {
+        "storeId": "foodlovers",
+        "price": 74.99,
+        "inStock": true
+      },
+      {
+        "storeId": "boxer",
+        "price": 67.99,
+        "inStock": true
+      },
+      {
+        "storeId": "spar",
+        "price": 77.76,
+        "inStock": true,
+        "onSpecial": false,
+        "specialDetail": "SPAR Fresh Deal"
+      }
+    ]
+  },
+  {
+    "id": "prod-dishwash",
+    "name": "Sunlight Lemon Dishwashing Liquid",
+    "category": "Household",
+    "unit": "750ml",
+    "isPopular": false,
+    "barcode": "6007788991123",
+    "imageUrl": "https://images.unsplash.com/photo-1607344645866-009c320c5ab8?w=400&auto=format&fit=crop&q=80",
+    "prices": [
+      {
+        "storeId": "woolworths",
+        "price": 39.99,
+        "inStock": true
+      },
+      {
+        "storeId": "checkers",
+        "price": 31.99,
+        "inStock": true
+      },
+      {
+        "storeId": "pnp",
+        "price": 32.99,
+        "onSpecial": true,
+        "specialDetail": "Smart Buy Multi-save",
+        "inStock": true
+      },
+      {
+        "storeId": "shoprite",
+        "price": 29.99,
+        "inStock": true
+      },
+      {
+        "storeId": "foodlovers",
+        "price": 33.99,
+        "inStock": true
+      },
+      {
+        "storeId": "boxer",
+        "price": 28.49,
+        "inStock": true
+      },
+      {
+        "storeId": "spar",
+        "price": 32.81,
+        "inStock": true,
+        "onSpecial": false,
+        "specialDetail": "SPAR Fresh Deal"
+      }
+    ]
+  },
+  {
+    "id": "prod-powerbank",
+    "name": "10000mAh Dual USB Power Bank",
+    "category": "Electronics",
+    "unit": "1 Unit",
+    "isPopular": false,
+    "barcode": "6008899001122",
+    "imageUrl": "https://images.unsplash.com/photo-1609592424109-dd27ba7b56e6?w=400&auto=format&fit=crop&q=80",
+    "prices": [
+      {
+        "storeId": "woolworths",
+        "price": 0,
+        "inStock": false
+      },
+      {
+        "storeId": "checkers",
+        "price": 299,
+        "inStock": true
+      },
+      {
+        "storeId": "pnp",
+        "price": 289,
+        "inStock": true
+      },
+      {
+        "storeId": "shoprite",
+        "price": 0,
+        "inStock": false
+      },
+      {
+        "storeId": "foodlovers",
+        "price": 0,
+        "inStock": false
+      },
+      {
+        "storeId": "boxer",
+        "price": 0,
+        "inStock": false
+      },
+      {
+        "storeId": "spar",
+        "price": 0,
+        "inStock": false,
+        "onSpecial": false,
+        "specialDetail": "SPAR Fresh Deal"
+      }
+    ]
+  },
+  {
+    "id": "prod-headphones",
+    "name": "Bluetooth Wireless Headphones",
+    "category": "Electronics",
+    "unit": "1 Unit",
+    "isPopular": true,
+    "barcode": "6009900112233",
+    "imageUrl": "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400&auto=format&fit=crop&q=80",
+    "prices": [
+      {
+        "storeId": "woolworths",
+        "price": 0,
+        "inStock": false
+      },
+      {
+        "storeId": "checkers",
+        "price": 499,
+        "inStock": true
+      },
+      {
+        "storeId": "pnp",
+        "price": 450,
+        "inStock": true
+      },
+      {
+        "storeId": "shoprite",
+        "price": 0,
+        "inStock": false
+      },
+      {
+        "storeId": "foodlovers",
+        "price": 0,
+        "inStock": false
+      },
+      {
+        "storeId": "boxer",
+        "price": 0,
+        "inStock": false
+      },
+      {
+        "storeId": "spar",
+        "price": 0,
+        "inStock": false,
+        "onSpecial": false,
+        "specialDetail": "SPAR Fresh Deal"
+      }
+    ]
+  }
+]
