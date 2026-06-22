@@ -3,3 +3,4 @@ uvicorn
 schedule
 firebase-admin
 python-dotenv
+httpx

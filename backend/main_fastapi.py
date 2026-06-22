@@ -2,13 +2,13 @@
 import json
 import os
 import sys
+import asyncio
 from datetime import datetime
-import urllib.request
-import urllib.parse
 import time
 import threading
 import schedule
 from fastapi import FastAPI, HTTPException, BackgroundTasks
+import httpx
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 from typing import List, Optional
@@ -62,7 +62,7 @@ def save_synced_products(products: List[dict]):
 
 # --- Gemini API Service ---
 
-def invoke_gemini(system_instruction: str, contents: List[dict], response_schema: Optional[dict] = None, is_json: bool = False) -> str:
+async def invoke_gemini(system_instruction: str, contents: List[dict], response_schema: Optional[dict] = None, is_json: bool = False) -> str:
     """Secure client to request intelligence or grounding parameters from Gemini API REST gateway."""
     api_key = os.environ.get("GEMINI_API_KEY")
     if not api_key:
@@ -88,24 +88,19 @@ def invoke_gemini(system_instruction: str, contents: List[dict], response_schema
     if response_schema and "prices" in str(response_schema):
         payload["tools"] = [{"google_search": {}}]
 
-    req = urllib.request.Request(
-        url,
-        data=json.dumps(payload).encode("utf-8"),
-        headers={"Content-Type": "application/json"},
-        method="POST"
-    )
-
-    with urllib.request.urlopen(req) as res:
-        response_data = json.loads(res.read().decode("utf-8"))
+    async with httpx.AsyncClient(timeout=90.0) as client:
         try:
+            res = await client.post(url, json=payload, headers={"Content-Type": "application/json"})
+            res.raise_for_status()
+            response_data = res.json()
             return response_data["candidates"][0]["content"]["parts"][0]["text"]
-        except (KeyError, IndexError) as err:
-            print(f"[FastAPI Error] Malformed Gemini response payload: {err}", file=sys.stderr)
-            raise ValueError("Invalid credentials or response structure from model")
+        except (KeyError, IndexError, httpx.HTTPStatusError) as err:
+            print(f"[FastAPI Error] Malformed or failed Gemini response: {err}", file=sys.stderr)
+            raise ValueError("Invalid credentials or error from model API")
 
 # --- Core Application Logic (Services) ---
 
-def get_products_search_data(query: str, target_url: Optional[str] = None) -> List[dict]:
+async def get_products_search_data(query: str, target_url: Optional[str] = None) -> List[dict]:
     """Performs a Gemini-grounded search for product data."""
     system_instruction = "You are a highly experienced South African shopping, price-tracking, and web scraping specialist..." # Truncated for brevity
     
@@ -125,7 +120,7 @@ def get_products_search_data(query: str, target_url: Optional[str] = None) -> Li
     }
 
     try:
-        gemini_output = invoke_gemini(system_instruction, contents, response_schema, is_json=True)
+        gemini_output = await invoke_gemini(system_instruction, contents, response_schema, is_json=True)
         return json.loads(gemini_output.strip())
     except Exception as err:
         print(f"[FastAPI API Error] Gemini search grounding aborted: {err}", file=sys.stderr)
@@ -143,7 +138,8 @@ def execute_sync_run(manual: bool = False):
     for query in essential_queries:
         try:
             sync_status_store["sync_logs"].insert(0, f"[{time_str}] Grounding search for: '{query}'...")
-            new_prods_json = get_products_search_data(query)
+            # Run async function from sync context (background thread)
+            new_prods_json = asyncio.run(get_products_search_data(query))
             all_new_products.extend(new_prods_json)
             time.sleep(2)  # Respect API rate limits
         except Exception as e:
@@ -213,7 +209,7 @@ async def get_sync_status():
 async def search_products(req: ProductSearchRequest):
     """Run a live, Gemini-grounded search for a product."""
     print(f"[FastAPI] Real-time Grounded Price Search: '{req.query}'")
-    results = get_products_search_data(req.query, req.targetUrl)
+    results = await get_products_search_data(req.query, req.targetUrl)
     if not results:
         # You might want to return a 404 here if no products are found
         print(f"[FastAPI] No products found for query: '{req.query}'")
@@ -243,7 +239,7 @@ async def ai_chat(req: ChatRequest):
     contents_payload.append({"role": "user", "parts": [{"text": req.message}]})
 
     try:
-        chat_reply = invoke_gemini(system_instruction, contents_payload, is_json=False)
+        chat_reply = await invoke_gemini(system_instruction, contents_payload, is_json=False)
         return {"text": chat_reply}
     except Exception as err:
         print(f"[FastAPI Error] Gemini chat invocation aborted: {err}", file=sys.stderr)
