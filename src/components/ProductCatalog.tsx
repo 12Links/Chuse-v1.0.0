@@ -205,7 +205,7 @@ export default function ProductCatalog({
                     }}
                   />
                 ) : (
-                  <div className="w-16 h-16 rounded-2xl bg-slate-55 flex items-center justify-center text-slate-600 border border-slate-200 shrink-0 font-extrabold text-lg font-mono uppercase">
+                  <div className="w-16 h-16 rounded-2xl bg-slate-100 flex items-center justify-center text-slate-600 border border-slate-200 shrink-0 font-extrabold text-lg font-mono uppercase">
                     {product.name.charAt(0)}
                   </div>
                 )}
@@ -220,7 +220,7 @@ export default function ProductCatalog({
               </div>
 
               {/* List of Store Prices inside item card */}
-              <div className="bg-slate-50 rounded-2xl p-4 my-4 space-y-2 border border-slate-200/50">
+              <div className="bg-slate-50 rounded-2xl p-4 my-4 space-y-2 border border-slate-200">
                 <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block">SA Supermarket Offers:</span>
                 
                 <div className="grid grid-cols-2 gap-2 text-xs">
@@ -341,9 +341,9 @@ export default function ProductCatalog({
 
         {filteredProducts.length === 0 && (
           <div className="col-span-full py-16 text-center bg-white rounded-3xl border border-slate-200 shadow-xs">
-            <Search className="w-10 h-10 text-slate-350 mx-auto mb-3" />
+            <Search className="w-10 h-10 text-slate-400 mx-auto mb-3" />
             <h4 className="font-black text-slate-700 text-base">No Matching Supermarket Products</h4>
-            <p className="text-xs text-slate-450 max-w-sm mx-auto mt-1.5 font-semibold leading-relaxed">
+            <p className="text-xs text-slate-500 max-w-sm mx-auto mt-1.5 font-semibold leading-relaxed">
               We couldn't find items matching "{searchTerm}". Try general categories or clear filters.
             </p>
           </div>

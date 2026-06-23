@@ -8,6 +8,7 @@ import time
 import threading
 import schedule
 from fastapi import FastAPI, HTTPException, BackgroundTasks
+from contextlib import asynccontextmanager
 import httpx
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
@@ -163,9 +164,26 @@ def execute_sync_run(manual: bool = False):
     if len(sync_status_store["sync_logs"]) > 25:
         sync_status_store["sync_logs"] = sync_status_store["sync_logs"][:25]
 
+# --- Background Scheduler & Lifespan ---
+
+def run_scheduler():
+    """Run the background scheduler in a separate thread."""
+    schedule.every().day.at("00:00").do(execute_sync_run, manual=False)
+    print("[FastAPI Scheduler] Daily midnight job registered.", flush=True)
+    while True:
+        schedule.run_pending()
+        time.sleep(60)
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """On application startup, start the background scheduler."""
+    scheduler_thread = threading.Thread(target=run_scheduler, daemon=True)
+    scheduler_thread.start()
+    yield
+
 # --- FastAPI Application Setup ---
 
-app = FastAPI(title="Chuse Backend API", version="1.0.0")
+app = FastAPI(title="Chuse Backend API", version="1.0.0", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
@@ -245,22 +263,6 @@ async def ai_chat(req: ChatRequest):
         print(f"[FastAPI Error] Gemini chat invocation aborted: {err}", file=sys.stderr)
         # Return a helpful fallback message
         return {"text": "Howzit! I'm checking store specials right now... Try swapping name brands for house brands for instant savings!"}
-
-# --- Background Scheduler ---
-
-def run_scheduler():
-    """Run the background scheduler in a separate thread."""
-    schedule.every().day.at("00:00").do(execute_sync_run, manual=False)
-    print("[FastAPI Scheduler] Daily midnight job registered.", flush=True)
-    while True:
-        schedule.run_pending()
-        time.sleep(60)
-
-@app.on_event("startup")
-async def startup_event():
-    """On application startup, start the background scheduler."""
-    scheduler_thread = threading.Thread(target=run_scheduler, daemon=True)
-    scheduler_thread.start()
 
 # --- Main Entry Point for Uvicorn ---
 

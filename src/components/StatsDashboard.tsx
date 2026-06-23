@@ -66,7 +66,7 @@ export default function StatsDashboard({ products }: StatsDashboardProps) {
           </div>
           <div>
             <span className="text-[10px] text-slate-400 font-extrabold uppercase tracking-widest block">Cheapest Store Basket</span>
-            <span className="text-lg font-black text-slate-805 font-mono block mt-1">
+            <span className="text-lg font-black text-slate-800 font-mono block mt-1">
               Shoprite (R {cheapestValue.toFixed(2)})
             </span>
             <span className="text-xs text-emerald-600 font-bold block mt-1">
@@ -81,7 +81,7 @@ export default function StatsDashboard({ products }: StatsDashboardProps) {
           </div>
           <div>
             <span className="text-[10px] text-slate-400 font-extrabold uppercase tracking-widest block">Average Essential Basket</span>
-            <span className="text-lg font-black text-slate-805 font-mono block mt-1">
+            <span className="text-lg font-black text-slate-800 font-mono block mt-1">
               R {averageValue.toFixed(2)}
             </span>
             <span className="text-xs text-amber-600 font-bold block mt-1">
@@ -96,7 +96,7 @@ export default function StatsDashboard({ products }: StatsDashboardProps) {
           </div>
           <div>
             <span className="text-[10px] text-slate-400 font-extrabold uppercase tracking-widest block">Premium Retailer Index</span>
-            <span className="text-lg font-black text-slate-805 font-mono block mt-1">
+            <span className="text-lg font-black text-slate-800 font-mono block mt-1">
               Woolworths (R {premiumValue.toFixed(2)})
             </span>
             <span className="text-xs text-rose-500 font-bold block mt-1">
@@ -111,8 +111,8 @@ export default function StatsDashboard({ products }: StatsDashboardProps) {
         <div className="lg:col-span-2 bg-white rounded-3xl p-6 border border-slate-200 shadow-xs space-y-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-              <h3 className="font-extrabold text-slate-850 text-lg flex items-center gap-2">
-                <BarChart2 className="w-5 h-5 text-amber-550" />
+              <h3 className="font-extrabold text-slate-800 text-lg flex items-center gap-2">
+                <BarChart2 className="w-5 h-5 text-amber-600" />
                 Essential SA Grocery Basket Total Cost
               </h3>
               <p className="text-xs text-slate-400 font-bold">
@@ -218,7 +218,7 @@ export default function StatsDashboard({ products }: StatsDashboardProps) {
                         <text
                           x={x + barWidth / 2}
                           y={svgHeight - paddingBottom + 18}
-                          className={`text-[10px] font-black ${isHovered ? 'fill-amber-600 font-black' : 'fill-slate-450'}`}
+                          className={`text-[10px] font-black ${isHovered ? 'fill-amber-600 font-black' : 'fill-slate-500'}`}
                           textAnchor="middle"
                         >
                           {data.store.name}
@@ -317,7 +317,7 @@ export default function StatsDashboard({ products }: StatsDashboardProps) {
                         <text
                           x={x + barWidth / 2}
                           y={svgHeight - paddingBottom + 18}
-                          className="text-[10px] font-black fill-slate-450"
+                          className="text-[10px] font-black fill-slate-500"
                           textAnchor="middle"
                         >
                           {data.name}
@@ -358,7 +358,7 @@ export default function StatsDashboard({ products }: StatsDashboardProps) {
           </div>
 
           <div className="bg-amber-100/20 border border-amber-200/30 rounded-3xl p-6 space-y-3">
-            <h4 className="font-extrabold text-slate-805 text-sm flex items-center gap-1.5">
+            <h4 className="font-extrabold text-slate-800 text-sm flex items-center gap-1.5">
               <ThumbsUp className="w-4 h-4 text-amber-600 animate-pulse" />
               Inflation Bargain Meter
             </h4>
@@ -366,7 +366,7 @@ export default function StatsDashboard({ products }: StatsDashboardProps) {
               We monitor average prices of essential products daily relative to high inflation margins. Currently, basic grocery products have experienced moderate relative volatility.
             </p>
             <div className="bg-white rounded-xl p-3.5 border border-amber-150 flex items-center justify-between text-xs">
-              <span className="font-extrabold text-slate-600">Bargain index:</span>
+              <span className="font-extrabold text-slate-600">Bargain Index:</span>
               <span className="font-mono text-amber-630 font-black">7.8 / 10 Excellent Savings</span>
             </div>
           </div>
