@@ -27,9 +27,9 @@ interface SettingsPageProps {
 }
 
 export default function SettingsPage({ user, onUpdateUser, onLogout, onClearBasket, products, onUpdateProducts }: SettingsPageProps) {
-  const [name, setName] = useState(user?.name || 'Guest User');
+  const [displayName, setDisplayName] = useState(user?.displayName || 'Guest User');
   const [email, setEmail] = useState(user?.email || 'guest@chuse.co.za');
-  const [region, setRegion] = useState(user?.region || 'Gauteng');
+  const [preferredStoreLocation, setPreferredStoreLocation] = useState(user?.preferredStoreLocation || 'Gauteng');
 
   const [loyaltyCards, setLoyaltyCards] = useState(user?.loyaltyCards || {
     checkers: false,
@@ -58,11 +58,11 @@ export default function SettingsPage({ user, onUpdateUser, onLogout, onClearBask
     setSuccessMsg('');
 
     const updatedProfile: UserProfile = {
-      name,
+      displayName,
       email,
-      avatarUrl: user?.avatarUrl || `https://api.dicebear.com/7.x/pixel-art/svg?seed=${encodeURIComponent(name)}`,
+      avatarUrl: user?.avatarUrl || `https://api.dicebear.com/7.x/pixel-art/svg?seed=${encodeURIComponent(displayName)}`,
       loyaltyCards,
-      region
+      preferredStoreLocation
     };
 
     onUpdateUser(updatedProfile);
@@ -103,7 +103,7 @@ export default function SettingsPage({ user, onUpdateUser, onLogout, onClearBask
       {/* Settings Grid Header */}
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 pb-6 border-b border-slate-200">
         <div>
-          <h2 className="text-2xl font-black text-slate-850 uppercase">Chuse User Hub & Settings</h2>
+          <h2 className="text-2xl font-black text-slate-900 uppercase">Chuse User Hub & Settings</h2>
           <p className="text-xs text-slate-500 font-medium mt-1">Manage loyalty card integrations, provinces, matching rules and profiles</p>
         </div>
         
@@ -145,7 +145,7 @@ export default function SettingsPage({ user, onUpdateUser, onLogout, onClearBask
           </div>
 
           <div className="space-y-1">
-            <h3 className="text-lg font-black text-slate-850 leading-none">{name}</h3>
+            <h3 className="text-lg font-black text-slate-900 leading-none">{displayName}</h3>
             <span className="text-xs text-slate-400 font-bold block">{email}</span>
           </div>
 
@@ -162,8 +162,8 @@ export default function SettingsPage({ user, onUpdateUser, onLogout, onClearBask
               <div className="flex items-center justify-between">
                 <span>Active Region:</span>
                 <span className="font-bold text-slate-900 flex items-center gap-1">
-                  <MapPin className="w-3.5 h-3.5 text-amber-500" />
-                  {region}
+                  <MapPin className="w-3.5 h-3.5 text-amber-600" />
+                  {preferredStoreLocation}
                 </span>
               </div>
             </div>
@@ -182,8 +182,8 @@ export default function SettingsPage({ user, onUpdateUser, onLogout, onClearBask
             
             {/* Profile Inputs */}
             <div className="space-y-4">
-              <h3 className="font-black text-slate-805 text-base flex items-center gap-2">
-                <User className="w-5 h-5 text-amber-550" />
+              <h3 className="font-black text-slate-800 text-base flex items-center gap-2">
+                <User className="w-5 h-5 text-amber-600" />
                 Profile Information
               </h3>
               
@@ -192,10 +192,10 @@ export default function SettingsPage({ user, onUpdateUser, onLogout, onClearBask
                   <label className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest block mb-1.5">Your Name</label>
                   <input 
                     type="text" 
-                    value={name}
-                    onChange={e => setName(e.target.value)}
+                    value={displayName}
+                    onChange={e => setDisplayName(e.target.value)}
                     disabled={!user}
-                    className="w-full px-4 py-3 rounded-2xl bg-slate-50/70 border border-slate-200 text-sm focus:outline-none focus:ring-4 focus:ring-amber-500/10 focus:border-[#FFE600] font-bold text-slate-800 disabled:opacity-60"
+                    className="w-full px-4 py-3 rounded-2xl bg-slate-100 border border-slate-200 text-sm focus:outline-none focus:ring-4 focus:ring-amber-500/10 focus:border-[#FFE600] font-bold text-slate-800 disabled:opacity-60"
                   />
                 </div>
 
@@ -206,7 +206,7 @@ export default function SettingsPage({ user, onUpdateUser, onLogout, onClearBask
                     value={email}
                     onChange={e => setEmail(e.target.value)}
                     disabled={!user}
-                    className="w-full px-4 py-3 rounded-2xl bg-slate-50/70 border border-slate-200 text-sm focus:outline-none focus:ring-4 focus:ring-amber-500/10 focus:border-[#FFE600] font-bold text-slate-800 disabled:opacity-60"
+                    className="w-full px-4 py-3 rounded-2xl bg-slate-100 border border-slate-200 text-sm focus:outline-none focus:ring-4 focus:ring-amber-500/10 focus:border-[#FFE600] font-bold text-slate-800 disabled:opacity-60"
                   />
                 </div>
               </div>
@@ -214,11 +214,11 @@ export default function SettingsPage({ user, onUpdateUser, onLogout, onClearBask
               <div>
                 <label className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest block mb-1.5">Province Location</label>
                 <div className="relative">
-                  <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 text-amber-550 w-4 h-4" />
+                  <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 text-amber-600 w-4 h-4" />
                   <select 
-                    value={region}
-                    onChange={e => setRegion(e.target.value)}
-                    className="w-full pl-11 pr-4 py-3 rounded-2xl bg-slate-50/70 border border-slate-200 text-sm focus:outline-none focus:ring-4 focus:ring-amber-500/10 focus:border-[#FFE600] font-bold text-slate-800 cursor-pointer"
+                    value={preferredStoreLocation}
+                    onChange={e => setPreferredStoreLocation(e.target.value)}
+                    className="w-full pl-11 pr-4 py-3 rounded-2xl bg-slate-100 border border-slate-200 text-sm focus:outline-none focus:ring-4 focus:ring-amber-500/10 focus:border-[#FFE600] font-bold text-slate-800 cursor-pointer"
                   >
                     <option value="Gauteng">Gauteng</option>
                     <option value="Western Cape">Western Cape</option>
@@ -234,8 +234,8 @@ export default function SettingsPage({ user, onUpdateUser, onLogout, onClearBask
 
             {/* Loyalty Cards */}
             <div className="space-y-4 pt-2">
-              <h3 className="font-black text-slate-805 text-base flex items-center gap-2">
-                <CreditCard className="w-5 h-5 text-amber-550" />
+              <h3 className="font-black text-slate-800 text-base flex items-center gap-2">
+                <CreditCard className="w-5 h-5 text-amber-600" />
                 Loyalty Card Discount Integrations
               </h3>
               <p className="text-xs text-slate-500 font-medium">Activated cards automatically subtract 10% - 20% loyalty discounts on eligible items in catalogs.</p>
@@ -246,7 +246,7 @@ export default function SettingsPage({ user, onUpdateUser, onLogout, onClearBask
                   onClick={() => handleToggleCard('checkers')}
                   className={`flex items-center gap-2.5 p-4 rounded-2xl border text-xs font-black transition-all cursor-pointer ${
                     loyaltyCards.checkers 
-                      ? 'bg-teal-500/10 border-teal-600 text-teal-850' 
+                      ? 'bg-teal-500/10 border-teal-600 text-teal-900' 
                       : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100/50'
                   }`}
                 >
@@ -256,7 +256,7 @@ export default function SettingsPage({ user, onUpdateUser, onLogout, onClearBask
                     {loyaltyCards.checkers && <span className="text-[9px] font-black">✓</span>}
                   </div>
                   <img 
-                    src="https://th.bing.com/th/id/ODF.iz6I_TYt_6aIpEvEIVvyQA?w=32&h=32&qlt=90&pcl=fffffc&o=6&pid=1.2" 
+                    src="/icons/checkers.png" 
                     alt="Checkers" 
                     referrerPolicy="no-referrer"
                     className="h-5 w-auto object-contain max-w-[40px] mix-blend-multiply shrink-0"
@@ -279,7 +279,7 @@ export default function SettingsPage({ user, onUpdateUser, onLogout, onClearBask
                     {loyaltyCards.pnp && <span className="text-[9px] font-black">✓</span>}
                   </div>
                   <img 
-                    src="https://cdn-prd-02.pnp.co.za/sys-master/images/h7c/hc7/11159969071134/PicknPayLogo.svg" 
+                    src="/icons/pnp.svg" 
                     alt="Pick n Pay" 
                     referrerPolicy="no-referrer"
                     className="h-5 w-auto object-contain max-w-[40px] mix-blend-multiply shrink-0"
@@ -302,7 +302,7 @@ export default function SettingsPage({ user, onUpdateUser, onLogout, onClearBask
                     {loyaltyCards.woolworths && <span className="text-[9px] font-black">✓</span>}
                   </div>
                   <img 
-                    src="https://upload.wikimedia.org/wikipedia/commons/e/ec/Woolworths_South_Africa_logo.svg" 
+                    src="/icons/woolworths.svg" 
                     alt="Woolworths" 
                     referrerPolicy="no-referrer"
                     className="h-5 w-auto object-contain max-w-[40px] mix-blend-multiply shrink-0"
@@ -315,7 +315,7 @@ export default function SettingsPage({ user, onUpdateUser, onLogout, onClearBask
                   onClick={() => handleToggleCard('shoprite')}
                   className={`flex items-center gap-2.5 p-4 rounded-2xl border text-xs font-black transition-all cursor-pointer ${
                     loyaltyCards.shoprite 
-                      ? 'bg-red-50 border-red-500 text-red-800' 
+                      ? 'bg-red-50 border-red-500 text-red-700' 
                       : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100/50'
                   }`}
                 >
@@ -325,7 +325,7 @@ export default function SettingsPage({ user, onUpdateUser, onLogout, onClearBask
                     {loyaltyCards.shoprite && <span className="text-[9px] font-black">✓</span>}
                   </div>
                   <img 
-                    src="https://th.bing.com/th/id/OLC.gyELPwXaVeevzA480x360?w=28&h=28&rs=1&qlt=80&o=6&cdv=1&dpr=1.3&pid=18.2" 
+                    src="/icons/shoprite.png" 
                     alt="Shoprite" 
                     referrerPolicy="no-referrer"
                     className="h-4 w-auto object-contain max-w-[40px] mix-blend-multiply shrink-0"
@@ -348,7 +348,7 @@ export default function SettingsPage({ user, onUpdateUser, onLogout, onClearBask
                     {loyaltyCards.spar && <span className="text-[9px] font-black">✓</span>}
                   </div>
                   <img 
-                    src="https://www.spar.co.za/SPAR/media/img/SPAR_Logo_1.jpg" 
+                    src="/icons/spar.jpg" 
                     alt="SPAR" 
                     referrerPolicy="no-referrer"
                     className="h-4 w-auto object-contain max-w-[40px] mix-blend-multiply shrink-0"
@@ -360,8 +360,8 @@ export default function SettingsPage({ user, onUpdateUser, onLogout, onClearBask
 
             {/* Preferred Supermarkets toggles */}
             <div className="space-y-4 pt-2">
-              <h3 className="font-black text-slate-805 text-base flex items-center gap-2">
-                <Sliders className="w-5 h-5 text-amber-550" />
+              <h3 className="font-black text-slate-800 text-base flex items-center gap-2">
+                <Sliders className="w-5 h-5 text-amber-600" />
                 Deselect Supermarkets from Comparisons
               </h3>
               
@@ -385,8 +385,8 @@ export default function SettingsPage({ user, onUpdateUser, onLogout, onClearBask
 
             {/* Notification and layout preferences */}
             <div className="space-y-4 pt-2">
-              <h3 className="font-black text-slate-805 text-base flex items-center gap-2">
-                <Bell className="w-5 h-5 text-amber-550" />
+              <h3 className="font-black text-slate-800 text-base flex items-center gap-2">
+                <Bell className="w-5 h-5 text-amber-600" />
                 App Preferences
               </h3>
               
@@ -414,7 +414,7 @@ export default function SettingsPage({ user, onUpdateUser, onLogout, onClearBask
             </div>
 
             {/* Submit settings button */}
-            <div className="pt-4 border-t border-slate-150 flex flex-col sm:flex-row gap-3">
+            <div className="pt-4 border-t border-slate-200 flex flex-col sm:flex-row gap-3">
               <button
                 type="submit"
                 className="inline-flex items-center justify-center gap-1.5 px-6 py-3.5 rounded-full text-xs font-black text-black bg-[#FFE600] speed-hover shadow-md cursor-pointer transition-all active:scale-95"

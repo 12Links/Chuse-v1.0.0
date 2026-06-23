@@ -18,7 +18,8 @@ export default function AddCustomProduct({ onAddProduct }: AddCustomProductProps
     pnp: '',
     shoprite: '',
     foodlovers: '',
-    boxer: ''
+    boxer: '',
+    spar: ''
   });
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
@@ -84,7 +85,8 @@ export default function AddCustomProduct({ onAddProduct }: AddCustomProductProps
       pnp: '',
       shoprite: '',
       foodlovers: '',
-      boxer: ''
+      boxer: '',
+      spar: ''
     });
     setSuccess(true);
 
@@ -134,7 +136,7 @@ export default function AddCustomProduct({ onAddProduct }: AddCustomProductProps
               placeholder="e.g. Black Cat Crunchy Peanut Butter"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="w-full px-4 py-3 rounded-2xl bg-slate-55/40 border border-slate-200 text-sm focus:outline-none focus:ring-4 focus:ring-amber-500/10 focus:border-[#FFE600] transition-all font-bold text-slate-800 placeholder:text-slate-400"
+              className="w-full px-4 py-3 rounded-2xl bg-slate-100 border border-slate-200 text-sm focus:outline-none focus:ring-4 focus:ring-amber-500/10 focus:border-[#FFE600] transition-all font-bold text-slate-800 placeholder:text-slate-400"
             />
           </div>
 
@@ -147,7 +149,7 @@ export default function AddCustomProduct({ onAddProduct }: AddCustomProductProps
                 id="custom-category-select"
                 value={category}
                 onChange={(e) => setCategory(e.target.value as any)}
-                className="w-full px-4 py-3 rounded-2xl bg-slate-55/40 border border-slate-200 text-sm focus:outline-none focus:ring-4 focus:ring-amber-500/10 focus:border-[#FFE600] font-bold text-slate-800 cursor-pointer"
+                className="w-full px-4 py-3 rounded-2xl bg-slate-100 border border-slate-200 text-sm focus:outline-none focus:ring-4 focus:ring-amber-500/10 focus:border-[#FFE600] font-bold text-slate-800 cursor-pointer"
               >
                 <option value="Groceries">Groceries</option>
                 <option value="Pantry">Pantry</option>
@@ -167,7 +169,7 @@ export default function AddCustomProduct({ onAddProduct }: AddCustomProductProps
                 placeholder="e.g. 400g Jar, Pack of 6"
                 value={unit}
                 onChange={(e) => setUnit(e.target.value)}
-                className="w-full px-4 py-3 rounded-2xl bg-slate-55/40 border border-slate-200 text-sm focus:outline-none focus:ring-4 focus:ring-amber-500/10 focus:border-[#FFE600] transition-all font-bold text-slate-800 placeholder:text-slate-400"
+                className="w-full px-4 py-3 rounded-2xl bg-slate-100 border border-slate-200 text-sm focus:outline-none focus:ring-4 focus:ring-amber-500/10 focus:border-[#FFE600] transition-all font-bold text-slate-800 placeholder:text-slate-400"
               />
             </div>
           </div>
@@ -180,7 +182,7 @@ export default function AddCustomProduct({ onAddProduct }: AddCustomProductProps
           </label>
           <div className="grid grid-cols-2 gap-4">
             {STORES.map(store => (
-              <div key={store.id} className="p-3.5 rounded-2xl bg-slate-55/70 border border-slate-150/40 space-y-2">
+              <div key={store.id} className="p-3.5 rounded-2xl bg-slate-100 border border-slate-200 space-y-2">
                 {store.logoUrl ? (
                   <div className="inline-flex items-center gap-1.5 bg-white border border-neutral-200/50 rounded-full py-0.5 px-2 shadow-2xs">
                     <img 

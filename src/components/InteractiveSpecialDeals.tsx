@@ -84,7 +84,7 @@ export default function InteractiveSpecialDeals({
               className="bg-white rounded-3xl p-6 shadow-xs border border-slate-200 flex flex-col justify-between hover:shadow-md hover:border-slate-300 transition-all relative overflow-hidden group"
               id={`special-card-${special.product.id}`}
             >
-              {/* Corner Ribbon for discount % - matching the Bento style */}
+              {/* Corner Ribbon for discount % */}
               <div className="absolute top-0 right-0 bg-[#FFE600] text-black text-xs font-black px-4.5 py-2 rounded-bl-2xl shadow-xs flex items-center gap-1 border-l border-b border-yellow-300">
                 <Percent className="w-3.5 h-3.5 stroke-[2.5]" />
                 {diffPct}% CHEAPER
@@ -149,7 +149,7 @@ export default function InteractiveSpecialDeals({
                 </div>
 
                 {/* Promo detail popup styled as clean modern block */}
-                <div className="bg-amber-100/15 rounded-2xl p-3.5 mb-5 border border-amber-200/30 flex items-start gap-2.5">
+                <div className="bg-amber-100/15 rounded-2xl p-3.5 mb-5 border border-amber-200 flex items-start gap-2.5">
                   <div className="bg-[#FFE600] text-black rounded-full p-1 shrink-0 mt-0.5 border border-yellow-300">
                     <Percent className="w-3 h-3 text-black" />
                   </div>

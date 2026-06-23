@@ -24,7 +24,7 @@ export default function AuthPage({ onAuthSuccess, onClose }: AuthPageProps) {
   const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [name, setName] = useState('');
+  const [displayName, setDisplayName] = useState('');
   
   // Loyalty Cards Integration
   const [loyaltyCards, setLoyaltyCards] = useState({
@@ -35,7 +35,7 @@ export default function AuthPage({ onAuthSuccess, onClose }: AuthPageProps) {
     spar: false
   });
   
-  const [region, setRegion] = useState('Gauteng');
+  const [preferredStoreLocation, setPreferredStoreLocation] = useState('Gauteng');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
@@ -52,8 +52,8 @@ export default function AuthPage({ onAuthSuccess, onClose }: AuthPageProps) {
       return;
     }
     
-    if (isSignUp && !name) {
-      setError('Please enter your name.');
+    if (isSignUp && !displayName) {
+      setError('Please enter your display name.');
       return;
     }
 
@@ -69,18 +69,18 @@ export default function AuthPage({ onAuthSuccess, onClose }: AuthPageProps) {
         userCred = credential.user;
       }
 
-      let currentName = name;
+      let currentDisplayName = displayName;
       let currentCards = loyaltyCards;
-      let currentRegion = region;
+      let currentPreferredStoreLocation = preferredStoreLocation;
 
       if (!isSignUp) {
         try {
           const userDoc = await getDoc(doc(db, "users", userCred.uid));
           if (userDoc.exists()) {
             const data = userDoc.data();
-            if (data.name) currentName = data.name;
+            if (data.displayName) currentDisplayName = data.displayName;
             if (data.loyaltyCards) currentCards = data.loyaltyCards;
-            if (data.region) currentRegion = data.region;
+            if (data.preferredStoreLocation) currentPreferredStoreLocation = data.preferredStoreLocation;
           }
         } catch (dbErr) {
           console.warn("Could not retrieve user settings from Firestore", dbErr);
@@ -89,10 +89,10 @@ export default function AuthPage({ onAuthSuccess, onClose }: AuthPageProps) {
         try {
           await setDoc(doc(db, "users", userCred.uid), {
             uid: userCred.uid,
-            name: currentName,
+            displayName: currentDisplayName,
             email: email,
             loyaltyCards: currentCards,
-            region: currentRegion,
+            preferredStoreLocation: currentPreferredStoreLocation,
             updatedAt: new Date().toISOString()
           });
         } catch (dbErr) {
@@ -101,11 +101,11 @@ export default function AuthPage({ onAuthSuccess, onClose }: AuthPageProps) {
       }
 
       const userProfile: UserProfile = {
-        name: currentName || userCred.email?.split('@')[0] || 'Member',
+        displayName: currentDisplayName || userCred.email?.split('@')[0] || 'Member',
         email: userCred.email || email,
-        avatarUrl: `https://api.dicebear.com/7.x/pixel-art/svg?seed=${encodeURIComponent(currentName || email)}`,
+        avatarUrl: `https://api.dicebear.com/7.x/pixel-art/svg?seed=${encodeURIComponent(currentDisplayName || email)}`,
         loyaltyCards: currentCards,
-        region: currentRegion
+        preferredStoreLocation: currentPreferredStoreLocation
       };
 
       localStorage.setItem('sa_user_profile', JSON.stringify(userProfile));
@@ -135,21 +135,21 @@ export default function AuthPage({ onAuthSuccess, onClose }: AuthPageProps) {
       const userCred = result.user;
       
       let currentCards = loyaltyCards;
-      let currentRegion = region;
+      let currentPreferredStoreLocation = preferredStoreLocation;
 
       try {
         const userDoc = await getDoc(doc(db, "users", userCred.uid));
         if (userDoc.exists()) {
           const data = userDoc.data();
           if (data.loyaltyCards) currentCards = data.loyaltyCards;
-          if (data.region) currentRegion = data.region;
+          if (data.preferredStoreLocation) currentPreferredStoreLocation = data.preferredStoreLocation;
         } else {
           await setDoc(doc(db, "users", userCred.uid), {
             uid: userCred.uid,
-            name: userCred.displayName || userCred.email?.split('@')[0] || 'Member',
+            displayName: userCred.displayName || userCred.email?.split('@')[0] || 'Member',
             email: userCred.email,
             loyaltyCards: currentCards,
-            region: currentRegion,
+            preferredStoreLocation: currentPreferredStoreLocation,
             updatedAt: new Date().toISOString()
           });
         }
@@ -158,11 +158,11 @@ export default function AuthPage({ onAuthSuccess, onClose }: AuthPageProps) {
       }
 
       const userProfile: UserProfile = {
-        name: userCred.displayName || userCred.email?.split('@')[0] || 'Member',
+        displayName: userCred.displayName || userCred.email?.split('@')[0] || 'Member',
         email: userCred.email || '',
         avatarUrl: userCred.photoURL || `https://api.dicebear.com/7.x/pixel-art/svg?seed=${encodeURIComponent(userCred.email || '')}`,
         loyaltyCards: currentCards,
-        region: currentRegion
+        preferredStoreLocation: currentPreferredStoreLocation
       };
 
       localStorage.setItem('sa_user_profile', JSON.stringify(userProfile));
@@ -182,7 +182,7 @@ export default function AuthPage({ onAuthSuccess, onClose }: AuthPageProps) {
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95, y: 15 }}
         transition={{ type: "spring", duration: 0.5 }}
-        className="bg-white rounded-[32px] shadow-2xl border border-slate-250 w-full max-w-lg overflow-hidden relative"
+        className="bg-white rounded-[32px] shadow-2xl border border-slate-300 w-full max-w-lg overflow-hidden relative"
       >
         {/* Close Button */}
         {onClose && (
@@ -231,14 +231,14 @@ export default function AuthPage({ onAuthSuccess, onClose }: AuthPageProps) {
           <form onSubmit={handleSubmit} className="space-y-4">
             {isSignUp && (
               <div>
-                <label className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest block mb-1.5">Your Full Name</label>
+                <label className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest block mb-1.5">Your Display Name</label>
                 <div className="relative">
                   <User className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
                   <input 
                     type="text" 
                     placeholder="e.g. Sipho Ndlovu"
-                    value={name}
-                    onChange={e => setName(e.target.value)}
+                    value={displayName}
+                    onChange={e => setDisplayName(e.target.value)}
                     className="w-full pl-11 pr-4 py-3 rounded-2xl bg-slate-50 border border-slate-200 text-sm focus:outline-none focus:ring-4 focus:ring-amber-500/10 focus:border-[#FFE600] font-semibold text-slate-800"
                   />
                 </div>
@@ -338,7 +338,7 @@ export default function AuthPage({ onAuthSuccess, onClose }: AuthPageProps) {
                   <button
                     type="button"
                     onClick={() => toggleCard('shoprite')}
-                    className={`flex items-center gap-2 p-3.5 rounded-2xl border text-xs font-black transition-all cursor-pointer ${
+                  className={`flex items-center gap-2 p-3.5 rounded-2xl border text-xs font-black transition-all cursor-pointer ${
                       loyaltyCards.shoprite 
                         ? 'bg-red-50 border-red-500 text-red-650' 
                         : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100/70'
@@ -376,9 +376,9 @@ export default function AuthPage({ onAuthSuccess, onClose }: AuthPageProps) {
               <div>
                 <label className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest block mb-1.5">Shopping Province</label>
                 <select 
-                  value={region}
-                  onChange={e => setRegion(e.target.value)}
-                  className="w-full px-4 py-3 rounded-2xl bg-slate-50 border border-slate-200 text-sm focus:outline-none focus:ring-4 focus:ring-amber-500/10 focus:border-[#FFE600] font-bold text-slate-705 cursor-pointer"
+                  value={preferredStoreLocation}
+                  onChange={e => setPreferredStoreLocation(e.target.value)}
+                  className="w-full px-4 py-3 rounded-2xl bg-slate-50 border border-slate-200 text-sm focus:outline-none focus:ring-4 focus:ring-amber-500/10 focus:border-[#FFE600] font-bold text-slate-700 cursor-pointer"
                 >
                   <option value="Gauteng">Gauteng</option>
                   <option value="Western Cape">Western Cape</option>

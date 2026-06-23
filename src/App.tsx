@@ -156,11 +156,11 @@ export default function App() {
             
             // Restore loyalty cards & region profile details
             const userProfile: UserProfile = {
-              name: data.name || currentUser.displayName || currentUser.email?.split('@')[0] || 'Member',
+              displayName: data.displayName || currentUser.displayName || currentUser.email?.split('@')[0] || 'Member',
               email: currentUser.email || data.email || '',
               avatarUrl: currentUser.photoURL || `https://api.dicebear.com/7.x/pixel-art/svg?seed=${encodeURIComponent(currentUser.email || '')}`,
               loyaltyCards: data.loyaltyCards || { checkers: false, pnp: false, woolworths: false, shoprite: false, spar: false },
-              region: data.region || 'Gauteng'
+              preferredStoreLocation: data.preferredStoreLocation || 'Gauteng'
             };
             setUser(userProfile);
             localStorage.setItem('sa_user_profile', JSON.stringify(userProfile));
@@ -276,7 +276,7 @@ export default function App() {
   };
 
   return (
-    <div id="chuse-container" className="min-h-screen bg-[#f8fafc] text-slate-905 font-sans selection:bg-[#FFE600] selection:text-black pb-24">
+    <div id="chuse-container" className="min-h-screen bg-[#f8fafc] text-slate-905 font-sans selection:bg-[#FFE600] selection:text-black">
       
       {/* Visual Top Notice Bar */}
       {showPromoBanner && (
@@ -338,7 +338,7 @@ export default function App() {
                     className="w-6.5 h-6.5 rounded-full bg-slate-100 border border-slate-200"
                   />
                   <div className="text-left leading-none">
-                    <span className="text-xs font-black text-slate-800 block">{user.name}</span>
+                    <span className="text-xs font-black text-slate-800 block">{user.displayName}</span>
                     <span className="text-[9px] font-black text-[#FFE600] bg-black px-1.5 py-0.5 rounded-sm block uppercase tracking-wider mt-0.5">Edit Profile</span>
                   </div>
                 </button>
@@ -356,7 +356,7 @@ export default function App() {
               <div className="hidden sm:inline-flex items-center gap-2 bg-slate-50 px-4 py-2.5 rounded-full border border-slate-200/80 shadow-xs">
                 <MapPin className="text-amber-500 w-4 h-4 shrink-0" />
                 <span className="text-xs text-slate-600 font-bold">
-                  Index: {user ? `${user.region} Province` : 'SA National Average'}
+                  Index: {user ? `${user.preferredStoreLocation} Province` : 'SA National Average'}
                 </span>
               </div>
             </div>
@@ -486,7 +486,7 @@ export default function App() {
       </header>
 
       {/* Main active layout */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-40">
         
         {activeTab === 'specials' && (
           <InteractiveSpecialDeals 
@@ -581,7 +581,7 @@ export default function App() {
 
       {/* Floating dynamic optimizer summary capsule */}
       {basket.length > 0 && activeTab !== 'basket' && currentBest && (
-        <div id="floating-basket-capsule" className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 bg-slate-900 text-white rounded-2xl px-5 py-4 shadow-xl border border-slate-800 flex items-center gap-4 hover:scale-[1.02] cursor-pointer transition-all max-w-[92%] sm:max-w-md">
+        <div id="floating-basket-capsule" className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-slate-900 text-white rounded-2xl px-5 py-4 shadow-xl border border-slate-800 flex items-center gap-4 hover:scale-[1.02] cursor-pointer transition-all max-w-[92%] sm:max-w-md">
           <div className="bg-[#FFE600] rounded-xl p-2.5 text-black shadow-md shrink-0">
             <ShoppingBag className="w-5 h-5" />
           </div>
@@ -609,9 +609,11 @@ export default function App() {
       )}
 
       {/* Mini layout footer to match Bento Design pattern */}
-      <footer className="mt-12 py-8 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 border-t border-slate-200 flex flex-col sm:flex-row justify-between items-center text-[10px] font-black text-slate-400 uppercase tracking-widest gap-4">
-        <div>chuse - South Africa's #1 Bento Comparison Engine</div>
-        <div className="flex gap-6 flex-wrap justify-center">
+      <footer className="mt-12 py-8 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 border-t border-slate-200 flex flex-col md:flex-row justify-between items-center text-center md:text-left gap-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+        <div className="mb-4 md:mb-0">
+          © {new Date().getFullYear()} Chuse. A product of 12 Links.
+        </div>
+        <div className="flex gap-x-6 gap-y-2 flex-wrap justify-center md:justify-end">
           <span>Smart Shopper & Xtra Savings Integrated</span>
           <span>Store API Status: Optimal</span>
           <span className="text-slate-900 underline decoration-[#FFE600] decoration-2">Updates every 15 mins</span>

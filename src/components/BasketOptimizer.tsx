@@ -166,7 +166,7 @@ export default function BasketOptimizer({
               return (
                 <div 
                   key={item.product.id} 
-                  className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 py-4 first:pt-0"
+                  className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 py-4"
                   id={`basket-item-${item.product.id}`}
                 >
                   <div className="flex items-start gap-4">
@@ -176,10 +176,10 @@ export default function BasketOptimizer({
                     <div>
                       <h4 className="font-extrabold text-slate-800 text-base leading-snug">{item.product.name}</h4>
                       <div className="flex items-center gap-2 mt-1.5">
-                        <span className="text-xs bg-slate-105 text-slate-600 rounded-full px-2.5 py-0.5 font-bold font-mono border border-slate-200">
+                        <span className="text-xs bg-slate-100 text-slate-600 rounded-full px-2.5 py-0.5 font-bold font-mono border border-slate-200">
                           {item.product.unit}
                         </span>
-                        <span className="text-xs text-slate-450 font-bold uppercase tracking-wider">{item.product.category}</span>
+                        <span className="text-xs text-slate-500 font-bold uppercase tracking-wider">{item.product.category}</span>
                       </div>
                       
                       {bestStore && cheapest && (
@@ -350,7 +350,7 @@ export default function BasketOptimizer({
           </div>
 
           {cheapestSingleStore && maxSavings > 0 && (
-            <div className="mt-6 pt-5 border-t border-slate-850 text-slate-350 text-sm space-y-4">
+            <div className="mt-6 pt-5 border-t border-slate-800 text-slate-400 text-sm space-y-4">
               <div className="flex items-center justify-between font-bold">
                 <span className="inline-flex items-center gap-1">
                   <TrendingDown className="w-4 h-4 text-emerald-400" />
@@ -368,7 +368,7 @@ export default function BasketOptimizer({
         </div>
 
         {/* Split Shopping Innovative Prompt card */}
-        <div className="bg-amber-100/20 border border-amber-200/30 rounded-3xl p-6 space-y-4">
+        <div className="bg-amber-100/20 border border-amber-200 rounded-3xl p-6 space-y-4">
           <div className="flex items-start gap-3">
             <div className="bg-[#FFE600] rounded-2xl p-2.5 text-black border border-yellow-300 shadow-sm shrink-0">
               <Split className="w-5 h-5 text-black" />
@@ -384,16 +384,16 @@ export default function BasketOptimizer({
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl p-4 divide-y divide-slate-100 shadow-sm border border-amber-200/40">
+          <div className="bg-white rounded-2xl p-4 divide-y divide-slate-100 shadow-sm border border-amber-200">
             <div className="flex justify-between py-2 text-xs font-bold text-slate-400 uppercase tracking-wider">
               <span>Smart Split Total:</span>
               <span className="font-mono text-amber-700 text-sm font-extrabold">R {idealSplitTotal.toFixed(2)}</span>
             </div>
             <div className="flex justify-between py-2 text-xs font-bold text-slate-400 uppercase tracking-wider">
               <span>Single Store Best:</span>
-              <span className="font-mono text-slate-650">R {cheapestSingleStore ? cheapestSingleStore.total.toFixed(2) : '0.00'}</span>
+              <span className="font-mono text-slate-700">R {cheapestSingleStore ? cheapestSingleStore.total.toFixed(2) : '0.00'}</span>
             </div>
-            <div className="flex justify-between py-2.5 pt-3 text-xs font-black text-amber-950 bg-amber-100/40 px-2 rounded-xl mt-2 select-none font-bold">
+            <div className="flex justify-between py-2.5 pt-3 text-xs font-black text-amber-900 bg-amber-100/40 px-2 rounded-xl mt-2 select-none font-bold">
               <span className="flex items-center gap-1 text-[11px]">
                 <PiggyBank className="w-4 h-4 text-amber-600 animate-bounce" /> Additional Cash Saved:
               </span>
@@ -419,7 +419,7 @@ export default function BasketOptimizer({
                 exit={{ opacity: 0, height: 0 }}
                 className="overflow-hidden space-y-3"
               >
-                <div className="bg-amber-100/30 rounded-2xl p-3.5 text-[11px] text-amber-900 font-semibold leading-relaxed flex items-start gap-1.5 border border-amber-200/40">
+                <div className="bg-amber-100/30 rounded-2xl p-3.5 text-[11px] text-amber-900 font-semibold leading-relaxed flex items-start gap-1.5 border border-amber-200">
                   <Info className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
                   Below is your optimal multi-stop shopping route to maximize physical cash flow.
                 </div>

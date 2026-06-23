@@ -45,9 +45,10 @@ export interface CustomProduct {
 }
 
 export interface UserProfile {
-  name: string;
+  displayName: string;
   email: string;
   avatarUrl?: string;
+  preferredStoreLocation: string;
   loyaltyCards: {
     checkers: boolean;
     pnp: boolean;
@@ -55,5 +56,4 @@ export interface UserProfile {
     shoprite: boolean;
     spar: boolean;
   };
-  region: string;
 }

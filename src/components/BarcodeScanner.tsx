@@ -204,7 +204,7 @@ export default function BarcodeScanner({ products, onAddToBasket }: BarcodeScann
               />
             ) : (
               /* Simulated ambient pulsing digital radar */
-              <div className="absolute inset-0 bg-radial from-slate-850 to-slate-950 flex flex-col items-center justify-center p-8 text-center space-y-4 overflow-hidden">
+              <div className="absolute inset-0 bg-radial from-slate-800 to-slate-900 flex flex-col items-center justify-center p-8 text-center space-y-4 overflow-hidden">
                 <div className="absolute inset-0 opacity-10 bg-[linear-gradient(rgba(18,24,38,0)_1px,transparent_1px),linear-gradient(90deg,rgba(18,24,38,0)_1px,transparent_1px)] bg-[size:16px_16px]" />
                 
                 {/* Visual Radar Pulse */}
@@ -290,7 +290,7 @@ export default function BarcodeScanner({ products, onAddToBasket }: BarcodeScann
               <button
                 key={prod.id}
                 onClick={() => handleLookupBarcode(prod.barcode || '')}
-                className="p-3 text-left bg-slate-55/40 hover:bg-yellow-50/50 border border-slate-200/60 rounded-xl text-[11px] font-extrabold text-slate-700 hover:text-black transition-all hover:border-yellow-300 cursor-pointer flex flex-col justify-between h-18"
+                className="p-3 text-left bg-slate-100 hover:bg-yellow-50/50 border border-slate-200 rounded-xl text-[11px] font-extrabold text-slate-700 hover:text-black transition-all hover:border-yellow-300 cursor-pointer flex flex-col justify-between h-20"
               >
                 <span>{prod.name}</span>
                 <span className="font-mono text-[9px] text-slate-400 mt-1 block">
@@ -314,12 +314,12 @@ export default function BarcodeScanner({ products, onAddToBasket }: BarcodeScann
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
-              className="bg-white border border-slate-200 rounded-[32px] p-8 text-center space-y-4 shadow-xs min-h-[420px] flex flex-col items-center justify-center text-slate-650"
+              className="bg-white border border-slate-200 rounded-[32px] p-8 text-center space-y-4 shadow-xs min-h-[420px] flex flex-col items-center justify-center text-slate-700"
             >
               <RefreshCw className="w-12 h-12 text-amber-500 animate-spin" />
               <div className="space-y-1">
                 <p className="font-black text-slate-850">Connecting to Retail Database...</p>
-                <p className="text-[11px] font-bold text-slate-400">Comparing Checkers, Woolworths, Spar, and PnP registers</p>
+                <p className="text-[11px] font-bold text-slate-500">Comparing Checkers, Woolworths, Spar, and PnP registers</p>
               </div>
             </motion.div>
           )}
@@ -330,14 +330,14 @@ export default function BarcodeScanner({ products, onAddToBasket }: BarcodeScann
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
-              className="bg-white border border-slate-200 rounded-[32px] p-8 text-center space-y-4 shadow-xs min-h-[420px] flex flex-col items-center justify-center text-slate-450 border-dashed"
+              className="bg-white border border-slate-200 rounded-[32px] p-8 text-center space-y-4 shadow-xs min-h-[420px] flex flex-col items-center justify-center text-slate-500 border-dashed"
             >
               <div className="w-14 h-14 bg-slate-50 border border-slate-200/80 rounded-full flex items-center justify-center text-slate-400 mx-auto">
                 <Scan className="w-6 h-6" />
               </div>
               <div className="space-y-1">
                 <h4 className="font-black text-slate-700 text-sm">Awaiting Scanner Input</h4>
-                <p className="text-xs text-slate-400 max-w-xs mx-auto leading-relaxed font-semibold">
+                <p className="text-xs text-slate-500 max-w-xs mx-auto leading-relaxed font-semibold">
                   Scan a physical box barcode using the camera, or tap one of the fast demo products for full price comparisons.
                 </p>
               </div>
@@ -350,7 +350,7 @@ export default function BarcodeScanner({ products, onAddToBasket }: BarcodeScann
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
-              className="bg-white border border-slate-200 rounded-[32px] p-8 text-center space-y-5 shadow-xs min-h-[420px] flex flex-col items-center justify-center text-slate-650"
+              className="bg-white border border-slate-200 rounded-[32px] p-8 text-center space-y-5 shadow-xs min-h-[420px] flex flex-col items-center justify-center text-slate-700"
             >
               <div className="w-16 h-16 bg-rose-50 border border-rose-100 text-rose-500 rounded-full flex items-center justify-center mx-auto">
                 <AlertCircle className="w-8 h-8" />
@@ -358,7 +358,7 @@ export default function BarcodeScanner({ products, onAddToBasket }: BarcodeScann
               
               <div className="space-y-1">
                 <h4 className="font-black text-slate-850">Barcode Not Registered</h4>
-                <p className="text-xs text-slate-450 max-w-xs mx-auto leading-relaxed font-bold">
+                <p className="text-xs text-slate-500 max-w-xs mx-auto leading-relaxed font-bold">
                   The scanned UPC/EAN code <strong className="font-mono text-slate-700">{scannedBarcode}</strong> is not listed on current index charts.
                 </p>
               </div>
@@ -412,7 +412,7 @@ export default function BarcodeScanner({ products, onAddToBasket }: BarcodeScann
                   {matchedProduct.prices.map(item => {
                     const priceFormatted = (item.inStock && item.price > 0) ? `R ${item.price.toFixed(2)}` : 'Out of Stock';
                     return (
-                      <div 
+                      <div
                         key={item.storeId}
                         className={`flex items-center justify-between p-3.5 rounded-2xl border text-slate-705 ${
                           item.storeId === 'woolworths' ? 'bg-neutral-50 border-neutral-200' :

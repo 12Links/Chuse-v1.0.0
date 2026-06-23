@@ -186,7 +186,7 @@ ${basketDetails.length > 0
       if (line.trim().startsWith('* ') || line.trim().startsWith('- ')) {
         const listText = line.trim().substring(2);
         return (
-          <li key={idx} className="list-disc ml-5 pl-1 my-1 text-xs text-slate-705 font-medium leading-relaxed">
+          <li key={idx} className="list-disc ml-5 pl-1 my-1 text-xs text-slate-700 font-medium leading-relaxed">
             {listText}
           </li>
         );
