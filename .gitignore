@@ -4,9 +4,27 @@ dist/
 coverage/
 .DS_Store
 *.log
+
+# Environment files
 .env
 .env*
 backend/.env
+!.env.example
+
+# Virtual environments
 .venv/
 venv/
-!.env.example
+backend/.venv/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# VS Code
+.vscode/
+
+# Firebase service account
+service_account.py
+service_account.json
+*service_account*
