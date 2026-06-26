@@ -346,14 +346,14 @@ export default function App() {
                 <button
                   id="header-signin-cta"
                   onClick={() => setShowAuthModal(true)}
-                  className="inline-flex items-center gap-1.5 px-4.5 py-2.5 rounded-full bg-slate-900 hover:bg-[#FFE600] hover:text-black text-white text-xs font-black transition-all cursor-pointer shadow-xs active:scale-95"
+                  className="inline-flex items-center gap-1.5 px-3 py-2.5 rounded-lg bg-slate-900 hover:bg-[#FFE600] hover:text-black text-white text-xs font-black transition-all cursor-pointer shadow-xs active:scale-95"
                 >
-                  <span>Sign In / Profile</span>
+                  <span>Sign In / Log In</span>
                 </button>
               )}
 
               {/* Dynamic Province Location Index Indicator */}
-              <div className="hidden sm:inline-flex items-center gap-2 bg-slate-50 px-4 py-2.5 rounded-full border border-slate-200/80 shadow-xs">
+              <div className="hidden sm:inline-flex items-center gap-2 bg-slate-50 px-4 py-2.5 rounded-lg border border-slate-200/80 shadow-xs">
                 <MapPin className="text-amber-500 w-4 h-4 shrink-0" />
                 <span className="text-xs text-slate-600 font-bold">
                   Index: {user ? `${user.preferredStoreLocation} Province` : 'SA National Average'}
@@ -368,7 +368,7 @@ export default function App() {
             <button
               id="tab-specials-trigger"
               onClick={() => setActiveTab('specials')}
-              className={`flex items-center gap-2 px-4.5 py-2.5 rounded-full text-xs font-black whitespace-nowrap transition-all duration-200 active:scale-95 cursor-pointer ${
+              className={`flex items-center gap-2 px-2 py-2.5 rounded-md text-xs font-black whitespace-nowrap transition-all duration-200 active:scale-95 cursor-pointer ${
                 activeTab === 'specials'
                   ? 'bg-[#FFE600] text-black border-transparent shadow-sm'
                   : 'text-slate-500 hover:text-slate-900 bg-slate-50 hover:bg-slate-100 border border-slate-200'
@@ -380,7 +380,7 @@ export default function App() {
             <button
               id="tab-ai-trigger"
               onClick={() => setActiveTab('ai')}
-              className={`flex items-center gap-2 px-4.5 py-2.5 rounded-full text-xs font-black whitespace-nowrap transition-all duration-200 active:scale-95 cursor-pointer relative ${
+              className={`flex items-center gap-2 px-2 py-2.5 rounded-md text-xs font-black whitespace-nowrap transition-all duration-200 active:scale-95 cursor-pointer relative ${
                 activeTab === 'ai'
                   ? 'bg-[#FFE600] text-black border-transparent shadow-sm'
                   : 'text-slate-550 hover:text-slate-900 bg-amber-50/40 hover:bg-amber-100/60 border border-amber-200/50'
@@ -396,7 +396,7 @@ export default function App() {
             <button
               id="tab-catalog-trigger"
               onClick={() => setActiveTab('catalog')}
-              className={`flex items-center gap-2 px-4.5 py-2.5 rounded-full text-xs font-black whitespace-nowrap transition-all duration-200 active:scale-95 cursor-pointer ${
+              className={`flex items-center gap-2 px-2 py-2.5 rounded-md text-xs font-black whitespace-nowrap transition-all duration-200 active:scale-95 cursor-pointer ${
                 activeTab === 'catalog'
                   ? 'bg-[#FFE600] text-black border-transparent shadow-sm'
                   : 'text-slate-500 hover:text-slate-900 bg-slate-50 hover:bg-slate-100 border border-slate-200'
@@ -409,7 +409,7 @@ export default function App() {
             <button
               id="tab-scan-trigger"
               onClick={() => setActiveTab('scan')}
-              className={`flex items-center gap-2 px-4.5 py-2.5 rounded-full text-xs font-black whitespace-nowrap transition-all duration-200 active:scale-95 cursor-pointer relative ${
+              className={`flex items-center gap-2 px-2 py-2.5 rounded-md text-xs font-black whitespace-nowrap transition-all duration-200 active:scale-95 cursor-pointer relative ${
                 activeTab === 'scan'
                   ? 'bg-[#FFE600] text-black border-transparent shadow-sm'
                   : 'text-slate-550 hover:text-slate-900 bg-amber-50/40 hover:bg-amber-100/60 border border-amber-200/50'
@@ -425,7 +425,7 @@ export default function App() {
             <button
               id="tab-basket-trigger"
               onClick={() => setActiveTab('basket')}
-              className={`flex items-center gap-2 px-4.5 py-2.5 rounded-full text-xs font-black whitespace-nowrap transition-all duration-200 active:scale-95 cursor-pointer relative ${
+              className={`flex items-center gap-2 px-2 py-2.5 rounded-md text-xs font-black whitespace-nowrap transition-all duration-200 active:scale-95 cursor-pointer relative ${
                 activeTab === 'basket'
                   ? 'bg-[#FFE600] text-black border-transparent shadow-sm'
                   : 'text-slate-500 hover:text-slate-900 bg-slate-50 hover:bg-slate-100 border border-slate-200'
@@ -442,7 +442,7 @@ export default function App() {
             <button
               id="tab-stats-trigger"
               onClick={() => setActiveTab('stats')}
-              className={`flex items-center gap-2 px-4.5 py-2.5 rounded-full text-xs font-black whitespace-nowrap transition-all duration-200 active:scale-95 cursor-pointer ${
+              className={`flex items-center gap-2 px-2 py-2.5 rounded-md text-xs font-black whitespace-nowrap transition-all duration-200 active:scale-95 cursor-pointer ${
                 activeTab === 'stats'
                   ? 'bg-[#FFE600] text-black border-transparent shadow-sm'
                   : 'text-slate-500 hover:text-slate-900 bg-slate-50 hover:bg-slate-100 border border-slate-200'
@@ -454,7 +454,7 @@ export default function App() {
             <button
               id="tab-custom-trigger"
               onClick={() => setActiveTab('custom')}
-              className={`flex items-center gap-2 px-4.5 py-2.5 rounded-full text-xs font-black whitespace-nowrap transition-all duration-200 active:scale-95 cursor-pointer ${
+              className={`flex items-center gap-2 px-2 py-2.5 rounded-md text-xs font-black whitespace-nowrap transition-all duration-200 active:scale-95 cursor-pointer ${
                 activeTab === 'custom'
                   ? 'bg-[#FFE600] text-black border-transparent shadow-sm'
                   : 'text-slate-500 hover:text-slate-900 bg-slate-50 hover:bg-slate-100 border border-slate-200'
@@ -473,7 +473,7 @@ export default function App() {
                   setActiveTab('settings');
                 }
               }}
-              className={`flex items-center gap-2 px-4.5 py-2.5 rounded-full text-xs font-black whitespace-nowrap transition-all duration-200 active:scale-95 cursor-pointer ${
+              className={`flex items-center gap-2 px-2 py-2.5 rounded-md text-xs font-black whitespace-nowrap transition-all duration-200 active:scale-95 cursor-pointer ${
                 activeTab === 'settings'
                   ? 'bg-[#FFE600] text-black border-transparent shadow-sm'
                   : 'text-slate-500 hover:text-slate-900 bg-slate-50 hover:bg-slate-100 border border-slate-200'
