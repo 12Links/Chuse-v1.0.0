@@ -1,0 +1,51 @@
+type User @table {
+  email: String!
+  displayName: String!
+  preferredStoreLocation: String
+}
+
+type Store @table {
+  name: String!
+  locationCity: String!
+  brandLogoUrl: String!
+}
+
+type Product @table {
+  name: String!
+  category: String!
+  brand: String!
+  barcode: String!
+  imageUrl: String
+  description: String
+}
+
+type PricePoint @table {
+  price: Float!
+  lastUpdated: Timestamp!
+  product: Product!
+  store: Store!
+}
+
+type ShoppingList @table {
+  user: User!
+  listName: String!
+}
+
+type ListItem @table {
+  shoppingList: ShoppingList!
+  product: Product!
+  quantity: Int!
+}
+
+type PriceAlert @table {
+  user: User!
+  product: Product!
+  thresholdPrice: Float!
+}
+
+type PriceHistory @table {
+  product: Product!
+  store: Store!
+  price: Float!
+  recordedAt: Timestamp!
+}
