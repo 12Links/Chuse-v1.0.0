@@ -1,50 +1,150 @@
 type User @table {
+  isGuest: Boolean!
+  lastActive: Timestamp
+}
+type Account @table {
+  # Foreign key to User
+  user: User! 
+
+  # User identification
+  userName: String!
+  lastName: String!
+  firstName: String!
+
+  # User address information
+  city: String!
+  province: String!
+  postalCode: String!
+  homeAddress: String!
+
+  # Users contact details
   email: String!
-  displayName: String!
-  preferredStoreLocation: String
+  phoneNumber: String!
+
+  # Other
+  gender: String!
+  dateOfBirth: String
+  password: String!
+}
+
+type nutritionConstrains @table {
+  user: User! 
+  timestamp: Timestamp!
+}
+
+type diataryPreference @table {
+  nutritionConstrains: nutritionConstrains!
+  value: String!
+}
+
+type allergens @table {
+  nutritionConstrains: nutritionConstrains!
+  value: String!
+}
+
+type spendingConstraint @table {
+  # Foreign key
+  user: User! 
+
+  # Values
+  minimum: Int
+  maximum: Int
+}
+
+type List @table {
+  user: User!
+  name: String!
+  createdAt: Timestamp!
 }
 
 type Store @table {
   name: String!
-  locationCity: String!
-  brandLogoUrl: String!
+
+  # Address
+  city: String!
+  province: String!
+  postalCode: String!
+  streetAddress: String!
 }
 
-type Product @table {
+type OFFProduct @table {
+  # Identification
   name: String!
-  category: String!
-  brand: String!
-  barcode: String!
-  imageUrl: String
-  description: String
+  brand: String
+  barcode: String
+  genericName: String
+
+  # Tags
+  categoryTags: String
+  allergensTags: String
+
+  # Catrgorization
+  novaGroup: Int
+  category: String
+  multiScoreGrade: String
+
+  # Other
+  ingredients: String
+  quantity: String
+  servingSize: String
+  imageURL: String
 }
 
-type PricePoint @table {
+type Nutrient @table {
+  product: OFFProduct!
+
+  name: String!
+  value: Float!
+}
+
+type ScrapedProduct @table {
+  store: Store!
+  SKU: String  
+  url: String
+  barcode: String
   price: Float!
-  lastUpdated: Timestamp!
-  product: Product!
+  promotionPrice: Float
+  onPromotion: Boolean!
+  inStock: Boolean!
+  imageURL: String
+  description: String
+  timestamp: Timestamp!
+}
+
+type Match @table {
+  scrapedProduct: ScrapedProduct!
+  offProduct: OFFProduct!
+  timestamp: Timestamp!
+}
+
+type Availability @table {
+  scrapedProduct: ScrapedProduct!
   store: Store!
 }
 
-type ShoppingList @table {
-  user: User!
-  listName: String!
-}
-
 type ListItem @table {
-  shoppingList: ShoppingList!
-  product: Product!
-  quantity: Int!
+  list: List!
+  product: OFFProduct!
 }
 
+# I am not sure not sure about this one
+type PricePoint @table {
+  price: Float!
+  lastUpdated: Timestamp!
+  product: ScrapedProduct!
+  store: Store!
+}
+
+# Used to notify the user when a price of a certaion item reaches a said value
 type PriceAlert @table {
   user: User!
-  product: Product!
+  product: ScrapedProduct!
   thresholdPrice: Float!
 }
 
+# Use for one of our features
 type PriceHistory @table {
-  product: Product!
+  scrapedProduct: ScrapedProduct!
   store: Store!
   price: Float!
   recordedAt: Timestamp!
