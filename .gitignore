@@ -28,3 +28,7 @@ __pycache__/
 service_account.py
 service_account.json
 *service_account*
+
+.firebaserc     
+firebase-debug.log
+.firebase/
