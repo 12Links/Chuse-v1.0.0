@@ -3,6 +3,15 @@ from sqlalchemy.orm import relationship
 from .database import Base
 from datetime import datetime
 
+class Store(Base):
+    __tablename__ = "stores"
+
+    id = Column(String, primary_key=True, index=True)
+    name = Column(String, unique=True, index=True)
+
+    prices = relationship("PricePoint", back_populates="store")
+    history = relationship("PriceHistory", back_populates="store")
+
 class Product(Base):
     __tablename__ = "products"
 
@@ -22,19 +31,21 @@ class PricePoint(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     product_id = Column(String, ForeignKey("products.id"))
-    store_id = Column(String, index=True)
+    store_id = Column(String, ForeignKey("stores.id"), index=True)
     price = Column(Float)
     last_updated = Column(DateTime, default=datetime.utcnow)
 
     product = relationship("Product", back_populates="prices")
+    store = relationship("Store", back_populates="prices")
 
 class PriceHistory(Base):
     __tablename__ = "price_history"
 
     id = Column(Integer, primary_key=True, index=True)
     product_id = Column(String, ForeignKey("products.id"))
-    store_id = Column(String)
+    store_id = Column(String, ForeignKey("stores.id"))
     price = Column(Float)
     recorded_at = Column(DateTime, default=datetime.utcnow)
 
     product = relationship("Product", back_populates="history")
+    store = relationship("Store", back_populates="history")

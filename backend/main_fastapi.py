@@ -17,6 +17,17 @@ WORKSPACE_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(WORKSPACE_ROOT)
 
 from scraper import run_all_scrapers
+from sqlalchemy import create_engine
+from backend.app.database import Base
+from backend.app.models import Product, PricePoint, PriceHistory
+
+# --- Setup and Configuration ---
+
+# Add workspace root to system path
+WORKSPACE_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.append(WORKSPACE_ROOT)
+
+from scraper import run_all_scrapers
 import backend.app.services  # This initializes Firebase Admin for Auth
 
 
@@ -39,6 +50,10 @@ async def lifespan(app: FastAPI):
     DATABASE_URL = os.getenv("DATABASE_URL")
     if not DATABASE_URL:
         raise ValueError("DATABASE_URL environment variable is not set for the application")
+
+    # Create tables
+    engine = create_engine(DATABASE_URL)
+    Base.metadata.create_all(bind=engine)
 
     app.state.db_pool = await asyncpg.create_pool(DATABASE_URL)
 
@@ -95,7 +110,7 @@ async def trigger_scrape(background_tasks: BackgroundTasks):
 @app.get("/prices/{product_id}")
 async def get_prices(product_id: str, conn: asyncpg.Connection = Depends(get_db)):
     # Return all store prices for a product
-    price_points_records = await conn.fetch('SELECT * FROM "PricePoint" WHERE "productId" = $1', product_id)
+    price_points_records = await conn.fetch('SELECT * FROM price_points WHERE product_id = $1', product_id)
     # The connection is released automatically by the `get_db` dependency
     return [dict(p) for p in price_points_records]
 
@@ -103,8 +118,8 @@ async def get_prices(product_id: str, conn: asyncpg.Connection = Depends(get_db)
 async def get_products(conn: asyncpg.Connection = Depends(get_db)):
     """Retrieve the list of all products from the SQL DB, enriched with live prices."""
     try:
-        # 1. Get all products from the 'Product' table
-        products_records = await conn.fetch('SELECT "id", "name", "category", "unit", "barcode", "imageUrl" FROM "Product"')
+        # 1. Get all products from the 'products' table
+        products_records = await conn.fetch('SELECT id, name, category, unit, barcode, "imageUrl" FROM products')
 
         products = []
         product_ids = []
@@ -115,20 +130,20 @@ async def get_products(conn: asyncpg.Connection = Depends(get_db)):
         if not products:
             return []
 
-        # 2. Get all relevant prices from 'PricePoint' in one query
-        prices_records = await conn.fetch('SELECT "productId", "storeId", "price", "lastUpdated" FROM "PricePoint" WHERE "productId" = ANY($1::uuid[])', product_ids)
+        # 2. Get all relevant prices from 'price_points' in one query
+        prices_records = await conn.fetch('SELECT product_id, store_id, price, last_updated FROM price_points WHERE product_id = ANY($1::text[])', product_ids)
 
         prices_map = {}
         for pr in prices_records:
-            pid = pr['productId']
+            pid = pr['product_id']
             if pid not in prices_map:
                 prices_map[pid] = []
 
             prices_map[pid].append({
-                "storeId": pr['storeId'],
+                "storeId": pr['store_id'],
                 "price": pr['price'],
                 "inStock": True, # Assuming price point means in stock
-                "lastUpdated": pr['lastUpdated'].isoformat() if pr['lastUpdated'] else None
+                "lastUpdated": pr['last_updated'].isoformat() if pr['last_updated'] else None
             })
 
         # 3. Combine products with their prices
@@ -149,7 +164,7 @@ async def search_products(req: ProductSearchRequest, conn: asyncpg.Connection = 
 
     # Use a LIKE query for efficient database-side searching.
     matched_products_records = await conn.fetch(
-        'SELECT "id", "name", "category", "unit", "barcode", "imageUrl" FROM "Product" WHERE "name" ILIKE $1',
+        'SELECT id, name, category, unit, barcode, "imageUrl" FROM products WHERE name ILIKE $1',
         f'%{query}%'
     )
     # NOTE: This search implementation doesn't return prices to keep it fast.

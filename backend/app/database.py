@@ -1,12 +1,14 @@
 import os
 import asyncpg
 from fastapi import Request
+from sqlalchemy.ext.declarative import declarative_base
 
 DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./app.db")
 
 if not DATABASE_URL or not DATABASE_URL.startswith("postgres"):
     raise ValueError("DATABASE_URL environment variable must be set to a valid PostgreSQL connection string.")
 
+Base = declarative_base()
 
 def get_db():
     """FastAPI dependency to get a DB connection from the app's pool."""

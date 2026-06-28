@@ -1,0 +1,903 @@
+extend type Query {
+  """
+  ✨ Look up a single `Account` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
+  """
+  account(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: Account_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Account_FirstRow
+  ): Account @fdc_generated(from: "Account", purpose: QUERY_SINGLE)
+  """
+  ✨ Look up a single `Availability` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
+  """
+  availability(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: Availability_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Availability_FirstRow
+  ): Availability @fdc_generated(from: "Availability", purpose: QUERY_SINGLE)
+  """
+  ✨ Look up a single `List` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
+  """
+  list(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: List_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: List_FirstRow
+  ): List @fdc_generated(from: "List", purpose: QUERY_SINGLE)
+  """
+  ✨ Look up a single `ListItem` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
+  """
+  listItem(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: ListItem_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: ListItem_FirstRow
+  ): ListItem @fdc_generated(from: "ListItem", purpose: QUERY_SINGLE)
+  """
+  ✨ Look up a single `Match` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
+  """
+  match(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: Match_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Match_FirstRow
+  ): Match @fdc_generated(from: "Match", purpose: QUERY_SINGLE)
+  """
+  ✨ Look up a single `Nutrient` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
+  """
+  nutrient(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: Nutrient_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Nutrient_FirstRow
+  ): Nutrient @fdc_generated(from: "Nutrient", purpose: QUERY_SINGLE)
+  """
+  ✨ Look up a single `OFFProduct` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
+  """
+  oFFProduct(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: OFFProduct_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: OFFProduct_FirstRow
+  ): OFFProduct @fdc_generated(from: "OFFProduct", purpose: QUERY_SINGLE)
+  """
+  ✨ Look up a single `PriceAlert` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
+  """
+  priceAlert(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: PriceAlert_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: PriceAlert_FirstRow
+  ): PriceAlert @fdc_generated(from: "PriceAlert", purpose: QUERY_SINGLE)
+  """
+  ✨ Look up a single `PriceHistory` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
+  """
+  priceHistory(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: PriceHistory_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: PriceHistory_FirstRow
+  ): PriceHistory @fdc_generated(from: "PriceHistory", purpose: QUERY_SINGLE)
+  """
+  ✨ Look up a single `PricePoint` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
+  """
+  pricePoint(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: PricePoint_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: PricePoint_FirstRow
+  ): PricePoint @fdc_generated(from: "PricePoint", purpose: QUERY_SINGLE)
+  """
+  ✨ Look up a single `ScrapedProduct` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
+  """
+  scrapedProduct(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: ScrapedProduct_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: ScrapedProduct_FirstRow
+  ): ScrapedProduct @fdc_generated(from: "ScrapedProduct", purpose: QUERY_SINGLE)
+  """
+  ✨ Look up a single `Store` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
+  """
+  store(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: Store_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Store_FirstRow
+  ): Store @fdc_generated(from: "Store", purpose: QUERY_SINGLE)
+  """
+  ✨ Look up a single `User` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
+  """
+  user(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: User_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: User_FirstRow
+  ): User @fdc_generated(from: "User", purpose: QUERY_SINGLE)
+  """
+  ✨ Look up a single `allergens` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
+  """
+  allergens(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: allergens_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: allergens_FirstRow
+  ): allergens @fdc_generated(from: "allergens", purpose: QUERY_SINGLE)
+  """
+  ✨ Look up a single `diataryPreference` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
+  """
+  diataryPreference(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: diataryPreference_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: diataryPreference_FirstRow
+  ): diataryPreference @fdc_generated(from: "diataryPreference", purpose: QUERY_SINGLE)
+  """
+  ✨ Look up a single `nutritionConstrains` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
+  """
+  nutritionConstrains(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: nutritionConstrains_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: nutritionConstrains_FirstRow
+  ): nutritionConstrains @fdc_generated(from: "nutritionConstrains", purpose: QUERY_SINGLE)
+  """
+  ✨ Look up a single `spendingConstraint` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
+  """
+  spendingConstraint(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: spendingConstraint_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: spendingConstraint_FirstRow
+  ): spendingConstraint @fdc_generated(from: "spendingConstraint", purpose: QUERY_SINGLE)
+  """
+  ✨ List `Account` objects in the table and return selected fields, optionally filtered by `where` conditions
+  """
+  accounts(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: Account_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [Account_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: Account_Having
+  ): [Account!]! @fdc_generated(from: "Account", purpose: QUERY_MULTIPLE)
+  """
+  ✨ List `Availability` objects in the table and return selected fields, optionally filtered by `where` conditions
+  """
+  availabilities(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: Availability_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [Availability_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: Availability_Having
+  ): [Availability!]! @fdc_generated(from: "Availability", purpose: QUERY_MULTIPLE)
+  """
+  ✨ List `List` objects in the table and return selected fields, optionally filtered by `where` conditions
+  """
+  lists(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: List_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [List_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: List_Having
+  ): [List!]! @fdc_generated(from: "List", purpose: QUERY_MULTIPLE)
+  """
+  ✨ List `ListItem` objects in the table and return selected fields, optionally filtered by `where` conditions
+  """
+  listItems(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: ListItem_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [ListItem_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: ListItem_Having
+  ): [ListItem!]! @fdc_generated(from: "ListItem", purpose: QUERY_MULTIPLE)
+  """
+  ✨ List `Match` objects in the table and return selected fields, optionally filtered by `where` conditions
+  """
+  matches(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: Match_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [Match_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: Match_Having
+  ): [Match!]! @fdc_generated(from: "Match", purpose: QUERY_MULTIPLE)
+  """
+  ✨ List `Nutrient` objects in the table and return selected fields, optionally filtered by `where` conditions
+  """
+  nutrients(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: Nutrient_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [Nutrient_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: Nutrient_Having
+  ): [Nutrient!]! @fdc_generated(from: "Nutrient", purpose: QUERY_MULTIPLE)
+  """
+  ✨ List `OFFProduct` objects in the table and return selected fields, optionally filtered by `where` conditions
+  """
+  oFFProducts(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: OFFProduct_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [OFFProduct_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: OFFProduct_Having
+  ): [OFFProduct!]! @fdc_generated(from: "OFFProduct", purpose: QUERY_MULTIPLE)
+  """
+  ✨ List `PriceAlert` objects in the table and return selected fields, optionally filtered by `where` conditions
+  """
+  priceAlerts(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: PriceAlert_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [PriceAlert_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: PriceAlert_Having
+  ): [PriceAlert!]! @fdc_generated(from: "PriceAlert", purpose: QUERY_MULTIPLE)
+  """
+  ✨ List `PriceHistory` objects in the table and return selected fields, optionally filtered by `where` conditions
+  """
+  priceHistories(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: PriceHistory_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [PriceHistory_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: PriceHistory_Having
+  ): [PriceHistory!]! @fdc_generated(from: "PriceHistory", purpose: QUERY_MULTIPLE)
+  """
+  ✨ List `PricePoint` objects in the table and return selected fields, optionally filtered by `where` conditions
+  """
+  pricePoints(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: PricePoint_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [PricePoint_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: PricePoint_Having
+  ): [PricePoint!]! @fdc_generated(from: "PricePoint", purpose: QUERY_MULTIPLE)
+  """
+  ✨ List `ScrapedProduct` objects in the table and return selected fields, optionally filtered by `where` conditions
+  """
+  scrapedProducts(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: ScrapedProduct_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [ScrapedProduct_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: ScrapedProduct_Having
+  ): [ScrapedProduct!]! @fdc_generated(from: "ScrapedProduct", purpose: QUERY_MULTIPLE)
+  """
+  ✨ List `Store` objects in the table and return selected fields, optionally filtered by `where` conditions
+  """
+  stores(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: Store_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [Store_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: Store_Having
+  ): [Store!]! @fdc_generated(from: "Store", purpose: QUERY_MULTIPLE)
+  """
+  ✨ List `User` objects in the table and return selected fields, optionally filtered by `where` conditions
+  """
+  users(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: User_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [User_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: User_Having
+  ): [User!]! @fdc_generated(from: "User", purpose: QUERY_MULTIPLE)
+  """
+  ✨ List `allergens` objects in the table and return selected fields, optionally filtered by `where` conditions
+  """
+  allergenss(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: allergens_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [allergens_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: allergens_Having
+  ): [allergens!]! @fdc_generated(from: "allergens", purpose: QUERY_MULTIPLE)
+  """
+  ✨ List `diataryPreference` objects in the table and return selected fields, optionally filtered by `where` conditions
+  """
+  diataryPreferences(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: diataryPreference_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [diataryPreference_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: diataryPreference_Having
+  ): [diataryPreference!]! @fdc_generated(from: "diataryPreference", purpose: QUERY_MULTIPLE)
+  """
+  ✨ List `nutritionConstrains` objects in the table and return selected fields, optionally filtered by `where` conditions
+  """
+  nutritionConstrainss(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: nutritionConstrains_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [nutritionConstrains_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: nutritionConstrains_Having
+  ): [nutritionConstrains!]! @fdc_generated(from: "nutritionConstrains", purpose: QUERY_MULTIPLE)
+  """
+  ✨ List `spendingConstraint` objects in the table and return selected fields, optionally filtered by `where` conditions
+  """
+  spendingConstraints(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: spendingConstraint_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [spendingConstraint_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: spendingConstraint_Having
+  ): [spendingConstraint!]! @fdc_generated(from: "spendingConstraint", purpose: QUERY_MULTIPLE)
+}
