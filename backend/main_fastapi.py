@@ -2,38 +2,30 @@
 import os
 import sys
 from datetime import datetime
-from fastapi import FastAPI, HTTPException, BackgroundTasks, Depends, Request
 from contextlib import asynccontextmanager
+
+from fastapi import FastAPI, HTTPException, BackgroundTasks, Depends, Request
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 from typing import List
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 import asyncpg
+from sqlalchemy import create_engine
+from dotenv import load_dotenv
+
+# --- Load environment variables ---
+load_dotenv(os.path.join(os.path.dirname(__file__), '.env'))
 
 # --- Setup and Configuration ---
-
-# Add workspace root to system path
 WORKSPACE_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(WORKSPACE_ROOT)
 
 from scraper import run_all_scrapers
-from sqlalchemy import create_engine
+import backend.app.services  # Initializes Firebase Admin for Auth
 from backend.app.database import Base
 from backend.app.models import Product, PricePoint, PriceHistory
 
-# --- Setup and Configuration ---
-
-# Add workspace root to system path
-WORKSPACE_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-sys.path.append(WORKSPACE_ROOT)
-
-from scraper import run_all_scrapers
-import backend.app.services  # This initializes Firebase Admin for Auth
-
-
-# --- In-Memory State and File I/O ---
-
-# A simple in-memory store for sync status. In a real production app, this might be a database or Redis.
+# --- In-Memory State ---
 sync_status_store = {
     "last_sync_time": datetime.now().isoformat(),
     "sync_logs": [
@@ -46,50 +38,74 @@ sync_status_store = {
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """On application startup, start the background scheduler."""
-    DATABASE_URL = os.getenv("DATABASE_URL")
-    if not DATABASE_URL:
-        raise ValueError("DATABASE_URL environment variable is not set for the application")
+    DB_USER = os.getenv("DB_USER")
+    DB_PASS = os.getenv("DB_PASS")
+    DB_NAME = os.getenv("DB_NAME", "dataconnect")
+    INSTANCE_CONNECTION_NAME = os.getenv("INSTANCE_CONNECTION_NAME", "choose-edec8:us-east4:frontend-fdc")
 
-    # Create tables
-    engine = create_engine(DATABASE_URL)
+    if not DB_USER or not DB_PASS:
+        raise RuntimeError("DB_USER and DB_PASS must be set in your backend/.env file")
+
+    if os.getenv("K_SERVICE"):
+        # Production (Cloud Run): connect via Unix socket
+        host_arg = f"?host=/cloudsql/{INSTANCE_CONNECTION_NAME}"
+        SYNC_DB_URL  = f"postgresql://{DB_USER}:{DB_PASS}@/{DB_NAME}{host_arg}"
+        ASYNC_DB_URL = f"postgresql://{DB_USER}:{DB_PASS}@/{DB_NAME}{host_arg}"
+    else:
+        # Local dev: connect via Cloud SQL Auth Proxy on localhost
+        SYNC_DB_URL  = f"postgresql://{DB_USER}:{DB_PASS}@127.0.0.1:5432/{DB_NAME}"
+        ASYNC_DB_URL = f"postgresql://{DB_USER}:{DB_PASS}@127.0.0.1:5432/{DB_NAME}"
+
+    print(f"[DB] Connecting as '{DB_USER}' to '{DB_NAME}'...")
+
+    # Create tables via SQLAlchemy (sync)
+    engine = create_engine(SYNC_DB_URL)
     Base.metadata.create_all(bind=engine)
+    engine.dispose()
 
-    app.state.db_pool = await asyncpg.create_pool(DATABASE_URL)
+    # Async connection pool for FastAPI endpoints
+    app.state.db_pool = await asyncpg.create_pool(ASYNC_DB_URL)
 
+    # Daily scrape scheduler (2am)
     scheduler = AsyncIOScheduler()
-    # Pass the pool to the scheduled job
-    scheduler.add_job(lambda: run_all_scrapers(app.state.db_pool), "cron", hour=2, minute=0)  # 2am daily
+    scheduler.add_job(
+        lambda: run_all_scrapers(app.state.db_pool),
+        "cron", hour=2, minute=0
+    )
     scheduler.start()
+    print("[Scheduler] Daily scrape job registered at 02:00.")
 
     yield
 
+    scheduler.shutdown()
     await app.state.db_pool.close()
+    print("[DB] Connection pool closed.")
+
+
+# --- DB Dependency ---
 
 async def get_db(request: Request) -> asyncpg.Connection:
-    """
-    FastAPI dependency that provides a DB connection from the pool and
-    releases it automatically.
-    """
     conn = await request.app.state.db_pool.acquire()
     try:
         yield conn
     finally:
         await request.app.state.db_pool.release(conn)
 
-# --- FastAPI Application Setup ---
+
+# --- FastAPI App ---
 
 app = FastAPI(title="Chuse Backend API", version="1.0.0", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"], # Allow all origins
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# --- Pydantic Models for Request/Response Validation ---
+
+# --- Pydantic Models ---
 
 class ChatRequest(BaseModel):
     message: str
@@ -99,108 +115,101 @@ class ChatRequest(BaseModel):
 class ProductSearchRequest(BaseModel):
     query: str
 
-# --- API Endpoints ---
+
+# --- Endpoints ---
 
 @app.post("/scrape/trigger")
-async def trigger_scrape(background_tasks: BackgroundTasks):
-    # Pass the pool to the background task
-    background_tasks.add_task(run_all_scrapers, background_tasks.app.state.db_pool)
+async def trigger_scrape(background_tasks: BackgroundTasks, request: Request):
+    background_tasks.add_task(run_all_scrapers, request.app.state.db_pool)
     return {"status": "scrape started"}
+
 
 @app.get("/prices/{product_id}")
 async def get_prices(product_id: str, conn: asyncpg.Connection = Depends(get_db)):
-    # Return all store prices for a product
-    price_points_records = await conn.fetch('SELECT * FROM price_points WHERE product_id = $1', product_id)
-    # The connection is released automatically by the `get_db` dependency
-    return [dict(p) for p in price_points_records]
+    records = await conn.fetch(
+        'SELECT * FROM price_points WHERE product_id = $1', product_id
+    )
+    return [dict(r) for r in records]
+
 
 @app.get("/api/products")
 async def get_products(conn: asyncpg.Connection = Depends(get_db)):
-    """Retrieve the list of all products from the SQL DB, enriched with live prices."""
     try:
-        # 1. Get all products from the 'products' table
-        products_records = await conn.fetch('SELECT id, name, category, unit, barcode, "imageUrl" FROM products')
-
-        products = []
-        product_ids = []
-        for p in products_records:
-            products.append(dict(p))
-            product_ids.append(p['id'])
-
-        if not products:
+        products_records = await conn.fetch(
+            'SELECT id, name, category, unit, barcode, "imageUrl" FROM products'
+        )
+        if not products_records:
             return []
 
-        # 2. Get all relevant prices from 'price_points' in one query
-        prices_records = await conn.fetch('SELECT product_id, store_id, price, last_updated FROM price_points WHERE product_id = ANY($1::text[])', product_ids)
+        products = [dict(p) for p in products_records]
+        product_ids = [p["id"] for p in products]
+
+        prices_records = await conn.fetch(
+            'SELECT product_id, store_id, price, last_updated '
+            'FROM price_points WHERE product_id = ANY($1::text[])',
+            product_ids
+        )
 
         prices_map = {}
         for pr in prices_records:
-            pid = pr['product_id']
-            if pid not in prices_map:
-                prices_map[pid] = []
-
-            prices_map[pid].append({
-                "storeId": pr['store_id'],
-                "price": pr['price'],
-                "inStock": True, # Assuming price point means in stock
-                "lastUpdated": pr['last_updated'].isoformat() if pr['last_updated'] else None
+            pid = pr["product_id"]
+            prices_map.setdefault(pid, []).append({
+                "storeId":     pr["store_id"],
+                "price":       pr["price"],
+                "inStock":     True,
+                "lastUpdated": pr["last_updated"].isoformat() if pr["last_updated"] else None,
             })
 
-        # 3. Combine products with their prices
         for product in products:
-            product["prices"] = prices_map.get(product['id'], [])
+            product["prices"] = prices_map.get(product["id"], [])
 
         return products
+
     except Exception as e:
-        print(f"[FastAPI Error] Failed to fetch products from SQL database: {e}", file=sys.stderr)
+        print(f"[FastAPI Error] Failed to fetch products: {e}", file=sys.stderr)
         raise HTTPException(status_code=500, detail="Failed to retrieve products from the database.")
+
 
 @app.post("/api/products/search")
 async def search_products(req: ProductSearchRequest, conn: asyncpg.Connection = Depends(get_db)):
-    """Searches for products in the SQL database based on a query string."""
     query = req.query.strip().lower()
     if not query:
         return []
-
-    # Use a LIKE query for efficient database-side searching.
-    matched_products_records = await conn.fetch(
-        'SELECT id, name, category, unit, barcode, "imageUrl" FROM products WHERE name ILIKE $1',
-        f'%{query}%'
+    records = await conn.fetch(
+        'SELECT id, name, category, unit, barcode, "imageUrl" '
+        'FROM products WHERE name ILIKE $1',
+        f"%{query}%"
     )
-    # NOTE: This search implementation doesn't return prices to keep it fast.
-    return [dict(p) for p in matched_products_records]
+    return [dict(r) for r in records]
+
 
 @app.get("/api/sync/status")
 async def get_sync_status():
-    """Get the status of the background synchronization daemon."""
     return {
-        "success": True,
+        "success":     True,
         "lastSyncTime": sync_status_store["last_sync_time"],
-        "syncLogs": sync_status_store["sync_logs"],
-        "schedule": "0 2 * * * (Every day at 2am)",
-        "status": "Listening",
-        "version": "4.0.0-playwright"
+        "syncLogs":    sync_status_store["sync_logs"],
+        "schedule":    "0 2 * * * (Every day at 2am)",
+        "status":      "Listening",
+        "version":     "4.0.0-playwright"
     }
+
 
 @app.post("/api/ai/chat")
 async def ai_chat(req: ChatRequest):
-    """Handle a request to the AI Savings Wizard."""
     if not req.message:
         raise HTTPException(status_code=400, detail="Missing message body parameter")
-
-    # This part needs to be refactored to not use invoke_gemini
-    # For now, returning a placeholder
     return {"text": "The AI chat is currently being updated. Please try again later."}
 
 
-# --- Main Entry Point for Uvicorn ---
+# --- Entry Point ---
 
 if __name__ == "__main__":
     import uvicorn
-    port_to_run = 8000
+    port = 8000
     if len(sys.argv) > 1:
         try:
-            port_to_run = int(sys.argv[1])
+            port = int(sys.argv[1])
         except ValueError:
             pass
-    uvicorn.run(app, host="127.0.0.1", port=port_to_run)
+    uvicorn.run(app, host="127.0.0.1", port=port)
