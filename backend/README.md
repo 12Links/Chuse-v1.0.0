@@ -39,6 +39,9 @@ Follow these steps from the project's **root directory** to set up and run the b
     This command starts the high-performance Uvicorn server with your FastAPI application.
     ```bash
     # From the 'backend' directory
-    python main_fastapi.py
+    python main_fastapi.py # dont use this to run the backend go to the main root and run ./start.sh
+    ```
+    ```
+
     ```
     Keep this terminal window open. In a new terminal, you can now start the frontend application.
