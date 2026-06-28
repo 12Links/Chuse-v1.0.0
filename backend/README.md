@@ -33,7 +33,7 @@ Follow these steps from the project's **root directory** to set up and run the b
     pip install -r requirements.txt
     ```
 
-4.  **Run the Application**
+5.  **Run the Application**
 
     With the virtual environment still active, run the Python server. It will listen on port 8000.
     This command starts the high-performance Uvicorn server with your FastAPI application.

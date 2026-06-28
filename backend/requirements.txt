@@ -4,3 +4,6 @@ schedule
 firebase-admin
 python-dotenv
 httpx
+apscheduler
+playwright
+asyncpg           # async postgres driver (preferred with FastAPI)

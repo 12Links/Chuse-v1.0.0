@@ -529,6 +529,7 @@ export default function App() {
             products={products} 
             basket={basket} 
             user={user}
+            onAuthRequest={() => setShowAuthModal(true)}
           />
         )}
 
@@ -563,62 +564,18 @@ export default function App() {
           />
         )}
 
+        {/* Mini layout footer to match Bento Design pattern */}
+        <footer className="mt-12 py-8 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 border-t border-slate-200 flex flex-col md:flex-row justify-between items-center text-center md:text-left gap-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+          <div className="mb-4 md:mb-0">
+            © {new Date().getFullYear()} Chuse. A product of 12 Links.
+          </div>
+          <div className="flex gap-x-6 gap-y-2 flex-wrap justify-center md:justify-end">
+            <span>Smart Shopper & Xtra Savings Integrated</span>
+            <span>Store API Status: Optimal</span>
+            <span className="text-slate-900 underline decoration-[#FFE600] decoration-2">Updates every 15 mins</span>
+          </div>
+        </footer>
       </main>
-
-      {/* Auth Modal Overlay portal */}
-      <AnimatePresence>
-        {showAuthModal && (
-          <AuthPage 
-            onAuthSuccess={(userProfile) => {
-              setUser(userProfile);
-              setShowAuthModal(false);
-              setActiveTab('settings');
-            }}
-            onClose={() => setShowAuthModal(false)}
-          />
-        )}
-      </AnimatePresence>
-
-      {/* Floating dynamic optimizer summary capsule */}
-      {basket.length > 0 && activeTab !== 'basket' && currentBest && (
-        <div id="floating-basket-capsule" className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-slate-900 text-white rounded-2xl px-5 py-4 shadow-xl border border-slate-800 flex items-center gap-4 hover:scale-[1.02] cursor-pointer transition-all max-w-[92%] sm:max-w-md">
-          <div className="bg-[#FFE600] rounded-xl p-2.5 text-black shadow-md shrink-0">
-            <ShoppingBag className="w-5 h-5" />
-          </div>
-          
-          <div className="flex-1 text-left">
-            <span className="text-[10px] uppercase font-bold text-slate-400 block tracking-wider leading-none">Smart Basket Estimate</span>
-            <div className="text-xs font-black mt-1 leading-snug text-white flex items-center gap-1.5">
-              Compare Basket ({basket.reduce((a, b) => a + b.quantity, 0)} Items)
-            </div>
-            {currentBest.total > 0 && (
-              <p className="text-[11px] text-[#FFE600] font-bold mt-0.5">
-                Cheapest: R {currentBest.total.toFixed(2)} at {currentBest.store.name}
-              </p>
-            )}
-          </div>
-
-          <button
-            id="floating-basket-optimise-cta"
-            onClick={() => setActiveTab('basket')}
-            className="bg-[#FFE600] hover:bg-yellow-400 font-extrabold text-[11px] text-black rounded-xl px-4 py-2.5 leading-none shrink-0 cursor-pointer shadow-sm transition-all"
-          >
-            Optimize Cost
-          </button>
-        </div>
-      )}
-
-      {/* Mini layout footer to match Bento Design pattern */}
-      <footer className="mt-12 py-8 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 border-t border-slate-200 flex flex-col md:flex-row justify-between items-center text-center md:text-left gap-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">
-        <div className="mb-4 md:mb-0">
-          © {new Date().getFullYear()} Chuse. A product of 12 Links.
-        </div>
-        <div className="flex gap-x-6 gap-y-2 flex-wrap justify-center md:justify-end">
-          <span>Smart Shopper & Xtra Savings Integrated</span>
-          <span>Store API Status: Optimal</span>
-          <span className="text-slate-900 underline decoration-[#FFE600] decoration-2">Updates every 15 mins</span>
-        </div>
-      </footer>
 
     </div>
   );

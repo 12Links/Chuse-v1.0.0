@@ -22,9 +22,9 @@
     "lucide-react": "^0.546.0",
     "motion": "^12.23.24",
     "node-cron": "^4.5.0",
+    "playwright": "^1.61.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-qr-barcode-scanner": "^1.0.6",
     "recharts": "^3.8.1",
     "vite": "^5.2.0"
   },
