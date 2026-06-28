@@ -3,5 +3,3 @@
 </div>
 
 
-**Prerequisites:**  Node.js
-**Prerequisites:**  Python 3.12+
