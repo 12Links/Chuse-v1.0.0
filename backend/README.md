@@ -33,16 +33,6 @@ Follow these steps from the project's **root directory** to set up and run the b
     pip install -r requirements.txt
     ```
 
-4.  **Set Up Environment Variables**
-
-    The backend requires environment variables for database and Firebase connections. From the project's **root directory** (not the `backend` directory), create a `.env` file:
-    ```
-    # In c:/Users/jacky/Documents/GitHub/Chuse-v1.0.0/.env
-    DATABASE_URL="postgresql://user:password@host:port/database"
-    FIREBASE_CREDENTIALS="c:/Users/jacky/Documents/GitHub/Chuse-v1.0.0/your-service-account-file.json"
-    ```
-    Replace the `DATABASE_URL` with your actual PostgreSQL connection string and update `FIREBASE_CREDENTIALS` with the correct path to your service account key file.
-
 5.  **Run the Application**
 
     With the virtual environment still active, run the Python server. It will listen on port 8000.
