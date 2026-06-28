@@ -1,31 +1,19 @@
 import os
-
-from sqlalchemy import create_engine, text
-from sqlalchemy.orm import declarative_base, sessionmaker
+import asyncpg
+from fastapi import Request
 
 DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./app.db")
 
-engine_kwargs = {}
-if DATABASE_URL.startswith("sqlite"):
-    engine_kwargs["connect_args"] = {"check_same_thread": False}
-
-engine = create_engine(DATABASE_URL, **engine_kwargs)
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-Base = declarative_base()
+if not DATABASE_URL or not DATABASE_URL.startswith("postgres"):
+    raise ValueError("DATABASE_URL environment variable must be set to a valid PostgreSQL connection string.")
 
 
-def check_database_connection():
+def get_db():
+    """FastAPI dependency to get a DB connection from the app's pool."""
+    # This function is now a placeholder. The actual dependency will be implemented
+    # slightly differently to handle async connections properly.
+    # We will use a connection from the request's app state.
     try:
-        with engine.connect() as connection:
-            connection.execute(text("SELECT 1"))
-        return {
-            "status": "ok",
-            "database_url": DATABASE_URL,
-            "message": "Database connection successful",
-        }
-    except Exception as exc:
-        return {
-            "status": "error",
-            "database_url": DATABASE_URL,
-            "message": str(exc),
-        }
+        yield None
+    finally:
+        pass

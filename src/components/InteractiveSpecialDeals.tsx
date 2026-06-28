@@ -85,7 +85,7 @@ export default function InteractiveSpecialDeals({
               id={`special-card-${special.product.id}`}
             >
               {/* Corner Ribbon for discount % */}
-              <div className="absolute top-0 right-0 bg-[#FFE600] text-black text-xs font-black px-4.5 py-2 rounded-bl-2xl shadow-xs flex items-center gap-1 border-l border-b border-yellow-300">
+              <div className="absolute top-0 right-0 bg-[#FFE600] text-black text-xs font-black px-4.5 py-2 rounded-tr-3xl shadow-xs flex items-center gap-1 border-l border-b border-yellow-300">
                 <Percent className="w-3.5 h-3.5 stroke-[2.5]" />
                 {diffPct}% CHEAPER
               </div>

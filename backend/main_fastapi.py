@@ -1,19 +1,14 @@
 #!/usr/bin/env python3
-import json
 import os
 import sys
-import asyncio
 from datetime import datetime
-import time
-import threading
-import schedule
-from fastapi import FastAPI, HTTPException, BackgroundTasks
+from fastapi import FastAPI, HTTPException, BackgroundTasks, Depends, Request
 from contextlib import asynccontextmanager
-import httpx
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
-from typing import List, Optional
-from dotenv import load_dotenv
+from typing import List
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
+import asyncpg
 
 # --- Setup and Configuration ---
 
@@ -21,16 +16,11 @@ from dotenv import load_dotenv
 WORKSPACE_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(WORKSPACE_ROOT)
 
-# Load environment variables from .env file in the root directory
-dotenv_path = os.path.join(WORKSPACE_ROOT, '.env')
-load_dotenv(dotenv_path=dotenv_path)
+from scraper import run_all_scrapers
+import backend.app.services  # This initializes Firebase Admin for Auth
 
-# The scraper.py module is deprecated in favor of live Gemini search grounding.
-from scraper import perform_scraping
 
 # --- In-Memory State and File I/O ---
-
-SYNC_FILE_PATH = os.path.join(WORKSPACE_ROOT, "synced_products.json")
 
 # A simple in-memory store for sync status. In a real production app, this might be a database or Redis.
 sync_status_store = {
@@ -41,145 +31,36 @@ sync_status_store = {
     ]
 }
 
-def load_synced_products():
-    """Retrieve indexed commodities list from the JSON cache disk filesystem."""
-    if os.path.exists(SYNC_FILE_PATH):
-        try:
-            with open(SYNC_FILE_PATH, "r", encoding="utf-8") as f:
-                return json.load(f)
-        except Exception as e:
-            print(f"[FastAPI Error] Failed to read cached JSON database: {e}", file=sys.stderr)
-    return []
-
-def save_synced_products(products: List[dict]):
-    """Write back updated indexes to protect cache integrity."""
-    try:
-        with open(SYNC_FILE_PATH, "w", encoding="utf-8") as f:
-            json.dump(products, f, indent=2, ensure_ascii=False)
-        return True
-    except Exception as e:
-        print(f"[FastAPI Error] Failed to write catalog JSON: {e}", file=sys.stderr)
-        return False
-
-# --- Gemini API Service ---
-
-async def invoke_gemini(system_instruction: str, contents: List[dict], response_schema: Optional[dict] = None, is_json: bool = False) -> str:
-    """Secure client to request intelligence or grounding parameters from Gemini API REST gateway."""
-    api_key = os.environ.get("GEMINI_API_KEY")
-    if not api_key:
-        print("[FastAPI Warning] GEMINI_API_KEY env variable is absent.", file=sys.stderr)
-        raise ValueError("Missing Gemini credentials")
-
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={api_key}"
-    
-    payload = {
-        "contents": contents,
-        "systemInstruction": {"parts": [{"text": system_instruction}]}
-    }
-
-    generation_config = {}
-    if is_json:
-        generation_config["responseMimeType"] = "application/json"
-    if response_schema:
-        generation_config["responseSchema"] = response_schema
-    
-    if generation_config:
-        payload["generationConfig"] = generation_config
-
-    if response_schema and "prices" in str(response_schema):
-        payload["tools"] = [{"google_search": {}}]
-
-    async with httpx.AsyncClient(timeout=90.0) as client:
-        try:
-            res = await client.post(url, json=payload, headers={"Content-Type": "application/json"})
-            res.raise_for_status()
-            response_data = res.json()
-            return response_data["candidates"][0]["content"]["parts"][0]["text"]
-        except (KeyError, IndexError, httpx.HTTPStatusError) as err:
-            print(f"[FastAPI Error] Malformed or failed Gemini response: {err}", file=sys.stderr)
-            raise ValueError("Invalid credentials or error from model API")
-
-# --- Core Application Logic (Services) ---
-
-async def get_products_search_data(query: str, target_url: Optional[str] = None) -> List[dict]:
-    """Performs a Gemini-grounded search for product data."""
-    system_instruction = "You are a highly experienced South African shopping, price-tracking, and web scraping specialist..." # Truncated for brevity
-    
-    contents = [{"parts": [{"text": f"Research real current pricing... for product query: '{query}'..."}]}] # Truncated
-
-    response_schema = {
-        "type": "ARRAY", "items": {"type": "OBJECT", "properties": {
-            "id": {"type": "STRING"}, "name": {"type": "STRING"}, "category": {"type": "STRING"},
-            "unit": {"type": "STRING"}, "imageUrl": {"type": "STRING"}, "barcode": {"type": "STRING"},
-            "isPopular": {"type": "BOOLEAN"}, "prices": {"type": "ARRAY", "items": {
-                "type": "OBJECT", "properties": {
-                    "storeId": {"type": "STRING"}, "price": {"type": "NUMBER"}, "onSpecial": {"type": "BOOLEAN"},
-                    "specialDetail": {"type": "STRING"}, "inStock": {"type": "BOOLEAN"}
-                }, "required": ["storeId", "price", "inStock"]
-            }}
-        }, "required": ["id", "name", "category", "unit", "prices"]}
-    }
-
-    try:
-        gemini_output = await invoke_gemini(system_instruction, contents, response_schema, is_json=True)
-        return json.loads(gemini_output.strip())
-    except Exception as err:
-        print(f"[FastAPI API Error] Gemini search grounding aborted: {err}", file=sys.stderr)
-        return []
-
-def execute_sync_run(manual: bool = False):
-    """The core logic for the daily/manual product data synchronization."""
-    time_str = datetime.now().strftime("%H:%M:%S")
-    trigger_type = "Manual Trigger" if manual else "Daily Scheduler"
-    sync_status_store["sync_logs"].insert(0, f"[{time_str}] [FastAPI Daemon] Starting background price update via {trigger_type}...")
-    
-    essential_queries = ["Sasko White Bread", "Clover Full Cream Milk 2L", "Nulaid Large Eggs", "Sunfoil Sunflower Oil 2L", "Huletts White Sugar 2.5kg", "Nescafé Gold Coffee"]
-    
-    all_new_products = []
-    for query in essential_queries:
-        try:
-            sync_status_store["sync_logs"].insert(0, f"[{time_str}] Grounding search for: '{query}'...")
-            # Run async function from sync context (background thread)
-            new_prods_json = asyncio.run(get_products_search_data(query))
-            all_new_products.extend(new_prods_json)
-            time.sleep(2)  # Respect API rate limits
-        except Exception as e:
-            sync_status_store["sync_logs"].insert(0, f"[{time_str}] ERROR grounding '{query}': {e}")
-
-    if not all_new_products:
-        sync_status_store["sync_logs"].insert(0, f"[{time_str}] ERROR: Live grounding returned no products. Sync aborted.")
-        return
-
-    current_products = load_synced_products()
-    new_products_map = {p['id']: p for p in all_new_products}
-    merged_products = [new_products_map.pop(p['id'], p) for p in current_products]
-    merged_products.extend(new_products_map.values())
-
-    if save_synced_products(merged_products):
-        sync_status_store["last_sync_time"] = datetime.now().isoformat()
-        sync_status_store["sync_logs"].insert(0, f"[{time_str}] SECURE SYNC SUCCESS: Re-aligned {len(merged_products)} SA commodities.")
-    else:
-        sync_status_store["sync_logs"].insert(0, f"[{time_str}] ERROR: Failed saving aligned pricing arrays to JSON cache.")
-
-    if len(sync_status_store["sync_logs"]) > 25:
-        sync_status_store["sync_logs"] = sync_status_store["sync_logs"][:25]
-
 # --- Background Scheduler & Lifespan ---
-
-def run_scheduler():
-    """Run the background scheduler in a separate thread."""
-    schedule.every().day.at("00:00").do(execute_sync_run, manual=False)
-    print("[FastAPI Scheduler] Daily midnight job registered.", flush=True)
-    while True:
-        schedule.run_pending()
-        time.sleep(60)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """On application startup, start the background scheduler."""
-    scheduler_thread = threading.Thread(target=run_scheduler, daemon=True)
-    scheduler_thread.start()
+    DATABASE_URL = os.getenv("DATABASE_URL")
+    if not DATABASE_URL:
+        raise ValueError("DATABASE_URL environment variable is not set for the application")
+
+    app.state.db_pool = await asyncpg.create_pool(DATABASE_URL)
+
+    scheduler = AsyncIOScheduler()
+    # Pass the pool to the scheduled job
+    scheduler.add_job(lambda: run_all_scrapers(app.state.db_pool), "cron", hour=2, minute=0)  # 2am daily
+    scheduler.start()
+
     yield
+
+    await app.state.db_pool.close()
+
+async def get_db(request: Request) -> asyncpg.Connection:
+    """
+    FastAPI dependency that provides a DB connection from the pool and
+    releases it automatically.
+    """
+    conn = await request.app.state.db_pool.acquire()
+    try:
+        yield conn
+    finally:
+        await request.app.state.db_pool.release(conn)
 
 # --- FastAPI Application Setup ---
 
@@ -195,21 +76,84 @@ app.add_middleware(
 
 # --- Pydantic Models for Request/Response Validation ---
 
-class ProductSearchRequest(BaseModel):
-    query: str
-    targetUrl: Optional[str] = None
-
 class ChatRequest(BaseModel):
     message: str
     basket: List[dict] = Field(default_factory=list)
     history: List[dict] = Field(default_factory=list)
 
+class ProductSearchRequest(BaseModel):
+    query: str
+
 # --- API Endpoints ---
 
+@app.post("/scrape/trigger")
+async def trigger_scrape(background_tasks: BackgroundTasks):
+    # Pass the pool to the background task
+    background_tasks.add_task(run_all_scrapers, background_tasks.app.state.db_pool)
+    return {"status": "scrape started"}
+
+@app.get("/prices/{product_id}")
+async def get_prices(product_id: str, conn: asyncpg.Connection = Depends(get_db)):
+    # Return all store prices for a product
+    price_points_records = await conn.fetch('SELECT * FROM "PricePoint" WHERE "productId" = $1', product_id)
+    # The connection is released automatically by the `get_db` dependency
+    return [dict(p) for p in price_points_records]
+
 @app.get("/api/products")
-async def get_products():
-    """Retrieve the latest cached list of all products."""
-    return load_synced_products()
+async def get_products(conn: asyncpg.Connection = Depends(get_db)):
+    """Retrieve the list of all products from the SQL DB, enriched with live prices."""
+    try:
+        # 1. Get all products from the 'Product' table
+        products_records = await conn.fetch('SELECT "id", "name", "category", "unit", "barcode", "imageUrl" FROM "Product"')
+
+        products = []
+        product_ids = []
+        for p in products_records:
+            products.append(dict(p))
+            product_ids.append(p['id'])
+
+        if not products:
+            return []
+
+        # 2. Get all relevant prices from 'PricePoint' in one query
+        prices_records = await conn.fetch('SELECT "productId", "storeId", "price", "lastUpdated" FROM "PricePoint" WHERE "productId" = ANY($1::uuid[])', product_ids)
+
+        prices_map = {}
+        for pr in prices_records:
+            pid = pr['productId']
+            if pid not in prices_map:
+                prices_map[pid] = []
+
+            prices_map[pid].append({
+                "storeId": pr['storeId'],
+                "price": pr['price'],
+                "inStock": True, # Assuming price point means in stock
+                "lastUpdated": pr['lastUpdated'].isoformat() if pr['lastUpdated'] else None
+            })
+
+        # 3. Combine products with their prices
+        for product in products:
+            product["prices"] = prices_map.get(product['id'], [])
+
+        return products
+    except Exception as e:
+        print(f"[FastAPI Error] Failed to fetch products from SQL database: {e}", file=sys.stderr)
+        raise HTTPException(status_code=500, detail="Failed to retrieve products from the database.")
+
+@app.post("/api/products/search")
+async def search_products(req: ProductSearchRequest, conn: asyncpg.Connection = Depends(get_db)):
+    """Searches for products in the SQL database based on a query string."""
+    query = req.query.strip().lower()
+    if not query:
+        return []
+
+    # Use a LIKE query for efficient database-side searching.
+    matched_products_records = await conn.fetch(
+        'SELECT "id", "name", "category", "unit", "barcode", "imageUrl" FROM "Product" WHERE "name" ILIKE $1',
+        f'%{query}%'
+    )
+    # NOTE: This search implementation doesn't return prices to keep it fast.
+    return [dict(p) for p in matched_products_records]
 
 @app.get("/api/sync/status")
 async def get_sync_status():
@@ -218,28 +162,9 @@ async def get_sync_status():
         "success": True,
         "lastSyncTime": sync_status_store["last_sync_time"],
         "syncLogs": sync_status_store["sync_logs"],
-        "schedule": "0 0 * * * (Every Daily Midnight)",
+        "schedule": "0 2 * * * (Every day at 2am)",
         "status": "Listening",
-        "version": "3.0.0-fastapi"
-    }
-
-@app.post("/api/products/search")
-async def search_products(req: ProductSearchRequest):
-    """Run a live, Gemini-grounded search for a product."""
-    print(f"[FastAPI] Real-time Grounded Price Search: '{req.query}'")
-    results = await get_products_search_data(req.query, req.targetUrl)
-    if not results:
-        # You might want to return a 404 here if no products are found
-        print(f"[FastAPI] No products found for query: '{req.query}'")
-    return results
-
-@app.post("/api/sync/run")
-async def run_manual_sync(background_tasks: BackgroundTasks):
-    """Manually trigger a background synchronization task."""
-    background_tasks.add_task(execute_sync_run, manual=True)
-    return {
-        "success": True,
-        "message": "Manually triggered background sync. Check /api/sync/status for progress."
+        "version": "4.0.0-playwright"
     }
 
 @app.post("/api/ai/chat")
@@ -248,21 +173,10 @@ async def ai_chat(req: ChatRequest):
     if not req.message:
         raise HTTPException(status_code=400, detail="Missing message body parameter")
 
-    print("[FastAPI] Invoking Gemini AI Chat Wizard...")
-    system_instruction = f"You are 'chuse. Saving Wizard'... Current basket: {json.dumps(req.basket)}" # Truncated
+    # This part needs to be refactored to not use invoke_gemini
+    # For now, returning a placeholder
+    return {"text": "The AI chat is currently being updated. Please try again later."}
 
-    contents_payload = []
-    for h in req.history:
-        contents_payload.append({"role": "user" if h.get("role") == "user" else "model", "parts": [{"text": h.get("text", "")}]})
-    contents_payload.append({"role": "user", "parts": [{"text": req.message}]})
-
-    try:
-        chat_reply = await invoke_gemini(system_instruction, contents_payload, is_json=False)
-        return {"text": chat_reply}
-    except Exception as err:
-        print(f"[FastAPI Error] Gemini chat invocation aborted: {err}", file=sys.stderr)
-        # Return a helpful fallback message
-        return {"text": "Howzit! I'm checking store specials right now... Try swapping name brands for house brands for instant savings!"}
 
 # --- Main Entry Point for Uvicorn ---
 

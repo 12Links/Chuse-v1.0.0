@@ -7,23 +7,15 @@ from firebase_admin import credentials, auth
 # We use HTTPBearer to extract the Authorization header automatically
 security = HTTPBearer()
 
-# Initialize Firebase Admin SDK
-# In production, you'll want to point this to your downloaded serviceAccountKey.json
-cred_path = os.getenv("FIREBASE_CREDENTIALS")
-if cred_path and os.path.exists(cred_path):
-    cred = credentials.Certificate(cred_path)
-    firebase_admin.initialize_app(cred)
-else:
-    # Initializes with default credentials (useful for GCP environments)
-    try:
-        firebase_admin.initialize_app()
-    except ValueError:
-        pass  # App already initialized
+# Firebase Admin SDK should be initialized once in the main application entry point (e.g., main_fastapi.py).
+# This file will assume it has been initialized.
 
 def get_current_user(creds: HTTPAuthorizationCredentials = Depends(security)):
     """
     FastAPI Dependency to verify the Firebase ID token in the Authorization header.
     """
+    if not firebase_admin._apps:
+        raise RuntimeError("Firebase Admin SDK has not been initialized. Please initialize it in your main application file.")
     try:
         decoded_token = auth.verify_id_token(creds.credentials)
         return decoded_token

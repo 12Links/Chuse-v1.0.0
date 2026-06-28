@@ -19,6 +19,7 @@ interface AISavingsWizardProps {
   products: Product[];
   basket: BasketItem[];
   user: UserProfile | null;
+  onAuthRequest: () => void;
 }
 
 interface Message {
@@ -28,11 +29,15 @@ interface Message {
   timestamp: Date;
 }
 
-export default function AISavingsWizard({ products, basket, user }: AISavingsWizardProps) {
+export default function AISavingsWizard({ products, basket, user, onAuthRequest }: AISavingsWizardProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputText, setInputText] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [guestMessageCount, setGuestMessageCount] = useState<number>(() => {
+    const saved = localStorage.getItem('guest_ai_wizard_messages');
+    return saved ? parseInt(saved, 10) : 0;
+  });
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -77,6 +82,20 @@ ${basketDetails.length > 0
   const handleSendMessage = async (textToSend: string) => {
     if (!textToSend.trim() || isLoading) return;
 
+    if (!user && guestMessageCount >= 5) {
+      onAuthRequest();
+      setMessages(prev => [
+        ...prev,
+        {
+          id: `assistant-limit-${Date.now()}`,
+          role: 'assistant',
+          text: `**You've reached your free message limit!** 🚀\n\nTo continue chatting with the chuse. Saving Wizard and unlock unlimited queries, please sign in or create a free account. It's quick, easy, and gives you access to all our powerful budgeting tools!`,
+          timestamp: new Date()
+        }
+      ]);
+      return;
+    }
+
     setError(null);
     const userMsgId = `user-${Date.now()}`;
     const newMessages: Message[] = [
@@ -92,6 +111,12 @@ ${basketDetails.length > 0
     setMessages(newMessages);
     setInputText('');
     setIsLoading(true);
+
+    if (!user) {
+      const newCount = guestMessageCount + 1;
+      setGuestMessageCount(newCount);
+      localStorage.setItem('guest_ai_wizard_messages', newCount.toString());
+    }
 
     try {
       // Package conversation and send to Express proxy endpoint
@@ -340,29 +365,36 @@ ${basketDetails.length > 0
           </div>
 
           {/* Form input field */}
-          <form 
-            onSubmit={(e) => {
-              e.preventDefault();
-              handleSendMessage(inputText);
-            }} 
-            className="p-4 border-t border-slate-200 bg-white flex gap-3 shrink-0"
-          >
-            <input
-              type="text"
-              placeholder="Ask the budget coach about bento split-buying savings, smart swaps..."
-              value={inputText}
-              onChange={(e) => setInputText(e.target.value)}
-              disabled={isLoading}
-              className="flex-1 px-4 py-3 rounded-full bg-slate-50 border border-slate-200 text-xs focus:outline-none focus:ring-4 focus:ring-amber-500/10 focus:border-[#FFE600] font-bold text-slate-805"
-            />
-            <button
-              type="submit"
-              disabled={!inputText.trim() || isLoading}
-              className="p-3 bg-[#FFE600] hover:bg-yellow-400 text-black rounded-full shrink-0 transition-all cursor-pointer disabled:opacity-50 active:scale-95 shadow-xs"
+          <div className="p-4 border-t border-slate-200 bg-white shrink-0">
+            <form 
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleSendMessage(inputText);
+              }} 
+              className="flex gap-3"
             >
-              <Send className="w-4 h-4" />
-            </button>
-          </form>
+              <input
+                type="text"
+                placeholder={!user && guestMessageCount >= 5 ? "Sign in to continue chatting..." : "Ask the budget coach about bento split-buying savings, smart swaps..."}
+                value={inputText}
+                onChange={(e) => setInputText(e.target.value)}
+                disabled={isLoading || (!user && guestMessageCount >= 5)}
+                className="flex-1 px-4 py-3 rounded-full bg-slate-50 border border-slate-200 text-xs focus:outline-none focus:ring-4 focus:ring-amber-500/10 focus:border-[#FFE600] font-bold text-slate-805"
+              />
+              <button
+                type="submit"
+                disabled={!inputText.trim() || isLoading || (!user && guestMessageCount >= 5)}
+                className="p-3 bg-[#FFE600] hover:bg-yellow-400 text-black rounded-full shrink-0 transition-all cursor-pointer disabled:opacity-50 active:scale-95 shadow-xs"
+              >
+                <Send className="w-4 h-4" />
+              </button>
+            </form>
+            {!user && (
+              <p className="text-center text-[10px] text-slate-400 font-bold mt-2">
+                You have {Math.max(0, 5 - guestMessageCount)} free messages remaining.
+              </p>
+            )}
+          </div>
         </div>
 
         {/* Action Prompt Chips Sidebar */}

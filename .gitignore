@@ -27,4 +27,6 @@ __pycache__/
 # Firebase service account
 service_account.py
 service_account.json
-*service_account*
+*service-account*.json
+*adminsdk*.json
+firebase-applet-config.json
