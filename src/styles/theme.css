@@ -8,7 +8,7 @@
   --card-foreground: #111110;
   --popover: #FAFAF7;
   --popover-foreground: #111110;
-  --primary: #005F35;
+  --primary: #e3cd02;
   --primary-foreground: #FFFFFF;
   --secondary: #E9EDE6;
   --secondary-foreground: #111110;
@@ -24,7 +24,7 @@
   --switch-background: #B8BAB0;
   --font-weight-medium: 500;
   --font-weight-normal: 400;
-  --ring: #005F35;
+  --ring: #d3dd11;
   --chart-1: oklch(0.646 0.222 41.116);
   --chart-2: oklch(0.6 0.118 184.704);
   --chart-3: oklch(0.398 0.07 227.392);
