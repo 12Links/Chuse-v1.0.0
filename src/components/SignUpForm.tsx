@@ -185,7 +185,7 @@ export function SignUpForm({ onToggleForm }: SignUpFormProps) {
             className="text-foreground font-bold tracking-widest text-sm uppercase"
             style={{ fontFamily: "'Barlow Condensed', sans-serif", letterSpacing: '0.15em' }}
           >
-            PriceWise
+            chuse
           </span>
         </div>
 

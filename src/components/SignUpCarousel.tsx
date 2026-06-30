@@ -16,7 +16,7 @@ const carouselSlides = [
   {
     image: 'https://images.unsplash.com/photo-1561069934-eee225952461?w=1080&h=1400&fit=crop&auto=format',
     tagline: 'Every rand counts',
-    description: 'Thousands of South Africans already use PriceWise to stretch their grocery budget'
+    description: 'Thousands of South Africans already use chuse to stretch their grocery budget'
   }
 ];
 
@@ -63,7 +63,7 @@ export function SignUpCarousel() {
             className="text-white font-bold tracking-widest text-sm uppercase"
             style={{ fontFamily: "'Barlow Condensed', sans-serif", letterSpacing: '0.15em' }}
           >
-            PriceWise
+            Chuse
           </span>
         </div>
       </div>
@@ -107,7 +107,7 @@ export function SignUpCarousel() {
         {/* SA context badge */}
         <div className="mt-8 inline-flex items-center gap-2 w-fit">
           <span className="text-xs text-white/40 uppercase tracking-widest" style={{ fontFamily: "'Barlow Condensed', sans-serif" }}>
-            South Africa&apos;s #1 Price Comparison
+            chuse&apos;s #1 Price Comparison @product of 12 links
           </span>
         </div>
       </div>
