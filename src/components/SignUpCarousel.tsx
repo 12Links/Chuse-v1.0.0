@@ -31,7 +31,7 @@ export function SignUpCarousel() {
   }, []);
 
   return (
-    <div className="relative h-full w-full bg-[#002D1A] overflow-hidden">
+    <div className="relative h-full w-full bg-[#0A0A0A] overflow-hidden">
       {/* Background image */}
       <AnimatePresence mode="wait">
         <motion.div
@@ -47,24 +47,23 @@ export function SignUpCarousel() {
             alt={carouselSlides[currentSlide].tagline}
             className="w-full h-full object-cover opacity-35"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#001A0E]/90 via-[#002D1A]/40 to-[#003D22]/20" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/55 to-[#FFE600]/18" />
         </motion.div>
       </AnimatePresence>
 
       {/* Brand mark top-left */}
       <div className="relative z-10 p-10">
         <div className="flex items-center gap-2">
-          <div className="w-7 h-7 bg-accent rounded-sm flex items-center justify-center">
+          <div className="w-7 h-7 bg-[#FFE600] rounded-sm flex items-center justify-center">
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-              <path d="M2 4h12M2 8h8M2 12h10" stroke="white" strokeWidth="2" strokeLinecap="round"/>
+              <path d="M2 4h12M2 8h8M2 12h10" stroke="black" strokeWidth="2" strokeLinecap="round"/>
             </svg>
           </div>
-          <span
-            className="text-white font-bold tracking-widest text-sm uppercase"
-            style={{ fontFamily: "'Barlow Condensed', sans-serif", letterSpacing: '0.15em' }}
-          >
-            Chuse
-          </span>
+          <img
+            src="/icons/playstore.png"
+            alt="Chuse"
+            className="h-6 w-auto select-none"
+          />
         </div>
       </div>
 
@@ -77,7 +76,7 @@ export function SignUpCarousel() {
               key={index}
               onClick={() => setCurrentSlide(index)}
               className={`h-0.5 rounded-full transition-all duration-500 ${
-                index === currentSlide ? 'w-10 bg-accent' : 'w-4 bg-white/30'
+                index === currentSlide ? 'w-10 bg-[#FFE600]' : 'w-4 bg-white/30'
               }`}
               aria-label={`Go to slide ${index + 1}`}
             />
@@ -106,7 +105,7 @@ export function SignUpCarousel() {
 
         {/* SA context badge */}
         <div className="mt-8 inline-flex items-center gap-2 w-fit">
-          <span className="text-xs text-white/40 uppercase tracking-widest" style={{ fontFamily: "'Barlow Condensed', sans-serif" }}>
+            <span className="text-xs text-white/50 uppercase tracking-widest" style={{ fontFamily: "'Barlow Condensed', sans-serif" }}>
             chuse&apos;s #1 Price Comparison @product of 12 links
           </span>
         </div>

@@ -1,6 +1,29 @@
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, HTTPException, Query, Depends
+from pydantic import BaseModel
+from sqlalchemy.orm import Session
+from sqlalchemy import select
+from typing import Optional
+import asyncpg
+from ..auth import get_current_user
+from ..models import User
+from ..database import get_db
 
 router = APIRouter(prefix="/api/v1", tags=["v1"])
+
+# Pydantic models for request/response
+class UserProfileUpdate(BaseModel):
+    displayName: Optional[str] = None
+    avatarUrl: Optional[str] = None
+    loyaltyCards: Optional[dict] = None
+    preferredStoreLocation: Optional[str] = None
+
+class UserProfileResponse(BaseModel):
+    uid: str
+    email: str
+    displayName: str
+    avatarUrl: Optional[str] = None
+    loyaltyCards: dict
+    preferredStoreLocation: str
 
 MOCK_PRODUCTS = [
     {
@@ -91,36 +114,156 @@ MOCK_STORE_CHAINS = [
 ]
 
 
-@router.post("/auth/login")
-def login(payload: dict):
-    email = payload.get("email", "")
-    if not email:
-        raise HTTPException(status_code=400, detail="Email is required")
-    return {
-        "access_token": "demo-access-token",
-        "token_type": "bearer",
-        "user": {**MOCK_USER, "email": email},
-    }
-
-
 @router.post("/auth/register")
-def register(payload: dict):
-    username = payload.get("username", "")
-    email = payload.get("email", "")
-    if not username or not email:
-        raise HTTPException(status_code=400, detail="Username and email are required")
+def register(payload: dict, db: Session = Depends(get_db)):
+    """Register a new user with Firebase and sync to database."""
+    uid = payload.get("uid")
+    email = payload.get("email")
+    displayName = payload.get("displayName", "")
+    
+    if not uid or not email:
+        raise HTTPException(status_code=400, detail="uid and email are required")
+    
+    # Check if user already exists
+    existing_user = db.query(User).filter(User.email == email).first()
+    if existing_user:
+        raise HTTPException(status_code=409, detail="User already exists")
+    
+    # Create new user
+    new_user = User(
+        uid=uid,
+        email=email,
+        displayName=displayName,
+        loyaltyCards=payload.get("loyaltyCards", {}),
+        preferredStoreLocation=payload.get("preferredStoreLocation", "Gauteng")
+    )
+    
+    db.add(new_user)
+    db.commit()
+    db.refresh(new_user)
+    
     return {
         "status": "ok",
-        "user": {**MOCK_USER, "username": username, "email": email},
+        "user": {
+            "uid": new_user.uid,
+            "email": new_user.email,
+            "displayName": new_user.displayName,
+            "loyaltyCards": new_user.loyaltyCards,
+            "preferredStoreLocation": new_user.preferredStoreLocation
+        }
     }
 
 
-@router.get("/users/me")
-def get_current_user():
-    return MOCK_USER
+@router.post("/auth/sync-profile")
+def sync_profile(token_info: dict = Depends(get_current_user), db: Session = Depends(get_db)):
+    """Sync user profile with Firebase token."""
+    uid = token_info.get("uid")
+    email = token_info.get("email")
+    
+    if not uid or not email:
+        raise HTTPException(status_code=400, detail="Invalid token")
+    
+    # Get or create user
+    user = db.query(User).filter(User.uid == uid).first()
+    
+    if not user:
+        user = User(
+            uid=uid,
+            email=email,
+            displayName=email.split("@")[0],
+            loyaltyCards={},
+            preferredStoreLocation="Gauteng"
+        )
+        db.add(user)
+        db.commit()
+        db.refresh(user)
+    
+    return {
+        "uid": user.uid,
+        "email": user.email,
+        "displayName": user.displayName,
+        "avatarUrl": user.avatarUrl,
+        "loyaltyCards": user.loyaltyCards,
+        "preferredStoreLocation": user.preferredStoreLocation
+    }
 
 
-@router.get("/products/search")
+@router.get("/users/me", response_model=UserProfileResponse)
+def get_current_user_profile(token_info: dict = Depends(get_current_user), db: Session = Depends(get_db)):
+    """Get current authenticated user profile."""
+    uid = token_info.get("uid")
+    
+    user = db.query(User).filter(User.uid == uid).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    return user
+
+
+@router.put("/users/me", response_model=UserProfileResponse)
+def update_user_profile(
+    update_data: UserProfileUpdate,
+    token_info: dict = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Update current user profile."""
+    uid = token_info.get("uid")
+    
+    user = db.query(User).filter(User.uid == uid).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Update fields if provided
+    if update_data.displayName is not None:
+        user.displayName = update_data.displayName
+    if update_data.avatarUrl is not None:
+        user.avatarUrl = update_data.avatarUrl
+    if update_data.loyaltyCards is not None:
+        user.loyaltyCards = update_data.loyaltyCards
+    if update_data.preferredStoreLocation is not None:
+        user.preferredStoreLocation = update_data.preferredStoreLocation
+    
+    db.commit()
+    db.refresh(user)
+    
+    return user
+
+
+@router.post("/auth/login")
+def login(token_info: dict = Depends(get_current_user), db: Session = Depends(get_db)):
+    """Verify and sync user profile on login."""
+    uid = token_info.get("uid")
+    email = token_info.get("email")
+    
+    if not uid or not email:
+        raise HTTPException(status_code=400, detail="Invalid token")
+    
+    # Get or create user
+    user = db.query(User).filter(User.uid == uid).first()
+    
+    if not user:
+        user = User(
+            uid=uid,
+            email=email,
+            displayName=email.split("@")[0],
+            loyaltyCards={},
+            preferredStoreLocation="Gauteng"
+        )
+        db.add(user)
+        db.commit()
+        db.refresh(user)
+    
+    return {
+        "status": "ok",
+        "user": {
+            "uid": user.uid,
+            "email": user.email,
+            "displayName": user.displayName,
+            "avatarUrl": user.avatarUrl,
+            "loyaltyCards": user.loyaltyCards,
+            "preferredStoreLocation": user.preferredStoreLocation
+        }
+    }
 def search_products(
     q: str = Query(default=""),
     dietary: str = Query(default="None"),

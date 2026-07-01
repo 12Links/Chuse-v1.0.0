@@ -8,6 +8,7 @@ coverage/
 # Environment files
 .env
 .env*
+.env.local
 backend/.env
 !.env.example
 

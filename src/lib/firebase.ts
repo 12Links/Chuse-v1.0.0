@@ -1,6 +1,5 @@
 import { initializeApp } from "firebase/app";
-import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from "firebase/auth";
-import { getFirestore, doc, setDoc, getDoc } from "firebase/firestore";
+import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from "firebase/auth";
 
 // User's private Firebase configurations with live fallback values and environments support
 const metaEnv = (import.meta as any).env || {};
@@ -17,10 +16,7 @@ const firebaseConfig = {
 // Initialize Firebase services
 const app = initializeApp(firebaseConfig);
 
-const dbId = metaEnv.VITE_FIREBASE_FIRESTORE_DATABASE_ID || "ai-studio-33fcf38b-583c-4af0-8eff-4cc5bfc2fd4e";
-
-export const db = dbId && dbId !== "(default)" ? getFirestore(app, dbId) : getFirestore(app);
 export const auth = getAuth(app);
 export const googleProvider = new GoogleAuthProvider();
 
-export { signInWithPopup, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, doc, setDoc, getDoc };
+export { signInWithPopup, signInWithRedirect, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut };

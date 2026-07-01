@@ -11,9 +11,9 @@ import BarcodeScanner from './components/BarcodeScanner';
 import { AuthenticationPage } from './components/AuthenticationPage';
 import SettingsPage from './components/SettingsPage';
 import AISavingsWizard from './components/AISavingsWizard';
-import { auth, db } from './lib/firebase';
+import { auth } from './lib/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { getCurrentUserProfile, loginUser, syncBasket } from './lib/api';
 import { 
   Sparkles, 
   ShoppingBag, 
@@ -148,16 +148,10 @@ function MainPage({ user, setUser }: MainPageProps) {
     setBasket(updatedBasket);
     localStorage.setItem('sa_price_compare_basket', JSON.stringify(updatedBasket));
 
-    const currentUser = auth.currentUser;
-    if (currentUser) {
-      try {
-        await setDoc(doc(db, "users", currentUser.uid), {
-          basket: updatedBasket,
-          updatedAt: new Date().toISOString()
-        }, { merge: true });
-      } catch (err) {
-        console.warn("Could not sync basket with Firestore", err);
-      }
+    try {
+      await syncBasket(updatedBasket);
+    } catch (err) {
+      console.warn('Backend basket sync failed, keeping local basket:', err);
     }
   };
 
@@ -356,35 +350,32 @@ export default function App() {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       if (currentUser) {
         try {
-          const userDoc = await getDoc(doc(db, "users", currentUser.uid));
-          if (userDoc.exists()) {
-            const data = userDoc.data();
-            const userProfile: UserProfile = {
-              displayName: data.displayName || currentUser.displayName || currentUser.email?.split('@')[0] || 'Member',
-              email: currentUser.email || data.email || '',
-              avatarUrl: currentUser.photoURL || `https://api.dicebear.com/7.x/pixel-art/svg?seed=${encodeURIComponent(currentUser.email || '')}`,
-              loyaltyCards: data.loyaltyCards || { checkers: false, pnp: false, woolworths: false, shoprite: false, spar: false },
-              preferredStoreLocation: data.preferredStoreLocation || 'Gauteng'
-            };
-            setUser(userProfile);
-            localStorage.setItem('sa_user_profile', JSON.stringify(userProfile));
-          } else {
-             // Create a new user profile if it doesn't exist
-            const userProfile: UserProfile = {
-                displayName: currentUser.displayName || currentUser.email?.split('@')[0] || 'Member',
-                email: currentUser.email || '',
-                avatarUrl: currentUser.photoURL || `https://api.dicebear.com/7.x/pixel-art/svg?seed=${encodeURIComponent(currentUser.email || '')}`,
-                loyaltyCards: { checkers: false, pnp: false, woolworths: false, shoprite: false, spar: false },
-                preferredStoreLocation: 'Gauteng'
-            };
-            await setDoc(doc(db, "users", currentUser.uid), userProfile);
-            setUser(userProfile);
-            localStorage.setItem('sa_user_profile', JSON.stringify(userProfile));
-          }
+          await loginUser(currentUser.uid, currentUser.email || '');
+          const backendProfile = await getCurrentUserProfile();
+          const cachedProfile = localStorage.getItem('sa_user_profile');
+          const cachedData = cachedProfile ? JSON.parse(cachedProfile) : null;
+          const userProfile: UserProfile = {
+            displayName: backendProfile?.displayName || cachedData?.displayName || currentUser.displayName || currentUser.email?.split('@')[0] || 'Member',
+            email: backendProfile?.email || cachedData?.email || currentUser.email || '',
+            avatarUrl: backendProfile?.avatarUrl || cachedData?.avatarUrl || currentUser.photoURL || `https://api.dicebear.com/7.x/pixel-art/svg?seed=${encodeURIComponent(currentUser.email || '')}`,
+            loyaltyCards: backendProfile?.loyaltyCards || cachedData?.loyaltyCards || { checkers: false, pnp: false, woolworths: false, shoprite: false, spar: false },
+            preferredStoreLocation: backendProfile?.preferredStoreLocation || cachedData?.preferredStoreLocation || 'Gauteng'
+          };
+          setUser(userProfile);
+          localStorage.setItem('sa_user_profile', JSON.stringify(userProfile));
         } catch (err) {
-            console.error("Auth state change error:", err);
-            setUser(null);
-            localStorage.removeItem('sa_user_profile');
+          console.error("Auth state change error:", err);
+          const cachedProfile = localStorage.getItem('sa_user_profile');
+          if (cachedProfile) {
+            try {
+              setUser(JSON.parse(cachedProfile));
+              return;
+            } catch {
+              // fall through to null state
+            }
+          }
+          setUser(null);
+          localStorage.removeItem('sa_user_profile');
         }
       } else {
         setUser(null);

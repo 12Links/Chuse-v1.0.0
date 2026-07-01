@@ -7,3 +7,6 @@ httpx
 apscheduler
 playwright
 asyncpg           # async postgres driver (preferred with FastAPI)
+sqlalchemy        # ORM for database models
+pydantic          # data validation for FastAPI
+psycopg2-binary   # PostgreSQL adapter for SQLAlchemy

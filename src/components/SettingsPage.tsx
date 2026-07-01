@@ -16,6 +16,7 @@ import {
   AlertTriangle
 } from 'lucide-react';
 import { UserProfile, Product } from '../types';
+import { updateUserProfile } from '../lib/api';
 
 interface SettingsPageProps {
   user: UserProfile | null;
@@ -53,7 +54,7 @@ export default function SettingsPage({ user, onUpdateUser, onLogout, onClearBask
   const [showSavingSpecials, setShowSavingSpecials] = useState(true);
   const [successMsg, setSuccessMsg] = useState('');
 
-  const handleSave = (e: React.FormEvent) => {
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     setSuccessMsg('');
 
@@ -65,8 +66,30 @@ export default function SettingsPage({ user, onUpdateUser, onLogout, onClearBask
       preferredStoreLocation
     };
 
-    onUpdateUser(updatedProfile);
-    localStorage.setItem('sa_user_profile', JSON.stringify(updatedProfile));
+    try {
+      const backendProfile = await updateUserProfile({
+        displayName: updatedProfile.displayName,
+        avatarUrl: updatedProfile.avatarUrl,
+        loyaltyCards: updatedProfile.loyaltyCards,
+        preferredStoreLocation: updatedProfile.preferredStoreLocation
+      });
+
+      const mergedProfile: UserProfile = {
+        displayName: backendProfile.displayName || updatedProfile.displayName,
+        email: backendProfile.email || updatedProfile.email,
+        avatarUrl: backendProfile.avatarUrl || updatedProfile.avatarUrl,
+        loyaltyCards: backendProfile.loyaltyCards || updatedProfile.loyaltyCards,
+        preferredStoreLocation: backendProfile.preferredStoreLocation || updatedProfile.preferredStoreLocation
+      };
+
+      onUpdateUser(mergedProfile);
+      localStorage.setItem('sa_user_profile', JSON.stringify(mergedProfile));
+    } catch (error) {
+      console.warn('Backend profile update failed, saving locally:', error);
+      onUpdateUser(updatedProfile);
+      localStorage.setItem('sa_user_profile', JSON.stringify(updatedProfile));
+    }
+
     setSuccessMsg('Settings saved successfully!');
     
     setTimeout(() => {
