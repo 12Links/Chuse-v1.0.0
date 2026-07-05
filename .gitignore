@@ -30,3 +30,5 @@ service_account.json
 *service-account*.json
 *adminsdk*.json
 firebase-applet-config.json
+
+backend/Data/

@@ -9,6 +9,15 @@ extend type Mutation {
     data: Account_Data!
   ): Account_KeyOutput! @fdc_generated(from: "Account", purpose: INSERT_SINGLE)
   """
+  ✨ Insert a single `Allergen` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  allergen_insert(
+    """
+    Data object to insert into the table.
+    """
+    data: Allergen_Data!
+  ): Allergen_KeyOutput! @fdc_generated(from: "Allergen", purpose: INSERT_SINGLE)
+  """
   ✨ Insert a single `Availability` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
   """
   availability_insert(
@@ -17,6 +26,15 @@ extend type Mutation {
     """
     data: Availability_Data!
   ): Availability_KeyOutput! @fdc_generated(from: "Availability", purpose: INSERT_SINGLE)
+  """
+  ✨ Insert a single `DietaryPreference` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  dietaryPreference_insert(
+    """
+    Data object to insert into the table.
+    """
+    data: DietaryPreference_Data!
+  ): DietaryPreference_KeyOutput! @fdc_generated(from: "DietaryPreference", purpose: INSERT_SINGLE)
   """
   ✨ Insert a single `List` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
   """
@@ -36,32 +54,23 @@ extend type Mutation {
     data: ListItem_Data!
   ): ListItem_KeyOutput! @fdc_generated(from: "ListItem", purpose: INSERT_SINGLE)
   """
-  ✨ Insert a single `Match` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
+  ✨ Insert a single `NutritionConstraint` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
   """
-  match_insert(
+  nutritionConstraint_insert(
     """
     Data object to insert into the table.
     """
-    data: Match_Data!
-  ): Match_KeyOutput! @fdc_generated(from: "Match", purpose: INSERT_SINGLE)
+    data: NutritionConstraint_Data!
+  ): NutritionConstraint_KeyOutput! @fdc_generated(from: "NutritionConstraint", purpose: INSERT_SINGLE)
   """
-  ✨ Insert a single `Nutrient` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
+  ✨ Insert a single `Price` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
   """
-  nutrient_insert(
+  price_insert(
     """
     Data object to insert into the table.
     """
-    data: Nutrient_Data!
-  ): Nutrient_KeyOutput! @fdc_generated(from: "Nutrient", purpose: INSERT_SINGLE)
-  """
-  ✨ Insert a single `OFFProduct` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
-  """
-  oFFProduct_insert(
-    """
-    Data object to insert into the table.
-    """
-    data: OFFProduct_Data!
-  ): OFFProduct_KeyOutput! @fdc_generated(from: "OFFProduct", purpose: INSERT_SINGLE)
+    data: Price_Data!
+  ): Price_KeyOutput! @fdc_generated(from: "Price", purpose: INSERT_SINGLE)
   """
   ✨ Insert a single `PriceAlert` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
   """
@@ -81,23 +90,23 @@ extend type Mutation {
     data: PriceHistory_Data!
   ): PriceHistory_KeyOutput! @fdc_generated(from: "PriceHistory", purpose: INSERT_SINGLE)
   """
-  ✨ Insert a single `PricePoint` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
+  ✨ Insert a single `Product` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
   """
-  pricePoint_insert(
+  product_insert(
     """
     Data object to insert into the table.
     """
-    data: PricePoint_Data!
-  ): PricePoint_KeyOutput! @fdc_generated(from: "PricePoint", purpose: INSERT_SINGLE)
+    data: Product_Data!
+  ): Product_KeyOutput! @fdc_generated(from: "Product", purpose: INSERT_SINGLE)
   """
-  ✨ Insert a single `ScrapedProduct` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
+  ✨ Insert a single `SpendingConstraint` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
   """
-  scrapedProduct_insert(
+  spendingConstraint_insert(
     """
     Data object to insert into the table.
     """
-    data: ScrapedProduct_Data!
-  ): ScrapedProduct_KeyOutput! @fdc_generated(from: "ScrapedProduct", purpose: INSERT_SINGLE)
+    data: SpendingConstraint_Data!
+  ): SpendingConstraint_KeyOutput! @fdc_generated(from: "SpendingConstraint", purpose: INSERT_SINGLE)
   """
   ✨ Insert a single `Store` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
   """
@@ -117,42 +126,6 @@ extend type Mutation {
     data: User_Data!
   ): User_KeyOutput! @fdc_generated(from: "User", purpose: INSERT_SINGLE)
   """
-  ✨ Insert a single `allergens` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
-  """
-  allergens_insert(
-    """
-    Data object to insert into the table.
-    """
-    data: allergens_Data!
-  ): allergens_KeyOutput! @fdc_generated(from: "allergens", purpose: INSERT_SINGLE)
-  """
-  ✨ Insert a single `diataryPreference` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
-  """
-  diataryPreference_insert(
-    """
-    Data object to insert into the table.
-    """
-    data: diataryPreference_Data!
-  ): diataryPreference_KeyOutput! @fdc_generated(from: "diataryPreference", purpose: INSERT_SINGLE)
-  """
-  ✨ Insert a single `nutritionConstrains` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
-  """
-  nutritionConstrains_insert(
-    """
-    Data object to insert into the table.
-    """
-    data: nutritionConstrains_Data!
-  ): nutritionConstrains_KeyOutput! @fdc_generated(from: "nutritionConstrains", purpose: INSERT_SINGLE)
-  """
-  ✨ Insert a single `spendingConstraint` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
-  """
-  spendingConstraint_insert(
-    """
-    Data object to insert into the table.
-    """
-    data: spendingConstraint_Data!
-  ): spendingConstraint_KeyOutput! @fdc_generated(from: "spendingConstraint", purpose: INSERT_SINGLE)
-  """
   ✨ Insert `Account` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
   """
   account_insertMany(
@@ -162,6 +135,15 @@ extend type Mutation {
     data: [Account_Data!]!
   ): [Account_KeyOutput!]! @fdc_generated(from: "Account", purpose: INSERT_MULTIPLE)
   """
+  ✨ Insert `Allergen` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  allergen_insertMany(
+    """
+    List of data objects to insert into the table.
+    """
+    data: [Allergen_Data!]!
+  ): [Allergen_KeyOutput!]! @fdc_generated(from: "Allergen", purpose: INSERT_MULTIPLE)
+  """
   ✨ Insert `Availability` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
   """
   availability_insertMany(
@@ -170,6 +152,15 @@ extend type Mutation {
     """
     data: [Availability_Data!]!
   ): [Availability_KeyOutput!]! @fdc_generated(from: "Availability", purpose: INSERT_MULTIPLE)
+  """
+  ✨ Insert `DietaryPreference` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  dietaryPreference_insertMany(
+    """
+    List of data objects to insert into the table.
+    """
+    data: [DietaryPreference_Data!]!
+  ): [DietaryPreference_KeyOutput!]! @fdc_generated(from: "DietaryPreference", purpose: INSERT_MULTIPLE)
   """
   ✨ Insert `List` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
   """
@@ -189,32 +180,23 @@ extend type Mutation {
     data: [ListItem_Data!]!
   ): [ListItem_KeyOutput!]! @fdc_generated(from: "ListItem", purpose: INSERT_MULTIPLE)
   """
-  ✨ Insert `Match` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
+  ✨ Insert `NutritionConstraint` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
   """
-  match_insertMany(
+  nutritionConstraint_insertMany(
     """
     List of data objects to insert into the table.
     """
-    data: [Match_Data!]!
-  ): [Match_KeyOutput!]! @fdc_generated(from: "Match", purpose: INSERT_MULTIPLE)
+    data: [NutritionConstraint_Data!]!
+  ): [NutritionConstraint_KeyOutput!]! @fdc_generated(from: "NutritionConstraint", purpose: INSERT_MULTIPLE)
   """
-  ✨ Insert `Nutrient` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
+  ✨ Insert `Price` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
   """
-  nutrient_insertMany(
+  price_insertMany(
     """
     List of data objects to insert into the table.
     """
-    data: [Nutrient_Data!]!
-  ): [Nutrient_KeyOutput!]! @fdc_generated(from: "Nutrient", purpose: INSERT_MULTIPLE)
-  """
-  ✨ Insert `OFFProduct` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
-  """
-  oFFProduct_insertMany(
-    """
-    List of data objects to insert into the table.
-    """
-    data: [OFFProduct_Data!]!
-  ): [OFFProduct_KeyOutput!]! @fdc_generated(from: "OFFProduct", purpose: INSERT_MULTIPLE)
+    data: [Price_Data!]!
+  ): [Price_KeyOutput!]! @fdc_generated(from: "Price", purpose: INSERT_MULTIPLE)
   """
   ✨ Insert `PriceAlert` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
   """
@@ -234,23 +216,23 @@ extend type Mutation {
     data: [PriceHistory_Data!]!
   ): [PriceHistory_KeyOutput!]! @fdc_generated(from: "PriceHistory", purpose: INSERT_MULTIPLE)
   """
-  ✨ Insert `PricePoint` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
+  ✨ Insert `Product` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
   """
-  pricePoint_insertMany(
+  product_insertMany(
     """
     List of data objects to insert into the table.
     """
-    data: [PricePoint_Data!]!
-  ): [PricePoint_KeyOutput!]! @fdc_generated(from: "PricePoint", purpose: INSERT_MULTIPLE)
+    data: [Product_Data!]!
+  ): [Product_KeyOutput!]! @fdc_generated(from: "Product", purpose: INSERT_MULTIPLE)
   """
-  ✨ Insert `ScrapedProduct` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
+  ✨ Insert `SpendingConstraint` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
   """
-  scrapedProduct_insertMany(
+  spendingConstraint_insertMany(
     """
     List of data objects to insert into the table.
     """
-    data: [ScrapedProduct_Data!]!
-  ): [ScrapedProduct_KeyOutput!]! @fdc_generated(from: "ScrapedProduct", purpose: INSERT_MULTIPLE)
+    data: [SpendingConstraint_Data!]!
+  ): [SpendingConstraint_KeyOutput!]! @fdc_generated(from: "SpendingConstraint", purpose: INSERT_MULTIPLE)
   """
   ✨ Insert `Store` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
   """
@@ -270,42 +252,6 @@ extend type Mutation {
     data: [User_Data!]!
   ): [User_KeyOutput!]! @fdc_generated(from: "User", purpose: INSERT_MULTIPLE)
   """
-  ✨ Insert `allergens` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
-  """
-  allergens_insertMany(
-    """
-    List of data objects to insert into the table.
-    """
-    data: [allergens_Data!]!
-  ): [allergens_KeyOutput!]! @fdc_generated(from: "allergens", purpose: INSERT_MULTIPLE)
-  """
-  ✨ Insert `diataryPreference` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
-  """
-  diataryPreference_insertMany(
-    """
-    List of data objects to insert into the table.
-    """
-    data: [diataryPreference_Data!]!
-  ): [diataryPreference_KeyOutput!]! @fdc_generated(from: "diataryPreference", purpose: INSERT_MULTIPLE)
-  """
-  ✨ Insert `nutritionConstrains` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
-  """
-  nutritionConstrains_insertMany(
-    """
-    List of data objects to insert into the table.
-    """
-    data: [nutritionConstrains_Data!]!
-  ): [nutritionConstrains_KeyOutput!]! @fdc_generated(from: "nutritionConstrains", purpose: INSERT_MULTIPLE)
-  """
-  ✨ Insert `spendingConstraint` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
-  """
-  spendingConstraint_insertMany(
-    """
-    List of data objects to insert into the table.
-    """
-    data: [spendingConstraint_Data!]!
-  ): [spendingConstraint_KeyOutput!]! @fdc_generated(from: "spendingConstraint", purpose: INSERT_MULTIPLE)
-  """
   ✨ Insert or update a single `Account` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Account`.
   """
   account_upsert(
@@ -315,6 +261,15 @@ extend type Mutation {
     data: Account_Data!
   ): Account_KeyOutput! @fdc_generated(from: "Account", purpose: UPSERT_SINGLE)
   """
+  ✨ Insert or update a single `Allergen` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Allergen`.
+  """
+  allergen_upsert(
+    """
+    Data object to insert or update if it already exists.
+    """
+    data: Allergen_Data!
+  ): Allergen_KeyOutput! @fdc_generated(from: "Allergen", purpose: UPSERT_SINGLE)
+  """
   ✨ Insert or update a single `Availability` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Availability`.
   """
   availability_upsert(
@@ -323,6 +278,15 @@ extend type Mutation {
     """
     data: Availability_Data!
   ): Availability_KeyOutput! @fdc_generated(from: "Availability", purpose: UPSERT_SINGLE)
+  """
+  ✨ Insert or update a single `DietaryPreference` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `DietaryPreference`.
+  """
+  dietaryPreference_upsert(
+    """
+    Data object to insert or update if it already exists.
+    """
+    data: DietaryPreference_Data!
+  ): DietaryPreference_KeyOutput! @fdc_generated(from: "DietaryPreference", purpose: UPSERT_SINGLE)
   """
   ✨ Insert or update a single `List` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `List`.
   """
@@ -342,32 +306,23 @@ extend type Mutation {
     data: ListItem_Data!
   ): ListItem_KeyOutput! @fdc_generated(from: "ListItem", purpose: UPSERT_SINGLE)
   """
-  ✨ Insert or update a single `Match` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Match`.
+  ✨ Insert or update a single `NutritionConstraint` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `NutritionConstraint`.
   """
-  match_upsert(
+  nutritionConstraint_upsert(
     """
     Data object to insert or update if it already exists.
     """
-    data: Match_Data!
-  ): Match_KeyOutput! @fdc_generated(from: "Match", purpose: UPSERT_SINGLE)
+    data: NutritionConstraint_Data!
+  ): NutritionConstraint_KeyOutput! @fdc_generated(from: "NutritionConstraint", purpose: UPSERT_SINGLE)
   """
-  ✨ Insert or update a single `Nutrient` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Nutrient`.
+  ✨ Insert or update a single `Price` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Price`.
   """
-  nutrient_upsert(
+  price_upsert(
     """
     Data object to insert or update if it already exists.
     """
-    data: Nutrient_Data!
-  ): Nutrient_KeyOutput! @fdc_generated(from: "Nutrient", purpose: UPSERT_SINGLE)
-  """
-  ✨ Insert or update a single `OFFProduct` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `OFFProduct`.
-  """
-  oFFProduct_upsert(
-    """
-    Data object to insert or update if it already exists.
-    """
-    data: OFFProduct_Data!
-  ): OFFProduct_KeyOutput! @fdc_generated(from: "OFFProduct", purpose: UPSERT_SINGLE)
+    data: Price_Data!
+  ): Price_KeyOutput! @fdc_generated(from: "Price", purpose: UPSERT_SINGLE)
   """
   ✨ Insert or update a single `PriceAlert` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `PriceAlert`.
   """
@@ -387,23 +342,23 @@ extend type Mutation {
     data: PriceHistory_Data!
   ): PriceHistory_KeyOutput! @fdc_generated(from: "PriceHistory", purpose: UPSERT_SINGLE)
   """
-  ✨ Insert or update a single `PricePoint` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `PricePoint`.
+  ✨ Insert or update a single `Product` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Product`.
   """
-  pricePoint_upsert(
+  product_upsert(
     """
     Data object to insert or update if it already exists.
     """
-    data: PricePoint_Data!
-  ): PricePoint_KeyOutput! @fdc_generated(from: "PricePoint", purpose: UPSERT_SINGLE)
+    data: Product_Data!
+  ): Product_KeyOutput! @fdc_generated(from: "Product", purpose: UPSERT_SINGLE)
   """
-  ✨ Insert or update a single `ScrapedProduct` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `ScrapedProduct`.
+  ✨ Insert or update a single `SpendingConstraint` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `SpendingConstraint`.
   """
-  scrapedProduct_upsert(
+  spendingConstraint_upsert(
     """
     Data object to insert or update if it already exists.
     """
-    data: ScrapedProduct_Data!
-  ): ScrapedProduct_KeyOutput! @fdc_generated(from: "ScrapedProduct", purpose: UPSERT_SINGLE)
+    data: SpendingConstraint_Data!
+  ): SpendingConstraint_KeyOutput! @fdc_generated(from: "SpendingConstraint", purpose: UPSERT_SINGLE)
   """
   ✨ Insert or update a single `Store` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Store`.
   """
@@ -423,42 +378,6 @@ extend type Mutation {
     data: User_Data!
   ): User_KeyOutput! @fdc_generated(from: "User", purpose: UPSERT_SINGLE)
   """
-  ✨ Insert or update a single `allergens` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `allergens`.
-  """
-  allergens_upsert(
-    """
-    Data object to insert or update if it already exists.
-    """
-    data: allergens_Data!
-  ): allergens_KeyOutput! @fdc_generated(from: "allergens", purpose: UPSERT_SINGLE)
-  """
-  ✨ Insert or update a single `diataryPreference` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `diataryPreference`.
-  """
-  diataryPreference_upsert(
-    """
-    Data object to insert or update if it already exists.
-    """
-    data: diataryPreference_Data!
-  ): diataryPreference_KeyOutput! @fdc_generated(from: "diataryPreference", purpose: UPSERT_SINGLE)
-  """
-  ✨ Insert or update a single `nutritionConstrains` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `nutritionConstrains`.
-  """
-  nutritionConstrains_upsert(
-    """
-    Data object to insert or update if it already exists.
-    """
-    data: nutritionConstrains_Data!
-  ): nutritionConstrains_KeyOutput! @fdc_generated(from: "nutritionConstrains", purpose: UPSERT_SINGLE)
-  """
-  ✨ Insert or update a single `spendingConstraint` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `spendingConstraint`.
-  """
-  spendingConstraint_upsert(
-    """
-    Data object to insert or update if it already exists.
-    """
-    data: spendingConstraint_Data!
-  ): spendingConstraint_KeyOutput! @fdc_generated(from: "spendingConstraint", purpose: UPSERT_SINGLE)
-  """
   ✨ Insert or update `Account` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Account`.
   """
   account_upsertMany(
@@ -468,6 +387,15 @@ extend type Mutation {
     data: [Account_Data!]!
   ): [Account_KeyOutput!]! @fdc_generated(from: "Account", purpose: UPSERT_MULTIPLE)
   """
+  ✨ Insert or update `Allergen` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Allergen`.
+  """
+  allergen_upsertMany(
+    """
+    List of data objects to insert or update if it already exists.
+    """
+    data: [Allergen_Data!]!
+  ): [Allergen_KeyOutput!]! @fdc_generated(from: "Allergen", purpose: UPSERT_MULTIPLE)
+  """
   ✨ Insert or update `Availability` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Availability`.
   """
   availability_upsertMany(
@@ -476,6 +404,15 @@ extend type Mutation {
     """
     data: [Availability_Data!]!
   ): [Availability_KeyOutput!]! @fdc_generated(from: "Availability", purpose: UPSERT_MULTIPLE)
+  """
+  ✨ Insert or update `DietaryPreference` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `DietaryPreference`.
+  """
+  dietaryPreference_upsertMany(
+    """
+    List of data objects to insert or update if it already exists.
+    """
+    data: [DietaryPreference_Data!]!
+  ): [DietaryPreference_KeyOutput!]! @fdc_generated(from: "DietaryPreference", purpose: UPSERT_MULTIPLE)
   """
   ✨ Insert or update `List` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `List`.
   """
@@ -495,32 +432,23 @@ extend type Mutation {
     data: [ListItem_Data!]!
   ): [ListItem_KeyOutput!]! @fdc_generated(from: "ListItem", purpose: UPSERT_MULTIPLE)
   """
-  ✨ Insert or update `Match` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Match`.
+  ✨ Insert or update `NutritionConstraint` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `NutritionConstraint`.
   """
-  match_upsertMany(
+  nutritionConstraint_upsertMany(
     """
     List of data objects to insert or update if it already exists.
     """
-    data: [Match_Data!]!
-  ): [Match_KeyOutput!]! @fdc_generated(from: "Match", purpose: UPSERT_MULTIPLE)
+    data: [NutritionConstraint_Data!]!
+  ): [NutritionConstraint_KeyOutput!]! @fdc_generated(from: "NutritionConstraint", purpose: UPSERT_MULTIPLE)
   """
-  ✨ Insert or update `Nutrient` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Nutrient`.
+  ✨ Insert or update `Price` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Price`.
   """
-  nutrient_upsertMany(
+  price_upsertMany(
     """
     List of data objects to insert or update if it already exists.
     """
-    data: [Nutrient_Data!]!
-  ): [Nutrient_KeyOutput!]! @fdc_generated(from: "Nutrient", purpose: UPSERT_MULTIPLE)
-  """
-  ✨ Insert or update `OFFProduct` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `OFFProduct`.
-  """
-  oFFProduct_upsertMany(
-    """
-    List of data objects to insert or update if it already exists.
-    """
-    data: [OFFProduct_Data!]!
-  ): [OFFProduct_KeyOutput!]! @fdc_generated(from: "OFFProduct", purpose: UPSERT_MULTIPLE)
+    data: [Price_Data!]!
+  ): [Price_KeyOutput!]! @fdc_generated(from: "Price", purpose: UPSERT_MULTIPLE)
   """
   ✨ Insert or update `PriceAlert` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `PriceAlert`.
   """
@@ -540,23 +468,23 @@ extend type Mutation {
     data: [PriceHistory_Data!]!
   ): [PriceHistory_KeyOutput!]! @fdc_generated(from: "PriceHistory", purpose: UPSERT_MULTIPLE)
   """
-  ✨ Insert or update `PricePoint` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `PricePoint`.
+  ✨ Insert or update `Product` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Product`.
   """
-  pricePoint_upsertMany(
+  product_upsertMany(
     """
     List of data objects to insert or update if it already exists.
     """
-    data: [PricePoint_Data!]!
-  ): [PricePoint_KeyOutput!]! @fdc_generated(from: "PricePoint", purpose: UPSERT_MULTIPLE)
+    data: [Product_Data!]!
+  ): [Product_KeyOutput!]! @fdc_generated(from: "Product", purpose: UPSERT_MULTIPLE)
   """
-  ✨ Insert or update `ScrapedProduct` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `ScrapedProduct`.
+  ✨ Insert or update `SpendingConstraint` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `SpendingConstraint`.
   """
-  scrapedProduct_upsertMany(
+  spendingConstraint_upsertMany(
     """
     List of data objects to insert or update if it already exists.
     """
-    data: [ScrapedProduct_Data!]!
-  ): [ScrapedProduct_KeyOutput!]! @fdc_generated(from: "ScrapedProduct", purpose: UPSERT_MULTIPLE)
+    data: [SpendingConstraint_Data!]!
+  ): [SpendingConstraint_KeyOutput!]! @fdc_generated(from: "SpendingConstraint", purpose: UPSERT_MULTIPLE)
   """
   ✨ Insert or update `Store` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Store`.
   """
@@ -575,42 +503,6 @@ extend type Mutation {
     """
     data: [User_Data!]!
   ): [User_KeyOutput!]! @fdc_generated(from: "User", purpose: UPSERT_MULTIPLE)
-  """
-  ✨ Insert or update `allergens` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `allergens`.
-  """
-  allergens_upsertMany(
-    """
-    List of data objects to insert or update if it already exists.
-    """
-    data: [allergens_Data!]!
-  ): [allergens_KeyOutput!]! @fdc_generated(from: "allergens", purpose: UPSERT_MULTIPLE)
-  """
-  ✨ Insert or update `diataryPreference` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `diataryPreference`.
-  """
-  diataryPreference_upsertMany(
-    """
-    List of data objects to insert or update if it already exists.
-    """
-    data: [diataryPreference_Data!]!
-  ): [diataryPreference_KeyOutput!]! @fdc_generated(from: "diataryPreference", purpose: UPSERT_MULTIPLE)
-  """
-  ✨ Insert or update `nutritionConstrains` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `nutritionConstrains`.
-  """
-  nutritionConstrains_upsertMany(
-    """
-    List of data objects to insert or update if it already exists.
-    """
-    data: [nutritionConstrains_Data!]!
-  ): [nutritionConstrains_KeyOutput!]! @fdc_generated(from: "nutritionConstrains", purpose: UPSERT_MULTIPLE)
-  """
-  ✨ Insert or update `spendingConstraint` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `spendingConstraint`.
-  """
-  spendingConstraint_upsertMany(
-    """
-    List of data objects to insert or update if it already exists.
-    """
-    data: [spendingConstraint_Data!]!
-  ): [spendingConstraint_KeyOutput!]! @fdc_generated(from: "spendingConstraint", purpose: UPSERT_MULTIPLE)
   """
   ✨ Update a single `Account` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `Account` or `null` if not found.
   """
@@ -636,6 +528,30 @@ extend type Mutation {
     data: Account_Data!
   ): Account_KeyOutput @fdc_generated(from: "Account", purpose: UPDATE_SINGLE)
   """
+  ✨ Update a single `Allergen` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `Allergen` or `null` if not found.
+  """
+  allergen_update(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: Allergen_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Allergen_FirstRow
+
+    """
+    Data object containing fields to be updated.
+    """
+    data: Allergen_Data!
+  ): Allergen_KeyOutput @fdc_generated(from: "Allergen", purpose: UPDATE_SINGLE)
+  """
   ✨ Update a single `Availability` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `Availability` or `null` if not found.
   """
   availability_update(
@@ -659,6 +575,30 @@ extend type Mutation {
     """
     data: Availability_Data!
   ): Availability_KeyOutput @fdc_generated(from: "Availability", purpose: UPDATE_SINGLE)
+  """
+  ✨ Update a single `DietaryPreference` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `DietaryPreference` or `null` if not found.
+  """
+  dietaryPreference_update(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: DietaryPreference_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: DietaryPreference_FirstRow
+
+    """
+    Data object containing fields to be updated.
+    """
+    data: DietaryPreference_Data!
+  ): DietaryPreference_KeyOutput @fdc_generated(from: "DietaryPreference", purpose: UPDATE_SINGLE)
   """
   ✨ Update a single `List` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `List` or `null` if not found.
   """
@@ -708,9 +648,9 @@ extend type Mutation {
     data: ListItem_Data!
   ): ListItem_KeyOutput @fdc_generated(from: "ListItem", purpose: UPDATE_SINGLE)
   """
-  ✨ Update a single `Match` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `Match` or `null` if not found.
+  ✨ Update a single `NutritionConstraint` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `NutritionConstraint` or `null` if not found.
   """
-  match_update(
+  nutritionConstraint_update(
     """
     The unique ID of the object.
     """
@@ -719,22 +659,22 @@ extend type Mutation {
     """
     The key used to identify the object.
     """
-    key: Match_Key
+    key: NutritionConstraint_Key
 
     """
     Fetch the first row based on the filters and ordering.
     """
-    first: Match_FirstRow
+    first: NutritionConstraint_FirstRow
 
     """
     Data object containing fields to be updated.
     """
-    data: Match_Data!
-  ): Match_KeyOutput @fdc_generated(from: "Match", purpose: UPDATE_SINGLE)
+    data: NutritionConstraint_Data!
+  ): NutritionConstraint_KeyOutput @fdc_generated(from: "NutritionConstraint", purpose: UPDATE_SINGLE)
   """
-  ✨ Update a single `Nutrient` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `Nutrient` or `null` if not found.
+  ✨ Update a single `Price` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `Price` or `null` if not found.
   """
-  nutrient_update(
+  price_update(
     """
     The unique ID of the object.
     """
@@ -743,42 +683,18 @@ extend type Mutation {
     """
     The key used to identify the object.
     """
-    key: Nutrient_Key
+    key: Price_Key
 
     """
     Fetch the first row based on the filters and ordering.
     """
-    first: Nutrient_FirstRow
+    first: Price_FirstRow
 
     """
     Data object containing fields to be updated.
     """
-    data: Nutrient_Data!
-  ): Nutrient_KeyOutput @fdc_generated(from: "Nutrient", purpose: UPDATE_SINGLE)
-  """
-  ✨ Update a single `OFFProduct` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `OFFProduct` or `null` if not found.
-  """
-  oFFProduct_update(
-    """
-    The unique ID of the object.
-    """
-    id: UUID
-
-    """
-    The key used to identify the object.
-    """
-    key: OFFProduct_Key
-
-    """
-    Fetch the first row based on the filters and ordering.
-    """
-    first: OFFProduct_FirstRow
-
-    """
-    Data object containing fields to be updated.
-    """
-    data: OFFProduct_Data!
-  ): OFFProduct_KeyOutput @fdc_generated(from: "OFFProduct", purpose: UPDATE_SINGLE)
+    data: Price_Data!
+  ): Price_KeyOutput @fdc_generated(from: "Price", purpose: UPDATE_SINGLE)
   """
   ✨ Update a single `PriceAlert` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `PriceAlert` or `null` if not found.
   """
@@ -828,9 +744,9 @@ extend type Mutation {
     data: PriceHistory_Data!
   ): PriceHistory_KeyOutput @fdc_generated(from: "PriceHistory", purpose: UPDATE_SINGLE)
   """
-  ✨ Update a single `PricePoint` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `PricePoint` or `null` if not found.
+  ✨ Update a single `Product` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `Product` or `null` if not found.
   """
-  pricePoint_update(
+  product_update(
     """
     The unique ID of the object.
     """
@@ -839,22 +755,22 @@ extend type Mutation {
     """
     The key used to identify the object.
     """
-    key: PricePoint_Key
+    key: Product_Key
 
     """
     Fetch the first row based on the filters and ordering.
     """
-    first: PricePoint_FirstRow
+    first: Product_FirstRow
 
     """
     Data object containing fields to be updated.
     """
-    data: PricePoint_Data!
-  ): PricePoint_KeyOutput @fdc_generated(from: "PricePoint", purpose: UPDATE_SINGLE)
+    data: Product_Data!
+  ): Product_KeyOutput @fdc_generated(from: "Product", purpose: UPDATE_SINGLE)
   """
-  ✨ Update a single `ScrapedProduct` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `ScrapedProduct` or `null` if not found.
+  ✨ Update a single `SpendingConstraint` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `SpendingConstraint` or `null` if not found.
   """
-  scrapedProduct_update(
+  spendingConstraint_update(
     """
     The unique ID of the object.
     """
@@ -863,18 +779,18 @@ extend type Mutation {
     """
     The key used to identify the object.
     """
-    key: ScrapedProduct_Key
+    key: SpendingConstraint_Key
 
     """
     Fetch the first row based on the filters and ordering.
     """
-    first: ScrapedProduct_FirstRow
+    first: SpendingConstraint_FirstRow
 
     """
     Data object containing fields to be updated.
     """
-    data: ScrapedProduct_Data!
-  ): ScrapedProduct_KeyOutput @fdc_generated(from: "ScrapedProduct", purpose: UPDATE_SINGLE)
+    data: SpendingConstraint_Data!
+  ): SpendingConstraint_KeyOutput @fdc_generated(from: "SpendingConstraint", purpose: UPDATE_SINGLE)
   """
   ✨ Update a single `Store` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `Store` or `null` if not found.
   """
@@ -924,102 +840,6 @@ extend type Mutation {
     data: User_Data!
   ): User_KeyOutput @fdc_generated(from: "User", purpose: UPDATE_SINGLE)
   """
-  ✨ Update a single `allergens` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `allergens` or `null` if not found.
-  """
-  allergens_update(
-    """
-    The unique ID of the object.
-    """
-    id: UUID
-
-    """
-    The key used to identify the object.
-    """
-    key: allergens_Key
-
-    """
-    Fetch the first row based on the filters and ordering.
-    """
-    first: allergens_FirstRow
-
-    """
-    Data object containing fields to be updated.
-    """
-    data: allergens_Data!
-  ): allergens_KeyOutput @fdc_generated(from: "allergens", purpose: UPDATE_SINGLE)
-  """
-  ✨ Update a single `diataryPreference` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `diataryPreference` or `null` if not found.
-  """
-  diataryPreference_update(
-    """
-    The unique ID of the object.
-    """
-    id: UUID
-
-    """
-    The key used to identify the object.
-    """
-    key: diataryPreference_Key
-
-    """
-    Fetch the first row based on the filters and ordering.
-    """
-    first: diataryPreference_FirstRow
-
-    """
-    Data object containing fields to be updated.
-    """
-    data: diataryPreference_Data!
-  ): diataryPreference_KeyOutput @fdc_generated(from: "diataryPreference", purpose: UPDATE_SINGLE)
-  """
-  ✨ Update a single `nutritionConstrains` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `nutritionConstrains` or `null` if not found.
-  """
-  nutritionConstrains_update(
-    """
-    The unique ID of the object.
-    """
-    id: UUID
-
-    """
-    The key used to identify the object.
-    """
-    key: nutritionConstrains_Key
-
-    """
-    Fetch the first row based on the filters and ordering.
-    """
-    first: nutritionConstrains_FirstRow
-
-    """
-    Data object containing fields to be updated.
-    """
-    data: nutritionConstrains_Data!
-  ): nutritionConstrains_KeyOutput @fdc_generated(from: "nutritionConstrains", purpose: UPDATE_SINGLE)
-  """
-  ✨ Update a single `spendingConstraint` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `spendingConstraint` or `null` if not found.
-  """
-  spendingConstraint_update(
-    """
-    The unique ID of the object.
-    """
-    id: UUID
-
-    """
-    The key used to identify the object.
-    """
-    key: spendingConstraint_Key
-
-    """
-    Fetch the first row based on the filters and ordering.
-    """
-    first: spendingConstraint_FirstRow
-
-    """
-    Data object containing fields to be updated.
-    """
-    data: spendingConstraint_Data!
-  ): spendingConstraint_KeyOutput @fdc_generated(from: "spendingConstraint", purpose: UPDATE_SINGLE)
-  """
   ✨ Update `Account` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
   """
   account_updateMany(
@@ -1039,6 +859,25 @@ extend type Mutation {
     data: Account_Data!
   ): Int! @fdc_generated(from: "Account", purpose: UPDATE_MULTIPLE)
   """
+  ✨ Update `Allergen` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
+  """
+  allergen_updateMany(
+    """
+    Filter condition to specify which rows to update.
+    """
+    where: Allergen_Filter
+
+    """
+    Set to true to update all rows.
+    """
+    all: Boolean = false
+
+    """
+    Data object containing fields to update.
+    """
+    data: Allergen_Data!
+  ): Int! @fdc_generated(from: "Allergen", purpose: UPDATE_MULTIPLE)
+  """
   ✨ Update `Availability` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
   """
   availability_updateMany(
@@ -1057,6 +896,25 @@ extend type Mutation {
     """
     data: Availability_Data!
   ): Int! @fdc_generated(from: "Availability", purpose: UPDATE_MULTIPLE)
+  """
+  ✨ Update `DietaryPreference` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
+  """
+  dietaryPreference_updateMany(
+    """
+    Filter condition to specify which rows to update.
+    """
+    where: DietaryPreference_Filter
+
+    """
+    Set to true to update all rows.
+    """
+    all: Boolean = false
+
+    """
+    Data object containing fields to update.
+    """
+    data: DietaryPreference_Data!
+  ): Int! @fdc_generated(from: "DietaryPreference", purpose: UPDATE_MULTIPLE)
   """
   ✨ Update `List` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
   """
@@ -1096,13 +954,13 @@ extend type Mutation {
     data: ListItem_Data!
   ): Int! @fdc_generated(from: "ListItem", purpose: UPDATE_MULTIPLE)
   """
-  ✨ Update `Match` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
+  ✨ Update `NutritionConstraint` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
   """
-  match_updateMany(
+  nutritionConstraint_updateMany(
     """
     Filter condition to specify which rows to update.
     """
-    where: Match_Filter
+    where: NutritionConstraint_Filter
 
     """
     Set to true to update all rows.
@@ -1112,16 +970,16 @@ extend type Mutation {
     """
     Data object containing fields to update.
     """
-    data: Match_Data!
-  ): Int! @fdc_generated(from: "Match", purpose: UPDATE_MULTIPLE)
+    data: NutritionConstraint_Data!
+  ): Int! @fdc_generated(from: "NutritionConstraint", purpose: UPDATE_MULTIPLE)
   """
-  ✨ Update `Nutrient` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
+  ✨ Update `Price` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
   """
-  nutrient_updateMany(
+  price_updateMany(
     """
     Filter condition to specify which rows to update.
     """
-    where: Nutrient_Filter
+    where: Price_Filter
 
     """
     Set to true to update all rows.
@@ -1131,27 +989,8 @@ extend type Mutation {
     """
     Data object containing fields to update.
     """
-    data: Nutrient_Data!
-  ): Int! @fdc_generated(from: "Nutrient", purpose: UPDATE_MULTIPLE)
-  """
-  ✨ Update `OFFProduct` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
-  """
-  oFFProduct_updateMany(
-    """
-    Filter condition to specify which rows to update.
-    """
-    where: OFFProduct_Filter
-
-    """
-    Set to true to update all rows.
-    """
-    all: Boolean = false
-
-    """
-    Data object containing fields to update.
-    """
-    data: OFFProduct_Data!
-  ): Int! @fdc_generated(from: "OFFProduct", purpose: UPDATE_MULTIPLE)
+    data: Price_Data!
+  ): Int! @fdc_generated(from: "Price", purpose: UPDATE_MULTIPLE)
   """
   ✨ Update `PriceAlert` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
   """
@@ -1191,13 +1030,13 @@ extend type Mutation {
     data: PriceHistory_Data!
   ): Int! @fdc_generated(from: "PriceHistory", purpose: UPDATE_MULTIPLE)
   """
-  ✨ Update `PricePoint` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
+  ✨ Update `Product` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
   """
-  pricePoint_updateMany(
+  product_updateMany(
     """
     Filter condition to specify which rows to update.
     """
-    where: PricePoint_Filter
+    where: Product_Filter
 
     """
     Set to true to update all rows.
@@ -1207,16 +1046,16 @@ extend type Mutation {
     """
     Data object containing fields to update.
     """
-    data: PricePoint_Data!
-  ): Int! @fdc_generated(from: "PricePoint", purpose: UPDATE_MULTIPLE)
+    data: Product_Data!
+  ): Int! @fdc_generated(from: "Product", purpose: UPDATE_MULTIPLE)
   """
-  ✨ Update `ScrapedProduct` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
+  ✨ Update `SpendingConstraint` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
   """
-  scrapedProduct_updateMany(
+  spendingConstraint_updateMany(
     """
     Filter condition to specify which rows to update.
     """
-    where: ScrapedProduct_Filter
+    where: SpendingConstraint_Filter
 
     """
     Set to true to update all rows.
@@ -1226,8 +1065,8 @@ extend type Mutation {
     """
     Data object containing fields to update.
     """
-    data: ScrapedProduct_Data!
-  ): Int! @fdc_generated(from: "ScrapedProduct", purpose: UPDATE_MULTIPLE)
+    data: SpendingConstraint_Data!
+  ): Int! @fdc_generated(from: "SpendingConstraint", purpose: UPDATE_MULTIPLE)
   """
   ✨ Update `Store` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
   """
@@ -1267,82 +1106,6 @@ extend type Mutation {
     data: User_Data!
   ): Int! @fdc_generated(from: "User", purpose: UPDATE_MULTIPLE)
   """
-  ✨ Update `allergens` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
-  """
-  allergens_updateMany(
-    """
-    Filter condition to specify which rows to update.
-    """
-    where: allergens_Filter
-
-    """
-    Set to true to update all rows.
-    """
-    all: Boolean = false
-
-    """
-    Data object containing fields to update.
-    """
-    data: allergens_Data!
-  ): Int! @fdc_generated(from: "allergens", purpose: UPDATE_MULTIPLE)
-  """
-  ✨ Update `diataryPreference` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
-  """
-  diataryPreference_updateMany(
-    """
-    Filter condition to specify which rows to update.
-    """
-    where: diataryPreference_Filter
-
-    """
-    Set to true to update all rows.
-    """
-    all: Boolean = false
-
-    """
-    Data object containing fields to update.
-    """
-    data: diataryPreference_Data!
-  ): Int! @fdc_generated(from: "diataryPreference", purpose: UPDATE_MULTIPLE)
-  """
-  ✨ Update `nutritionConstrains` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
-  """
-  nutritionConstrains_updateMany(
-    """
-    Filter condition to specify which rows to update.
-    """
-    where: nutritionConstrains_Filter
-
-    """
-    Set to true to update all rows.
-    """
-    all: Boolean = false
-
-    """
-    Data object containing fields to update.
-    """
-    data: nutritionConstrains_Data!
-  ): Int! @fdc_generated(from: "nutritionConstrains", purpose: UPDATE_MULTIPLE)
-  """
-  ✨ Update `spendingConstraint` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
-  """
-  spendingConstraint_updateMany(
-    """
-    Filter condition to specify which rows to update.
-    """
-    where: spendingConstraint_Filter
-
-    """
-    Set to true to update all rows.
-    """
-    all: Boolean = false
-
-    """
-    Data object containing fields to update.
-    """
-    data: spendingConstraint_Data!
-  ): Int! @fdc_generated(from: "spendingConstraint", purpose: UPDATE_MULTIPLE)
-  """
   ✨ Delete a single `Account` based on `id`, `key` or `first` and return its key (or `null` if not found).
   """
   account_delete(
@@ -1362,6 +1125,25 @@ extend type Mutation {
     first: Account_FirstRow
   ): Account_KeyOutput @fdc_generated(from: "Account", purpose: DELETE_SINGLE)
   """
+  ✨ Delete a single `Allergen` based on `id`, `key` or `first` and return its key (or `null` if not found).
+  """
+  allergen_delete(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: Allergen_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Allergen_FirstRow
+  ): Allergen_KeyOutput @fdc_generated(from: "Allergen", purpose: DELETE_SINGLE)
+  """
   ✨ Delete a single `Availability` based on `id`, `key` or `first` and return its key (or `null` if not found).
   """
   availability_delete(
@@ -1380,6 +1162,25 @@ extend type Mutation {
     """
     first: Availability_FirstRow
   ): Availability_KeyOutput @fdc_generated(from: "Availability", purpose: DELETE_SINGLE)
+  """
+  ✨ Delete a single `DietaryPreference` based on `id`, `key` or `first` and return its key (or `null` if not found).
+  """
+  dietaryPreference_delete(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: DietaryPreference_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: DietaryPreference_FirstRow
+  ): DietaryPreference_KeyOutput @fdc_generated(from: "DietaryPreference", purpose: DELETE_SINGLE)
   """
   ✨ Delete a single `List` based on `id`, `key` or `first` and return its key (or `null` if not found).
   """
@@ -1419,9 +1220,9 @@ extend type Mutation {
     first: ListItem_FirstRow
   ): ListItem_KeyOutput @fdc_generated(from: "ListItem", purpose: DELETE_SINGLE)
   """
-  ✨ Delete a single `Match` based on `id`, `key` or `first` and return its key (or `null` if not found).
+  ✨ Delete a single `NutritionConstraint` based on `id`, `key` or `first` and return its key (or `null` if not found).
   """
-  match_delete(
+  nutritionConstraint_delete(
     """
     The unique ID of the object.
     """
@@ -1430,17 +1231,17 @@ extend type Mutation {
     """
     The key used to identify the object.
     """
-    key: Match_Key
+    key: NutritionConstraint_Key
 
     """
     Fetch the first row based on the filters and ordering.
     """
-    first: Match_FirstRow
-  ): Match_KeyOutput @fdc_generated(from: "Match", purpose: DELETE_SINGLE)
+    first: NutritionConstraint_FirstRow
+  ): NutritionConstraint_KeyOutput @fdc_generated(from: "NutritionConstraint", purpose: DELETE_SINGLE)
   """
-  ✨ Delete a single `Nutrient` based on `id`, `key` or `first` and return its key (or `null` if not found).
+  ✨ Delete a single `Price` based on `id`, `key` or `first` and return its key (or `null` if not found).
   """
-  nutrient_delete(
+  price_delete(
     """
     The unique ID of the object.
     """
@@ -1449,32 +1250,13 @@ extend type Mutation {
     """
     The key used to identify the object.
     """
-    key: Nutrient_Key
+    key: Price_Key
 
     """
     Fetch the first row based on the filters and ordering.
     """
-    first: Nutrient_FirstRow
-  ): Nutrient_KeyOutput @fdc_generated(from: "Nutrient", purpose: DELETE_SINGLE)
-  """
-  ✨ Delete a single `OFFProduct` based on `id`, `key` or `first` and return its key (or `null` if not found).
-  """
-  oFFProduct_delete(
-    """
-    The unique ID of the object.
-    """
-    id: UUID
-
-    """
-    The key used to identify the object.
-    """
-    key: OFFProduct_Key
-
-    """
-    Fetch the first row based on the filters and ordering.
-    """
-    first: OFFProduct_FirstRow
-  ): OFFProduct_KeyOutput @fdc_generated(from: "OFFProduct", purpose: DELETE_SINGLE)
+    first: Price_FirstRow
+  ): Price_KeyOutput @fdc_generated(from: "Price", purpose: DELETE_SINGLE)
   """
   ✨ Delete a single `PriceAlert` based on `id`, `key` or `first` and return its key (or `null` if not found).
   """
@@ -1514,9 +1296,9 @@ extend type Mutation {
     first: PriceHistory_FirstRow
   ): PriceHistory_KeyOutput @fdc_generated(from: "PriceHistory", purpose: DELETE_SINGLE)
   """
-  ✨ Delete a single `PricePoint` based on `id`, `key` or `first` and return its key (or `null` if not found).
+  ✨ Delete a single `Product` based on `id`, `key` or `first` and return its key (or `null` if not found).
   """
-  pricePoint_delete(
+  product_delete(
     """
     The unique ID of the object.
     """
@@ -1525,17 +1307,17 @@ extend type Mutation {
     """
     The key used to identify the object.
     """
-    key: PricePoint_Key
+    key: Product_Key
 
     """
     Fetch the first row based on the filters and ordering.
     """
-    first: PricePoint_FirstRow
-  ): PricePoint_KeyOutput @fdc_generated(from: "PricePoint", purpose: DELETE_SINGLE)
+    first: Product_FirstRow
+  ): Product_KeyOutput @fdc_generated(from: "Product", purpose: DELETE_SINGLE)
   """
-  ✨ Delete a single `ScrapedProduct` based on `id`, `key` or `first` and return its key (or `null` if not found).
+  ✨ Delete a single `SpendingConstraint` based on `id`, `key` or `first` and return its key (or `null` if not found).
   """
-  scrapedProduct_delete(
+  spendingConstraint_delete(
     """
     The unique ID of the object.
     """
@@ -1544,13 +1326,13 @@ extend type Mutation {
     """
     The key used to identify the object.
     """
-    key: ScrapedProduct_Key
+    key: SpendingConstraint_Key
 
     """
     Fetch the first row based on the filters and ordering.
     """
-    first: ScrapedProduct_FirstRow
-  ): ScrapedProduct_KeyOutput @fdc_generated(from: "ScrapedProduct", purpose: DELETE_SINGLE)
+    first: SpendingConstraint_FirstRow
+  ): SpendingConstraint_KeyOutput @fdc_generated(from: "SpendingConstraint", purpose: DELETE_SINGLE)
   """
   ✨ Delete a single `Store` based on `id`, `key` or `first` and return its key (or `null` if not found).
   """
@@ -1590,82 +1372,6 @@ extend type Mutation {
     first: User_FirstRow
   ): User_KeyOutput @fdc_generated(from: "User", purpose: DELETE_SINGLE)
   """
-  ✨ Delete a single `allergens` based on `id`, `key` or `first` and return its key (or `null` if not found).
-  """
-  allergens_delete(
-    """
-    The unique ID of the object.
-    """
-    id: UUID
-
-    """
-    The key used to identify the object.
-    """
-    key: allergens_Key
-
-    """
-    Fetch the first row based on the filters and ordering.
-    """
-    first: allergens_FirstRow
-  ): allergens_KeyOutput @fdc_generated(from: "allergens", purpose: DELETE_SINGLE)
-  """
-  ✨ Delete a single `diataryPreference` based on `id`, `key` or `first` and return its key (or `null` if not found).
-  """
-  diataryPreference_delete(
-    """
-    The unique ID of the object.
-    """
-    id: UUID
-
-    """
-    The key used to identify the object.
-    """
-    key: diataryPreference_Key
-
-    """
-    Fetch the first row based on the filters and ordering.
-    """
-    first: diataryPreference_FirstRow
-  ): diataryPreference_KeyOutput @fdc_generated(from: "diataryPreference", purpose: DELETE_SINGLE)
-  """
-  ✨ Delete a single `nutritionConstrains` based on `id`, `key` or `first` and return its key (or `null` if not found).
-  """
-  nutritionConstrains_delete(
-    """
-    The unique ID of the object.
-    """
-    id: UUID
-
-    """
-    The key used to identify the object.
-    """
-    key: nutritionConstrains_Key
-
-    """
-    Fetch the first row based on the filters and ordering.
-    """
-    first: nutritionConstrains_FirstRow
-  ): nutritionConstrains_KeyOutput @fdc_generated(from: "nutritionConstrains", purpose: DELETE_SINGLE)
-  """
-  ✨ Delete a single `spendingConstraint` based on `id`, `key` or `first` and return its key (or `null` if not found).
-  """
-  spendingConstraint_delete(
-    """
-    The unique ID of the object.
-    """
-    id: UUID
-
-    """
-    The key used to identify the object.
-    """
-    key: spendingConstraint_Key
-
-    """
-    Fetch the first row based on the filters and ordering.
-    """
-    first: spendingConstraint_FirstRow
-  ): spendingConstraint_KeyOutput @fdc_generated(from: "spendingConstraint", purpose: DELETE_SINGLE)
-  """
   ✨ Delete `Account` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
   """
   account_deleteMany(
@@ -1680,6 +1386,20 @@ extend type Mutation {
     all: Boolean = false
   ): Int! @fdc_generated(from: "Account", purpose: DELETE_MULTIPLE)
   """
+  ✨ Delete `Allergen` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
+  """
+  allergen_deleteMany(
+    """
+    Filter condition to specify which rows to delete.
+    """
+    where: Allergen_Filter
+
+    """
+    Set to true to delete all rows.
+    """
+    all: Boolean = false
+  ): Int! @fdc_generated(from: "Allergen", purpose: DELETE_MULTIPLE)
+  """
   ✨ Delete `Availability` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
   """
   availability_deleteMany(
@@ -1693,6 +1413,20 @@ extend type Mutation {
     """
     all: Boolean = false
   ): Int! @fdc_generated(from: "Availability", purpose: DELETE_MULTIPLE)
+  """
+  ✨ Delete `DietaryPreference` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
+  """
+  dietaryPreference_deleteMany(
+    """
+    Filter condition to specify which rows to delete.
+    """
+    where: DietaryPreference_Filter
+
+    """
+    Set to true to delete all rows.
+    """
+    all: Boolean = false
+  ): Int! @fdc_generated(from: "DietaryPreference", purpose: DELETE_MULTIPLE)
   """
   ✨ Delete `List` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
   """
@@ -1722,47 +1456,33 @@ extend type Mutation {
     all: Boolean = false
   ): Int! @fdc_generated(from: "ListItem", purpose: DELETE_MULTIPLE)
   """
-  ✨ Delete `Match` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
+  ✨ Delete `NutritionConstraint` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
   """
-  match_deleteMany(
+  nutritionConstraint_deleteMany(
     """
     Filter condition to specify which rows to delete.
     """
-    where: Match_Filter
+    where: NutritionConstraint_Filter
 
     """
     Set to true to delete all rows.
     """
     all: Boolean = false
-  ): Int! @fdc_generated(from: "Match", purpose: DELETE_MULTIPLE)
+  ): Int! @fdc_generated(from: "NutritionConstraint", purpose: DELETE_MULTIPLE)
   """
-  ✨ Delete `Nutrient` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
+  ✨ Delete `Price` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
   """
-  nutrient_deleteMany(
+  price_deleteMany(
     """
     Filter condition to specify which rows to delete.
     """
-    where: Nutrient_Filter
+    where: Price_Filter
 
     """
     Set to true to delete all rows.
     """
     all: Boolean = false
-  ): Int! @fdc_generated(from: "Nutrient", purpose: DELETE_MULTIPLE)
-  """
-  ✨ Delete `OFFProduct` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
-  """
-  oFFProduct_deleteMany(
-    """
-    Filter condition to specify which rows to delete.
-    """
-    where: OFFProduct_Filter
-
-    """
-    Set to true to delete all rows.
-    """
-    all: Boolean = false
-  ): Int! @fdc_generated(from: "OFFProduct", purpose: DELETE_MULTIPLE)
+  ): Int! @fdc_generated(from: "Price", purpose: DELETE_MULTIPLE)
   """
   ✨ Delete `PriceAlert` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
   """
@@ -1792,33 +1512,33 @@ extend type Mutation {
     all: Boolean = false
   ): Int! @fdc_generated(from: "PriceHistory", purpose: DELETE_MULTIPLE)
   """
-  ✨ Delete `PricePoint` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
+  ✨ Delete `Product` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
   """
-  pricePoint_deleteMany(
+  product_deleteMany(
     """
     Filter condition to specify which rows to delete.
     """
-    where: PricePoint_Filter
+    where: Product_Filter
 
     """
     Set to true to delete all rows.
     """
     all: Boolean = false
-  ): Int! @fdc_generated(from: "PricePoint", purpose: DELETE_MULTIPLE)
+  ): Int! @fdc_generated(from: "Product", purpose: DELETE_MULTIPLE)
   """
-  ✨ Delete `ScrapedProduct` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
+  ✨ Delete `SpendingConstraint` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
   """
-  scrapedProduct_deleteMany(
+  spendingConstraint_deleteMany(
     """
     Filter condition to specify which rows to delete.
     """
-    where: ScrapedProduct_Filter
+    where: SpendingConstraint_Filter
 
     """
     Set to true to delete all rows.
     """
     all: Boolean = false
-  ): Int! @fdc_generated(from: "ScrapedProduct", purpose: DELETE_MULTIPLE)
+  ): Int! @fdc_generated(from: "SpendingConstraint", purpose: DELETE_MULTIPLE)
   """
   ✨ Delete `Store` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
   """
@@ -1847,60 +1567,4 @@ extend type Mutation {
     """
     all: Boolean = false
   ): Int! @fdc_generated(from: "User", purpose: DELETE_MULTIPLE)
-  """
-  ✨ Delete `allergens` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
-  """
-  allergens_deleteMany(
-    """
-    Filter condition to specify which rows to delete.
-    """
-    where: allergens_Filter
-
-    """
-    Set to true to delete all rows.
-    """
-    all: Boolean = false
-  ): Int! @fdc_generated(from: "allergens", purpose: DELETE_MULTIPLE)
-  """
-  ✨ Delete `diataryPreference` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
-  """
-  diataryPreference_deleteMany(
-    """
-    Filter condition to specify which rows to delete.
-    """
-    where: diataryPreference_Filter
-
-    """
-    Set to true to delete all rows.
-    """
-    all: Boolean = false
-  ): Int! @fdc_generated(from: "diataryPreference", purpose: DELETE_MULTIPLE)
-  """
-  ✨ Delete `nutritionConstrains` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
-  """
-  nutritionConstrains_deleteMany(
-    """
-    Filter condition to specify which rows to delete.
-    """
-    where: nutritionConstrains_Filter
-
-    """
-    Set to true to delete all rows.
-    """
-    all: Boolean = false
-  ): Int! @fdc_generated(from: "nutritionConstrains", purpose: DELETE_MULTIPLE)
-  """
-  ✨ Delete `spendingConstraint` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
-  """
-  spendingConstraint_deleteMany(
-    """
-    Filter condition to specify which rows to delete.
-    """
-    where: spendingConstraint_Filter
-
-    """
-    Set to true to delete all rows.
-    """
-    all: Boolean = false
-  ): Int! @fdc_generated(from: "spendingConstraint", purpose: DELETE_MULTIPLE)
 }
