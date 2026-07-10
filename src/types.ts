@@ -56,4 +56,5 @@ export interface UserProfile {
     shoprite: boolean;
     spar: boolean;
   };
+  isGuest?: boolean;
 }

@@ -1,6 +1,6 @@
 import { auth } from './firebase';
 
-const API_BASE_URL = 'http://localhost:8000';
+const API_BASE_URL = '';
 
 /**
  * Make an authenticated request to the backend API with Firebase ID token

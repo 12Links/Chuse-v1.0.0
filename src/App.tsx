@@ -11,6 +11,8 @@ import BarcodeScanner from './components/BarcodeScanner';
 import { AuthenticationPage } from './components/AuthenticationPage';
 import SettingsPage from './components/SettingsPage';
 import AISavingsWizard from './components/AISavingsWizard';
+import ShoppingListsManager from './components/ShoppingListsManager';
+import PriceDiscrepancyReporter from './components/PriceDiscrepancyReporter';
 import { auth } from './lib/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 import { getCurrentUserProfile, loginUser, syncBasket } from './lib/api';
@@ -29,8 +31,12 @@ import {
   MapPin,
   Scan,
   User,
-  Settings
+  Settings,
+  ClipboardList,
+  Camera,
+  X
 } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
 
 function ProtectedRoute({ user }: { user: UserProfile | null }) {
   if (user === undefined) {
@@ -45,10 +51,12 @@ function ProtectedRoute({ user }: { user: UserProfile | null }) {
 interface MainPageProps {
     user: UserProfile | null;
     setUser: (user: UserProfile | null) => void;
+    isDarkMode: boolean;
+    onToggleDarkMode: (isDark: boolean) => void;
 }
 
-function MainPage({ user, setUser }: MainPageProps) {
-  const [activeTab, setActiveTab] = useState<'specials' | 'catalog' | 'basket' | 'stats' | 'custom' | 'scan' | 'settings' | 'ai'>('specials');
+function MainPage({ user, setUser, isDarkMode, onToggleDarkMode }: MainPageProps) {
+  const [activeTab, setActiveTab] = useState<'specials' | 'catalog' | 'basket' | 'stats' | 'custom' | 'scan' | 'settings' | 'ai' | 'lists' | 'reports'>('specials');
   const [products, setProducts] = useState<Product[]>([]);
   const [basket, setBasket] = useState<BasketItem[]>([]);
   const [showPromoBanner, setShowPromoBanner] = useState(true);
@@ -202,40 +210,58 @@ function MainPage({ user, setUser }: MainPageProps) {
   };
 
   return (
-    <div id="chuse-container" className="min-h-screen bg-[#f8fafc] text-slate-905 font-sans selection:bg-[#FFE600] selection:text-black">
+    <div id="chuse-container" className="min-h-screen bg-[#f8fafc] dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-sans selection:bg-[#FFE600] selection:text-black relative overflow-hidden transition-colors duration-300">
+      {/* Editorial Floating Background Blurs */}
+      <div className="ambient-blur-1 top-[5%] left-[2%]"></div>
+      <div className="ambient-blur-2 top-[35%] right-[2%]"></div>
+      <div className="ambient-blur-1 top-[75%] left-[20%]"></div>
+
       {showPromoBanner && (
-        <div id="promo-notice-banner" className="bg-slate-900 border-b border-slate-800 text-white text-[11px] font-bold tracking-wider text-center py-2.5 px-6 flex items-center justify-between uppercase relative z-40">
+        <div id="promo-notice-banner" className="bg-slate-950 dark:bg-black border-b border-slate-900 dark:border-slate-950 text-white text-[10px] sm:text-[11px] font-bold tracking-wider text-center py-3 px-6 flex items-center justify-between uppercase relative z-45">
           <div className="flex-1 flex justify-center items-center gap-2 flex-wrap text-slate-200">
-            <span className="bg-[#FFE600] text-black font-black px-2.5 py-0.5 rounded text-[9px] tracking-wider">TRENDING SA</span>
-            <span>Checkers Xtra Savings vs Woolworths W-Rewards indices: basic staples basket fluctuates 3.2% vs last week</span>
+            <span className="bg-[#FFE600] text-black font-extrabold px-2 py-0.5 rounded text-[8.5px] tracking-wider shadow-xs animate-pulse">TRENDING SA</span>
+            <span>Checkers Xtra Savings vs Woolworths W-Rewards: basic staples basket fluctuates 3.2% vs last week</span>
           </div>
           <button 
             id="close-promo-banner"
             onClick={() => setShowPromoBanner(false)} 
-            className="text-slate-400 hover:text-white absolute right-4 cursor-pointer"
+            className="text-slate-400 hover:text-white transition-colors cursor-pointer p-1"
+            aria-label="Close Announcement"
           >
+            <X className="w-4 h-4" />
           </button>
         </div>
       )}
 
-      <header className="bg-white/85 backdrop-blur-md border-b border-slate-200 sticky top-0 z-30 shadow-xs">
+      <header className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-b border-slate-100 dark:border-slate-800 sticky top-0 z-30 shadow-xs transition-colors duration-300">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row md:items-center justify-between py-5 gap-4">
             <div className="flex items-center gap-3">
-              <div className="w-11 h-11 bg-[#FFE600] rounded-full flex items-center justify-center text-black font-black text-xl shadow-md border border-yellow-300">
-                <ShoppingBag className="w-5 h-5 text-black" strokeWidth={2.5} />
+              <div className="relative w-11 h-11 shrink-0">
+                <img 
+                  src="/icons/ic_launcher.png" 
+                  alt="Chuse Logo" 
+                  className="w-11 h-11 object-contain rounded-2xl shadow-sm border border-slate-800/10 transform hover:scale-105 transition-transform duration-300"
+                  onError={(e) => {
+                    (e.target as HTMLElement).style.display = 'none';
+                    const fallback = document.getElementById('chuse-header-logo-fallback');
+                    if (fallback) fallback.style.display = 'flex';
+                  }}
+                />
+                <div 
+                  id="chuse-header-logo-fallback"
+                  style={{ display: 'none' }}
+                  className="w-11 h-11 bg-slate-950 rounded-2xl flex items-center justify-center text-[#FFE600] font-black text-xl shadow-md border border-slate-800 transform hover:scale-105 transition-transform duration-300"
+                >
+                  <ShoppingBag className="w-5 h-5 text-[#FFE600]" strokeWidth={2.5} />
+                </div>
               </div>
               <div className="text-left">
-                <div className="flex items-center gap-2">
-                  <h1 className="text-2xl font-black tracking-tight text-slate-900 lowercase flex items-center">
-                    chuse<span className="text-[#FFE600] font-black">.</span>
-                  </h1>
-                  <span className="bg-[#FFE600] text-black text-[9px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider border border-black/5 animate-pulse">
-                    Live
-                  </span>
-                </div>
-                <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">
-                  South African multi-supermarket bento price comparison engine
+                <h1 className="text-2xl font-black tracking-tight text-slate-900 dark:text-white lowercase flex items-center font-mono leading-none mb-1">
+                  chuse<span className="text-[#FFE600] font-black">.</span>
+                </h1>
+                <p className="text-[9.5px] text-slate-400 dark:text-slate-400 font-bold uppercase tracking-widest font-mono">
+                  South African Multi-Supermarket Price Optimization Engine
                 </p>
               </div>
             </div>
@@ -245,97 +271,224 @@ function MainPage({ user, setUser }: MainPageProps) {
                 <button
                   id="header-user-settings-capsule"
                   onClick={() => setActiveTab('settings')}
-                  className={`flex items-center gap-2.5 px-3.5 py-1.5 rounded-full border transition-all cursor-pointer ${
+                  className={`flex items-center gap-2.5 px-4 py-2 rounded-full border transition-all cursor-pointer ${
                     activeTab === 'settings'
-                      ? 'bg-yellow-50 border-[#FFE600] ring-2 ring-[#FFE600]/10'
-                      : 'bg-white hover:bg-slate-50 border-slate-200 shadow-xs'
+                      ? 'bg-yellow-50/50 dark:bg-[#FFE600]/10 border-[#FFE600] ring-4 ring-[#FFE600]/10'
+                      : 'bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 border-slate-200/70 dark:border-slate-800 shadow-xs'
                   }`}
                 >
                   <img 
                     src={user.avatarUrl} 
                     alt="User Profile" 
-                    className="w-6.5 h-6.5 rounded-full bg-slate-100 border border-slate-200"
+                    className="w-7 h-7 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 object-cover"
                   />
                   <div className="text-left leading-none">
-                    <span className="text-xs font-black text-slate-800 block">{user.displayName}</span>
-                    <span className="text-[9px] font-black text-[#FFE600] bg-black px-1.5 py-0.5 rounded-sm block uppercase tracking-wider mt-0.5">Edit Profile</span>
+                    <span className="text-xs font-bold text-slate-800 dark:text-slate-200 block">{user.displayName}</span>
+                    <span className="text-[8.5px] font-black text-amber-600 dark:text-amber-400 uppercase tracking-widest block mt-0.5">My Profile</span>
                   </div>
                 </button>
               ) : (
                 <Link
                   to="/auth"
                   id="header-signin-cta"
-                  className="inline-flex items-center gap-1.5 px-3 py-2.5 rounded-lg bg-slate-900 hover:bg-[#FFE600] hover:text-black text-white text-xs font-black transition-all cursor-pointer shadow-xs active:scale-95"
+                  className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-full bg-slate-950 hover:bg-[#FFE600] hover:text-black text-white text-xs font-black transition-all cursor-pointer shadow-xs active:scale-95 hover:shadow-md"
                 >
-                  <span>Sign In / Log In</span>
+                  <span>Sign In / Join Free</span>
                 </Link>
               )}
 
-              <div className="hidden sm:inline-flex items-center gap-2 bg-slate-50 px-4 py-2.5 rounded-lg border border-slate-200/80 shadow-xs">
+              <div className="hidden sm:inline-flex items-center gap-2 bg-slate-50 dark:bg-slate-900 px-4 py-2.5 rounded-full border border-slate-200/60 dark:border-slate-800 shadow-2xs">
                 <MapPin className="text-amber-500 w-4 h-4 shrink-0" />
-                <span className="text-xs text-slate-600 font-bold">
+                <span className="text-xs text-slate-600 dark:text-slate-350 font-bold">
                   Index: {user ? `${user.preferredStoreLocation} Province` : 'SA National Average'}
                 </span>
               </div>
             </div>
           </div>
 
-          <div className="flex items-center gap-2 overflow-x-auto border-t border-slate-100 py-2 no-scrollbar">
-            <button id="tab-specials-trigger" onClick={() => setActiveTab('specials')} className={`flex items-center gap-2 px-2 py-2.5 rounded-md text-xs font-black whitespace-nowrap transition-all duration-200 active:scale-95 cursor-pointer ${ activeTab === 'specials' ? 'bg-[#FFE600] text-black border-transparent shadow-sm' : 'text-slate-500 hover:text-slate-900 bg-slate-50 hover:bg-slate-100 border border-slate-200'}`}>
-              <Percent className="w-4 h-4" /> Active Specials
+          <div className="flex items-center gap-2.5 overflow-x-auto border-t border-slate-100/60 dark:border-slate-800/60 py-3 no-scrollbar">
+            <button 
+              id="tab-specials-trigger" 
+              onClick={() => setActiveTab('specials')} 
+              className={`flex items-center gap-2 px-3.5 py-2 rounded-full text-xs font-bold whitespace-nowrap transition-all duration-200 active:scale-95 cursor-pointer border ${ 
+                activeTab === 'specials' 
+                  ? 'bg-[#FFE600] text-black border-transparent shadow-sm ring-4 ring-[#FFE600]/15' 
+                  : 'text-slate-500 hover:text-slate-950 dark:text-slate-400 dark:hover:text-white bg-slate-50/60 dark:bg-slate-900/60 hover:bg-slate-50 dark:hover:bg-slate-900 border-slate-200/50 dark:border-slate-800'
+              }`}
+            >
+              <Percent className="w-4 h-4 text-rose-500" /> Active Specials
             </button>
-            <button id="tab-ai-trigger" onClick={() => setActiveTab('ai')} className={`flex items-center gap-2 px-2 py-2.5 rounded-md text-xs font-black whitespace-nowrap transition-all duration-200 active:scale-95 cursor-pointer relative ${ activeTab === 'ai' ? 'bg-[#FFE600] text-black border-transparent shadow-sm' : 'text-slate-550 hover:text-slate-900 bg-amber-50/40 hover:bg-amber-100/60 border border-amber-200/50'}`}>
+
+            <button 
+              id="tab-ai-trigger" 
+              onClick={() => setActiveTab('ai')} 
+              className={`flex items-center gap-2 px-3.5 py-2 rounded-full text-xs font-bold whitespace-nowrap transition-all duration-200 active:scale-95 cursor-pointer border relative ${ 
+                activeTab === 'ai' 
+                  ? 'bg-[#FFE600] text-black border-transparent shadow-sm ring-4 ring-[#FFE600]/15' 
+                  : 'text-slate-600 hover:text-slate-950 dark:text-slate-400 dark:hover:text-white bg-amber-50/40 dark:bg-slate-900/40 hover:bg-amber-50/80 dark:hover:bg-slate-900 border-amber-200/40 dark:border-slate-800'
+              }`}
+            >
               <Sparkles className="w-4 h-4 text-amber-500 fill-amber-300" /> 
               <span>AI Savings Wizard</span>
-              <span className="absolute -top-1 right-2 bg-gradient-to-r from-amber-500 to-yellow-500 text-[6.5px] font-black tracking-widest px-1.5 py-0.2 rounded-full uppercase text-white border border-amber-305">AI</span>
+              <span className="absolute -top-1 -right-1 bg-gradient-to-r from-amber-500 to-yellow-500 text-[6.5px] font-black tracking-widest px-1.5 py-0.5 rounded-full uppercase text-white border border-white">AI</span>
             </button>
-            <button id="tab-catalog-trigger" onClick={() => setActiveTab('catalog')} className={`flex items-center gap-2 px-2 py-2.5 rounded-md text-xs font-black whitespace-nowrap transition-all duration-200 active:scale-95 cursor-pointer ${ activeTab === 'catalog' ? 'bg-[#FFE600] text-black border-transparent shadow-sm' : 'text-slate-500 hover:text-slate-900 bg-slate-50 hover:bg-slate-100 border border-slate-200'}`}>
-              <Compass className="w-4 h-4" /> Product Directory
+
+            <button 
+              id="tab-catalog-trigger" 
+              onClick={() => setActiveTab('catalog')} 
+              className={`flex items-center gap-2 px-3.5 py-2 rounded-full text-xs font-bold whitespace-nowrap transition-all duration-200 active:scale-95 cursor-pointer border ${ 
+                activeTab === 'catalog' 
+                  ? 'bg-[#FFE600] text-black border-transparent shadow-sm ring-4 ring-[#FFE600]/15' 
+                  : 'text-slate-500 hover:text-slate-950 dark:text-slate-400 dark:hover:text-white bg-slate-50/60 dark:bg-slate-900/60 hover:bg-slate-50 dark:hover:bg-slate-900 border-slate-200/50 dark:border-slate-800'
+              }`}
+            >
+              <Compass className="w-4 h-4 text-sky-500" /> Product Directory
             </button>
-            <button id="tab-scan-trigger" onClick={() => setActiveTab('scan')} className={`flex items-center gap-2 px-2 py-2.5 rounded-md text-xs font-black whitespace-nowrap transition-all duration-200 active:scale-95 cursor-pointer relative ${ activeTab === 'scan' ? 'bg-[#FFE600] text-black border-transparent shadow-sm' : 'text-slate-550 hover:text-slate-900 bg-amber-50/40 hover:bg-amber-100/60 border border-amber-200/50'}`}>
-              <Scan className="w-4 h-4 text-black" /> 
+
+            <button 
+              id="tab-lists-trigger" 
+              onClick={() => setActiveTab('lists')} 
+              className={`flex items-center gap-2 px-3.5 py-2 rounded-full text-xs font-bold whitespace-nowrap transition-all duration-200 active:scale-95 cursor-pointer border ${ 
+                activeTab === 'lists' 
+                  ? 'bg-[#FFE600] text-black border-transparent shadow-sm ring-4 ring-[#FFE600]/15' 
+                  : 'text-slate-500 hover:text-slate-950 dark:text-slate-400 dark:hover:text-white bg-slate-50/60 dark:bg-slate-900/60 hover:bg-slate-50 dark:hover:bg-slate-900 border-slate-200/50 dark:border-slate-800'
+              }`}
+            >
+              <ClipboardList className="w-4 h-4 text-indigo-500" /> Shopping Lists
+            </button>
+
+            <button 
+              id="tab-reports-trigger" 
+              onClick={() => setActiveTab('reports')} 
+              className={`flex items-center gap-2 px-3.5 py-2 rounded-full text-xs font-bold whitespace-nowrap transition-all duration-200 active:scale-95 cursor-pointer border relative ${ 
+                activeTab === 'reports' 
+                  ? 'bg-[#FFE600] text-black border-transparent shadow-sm ring-4 ring-[#FFE600]/15' 
+                  : 'text-slate-600 hover:text-slate-950 dark:text-slate-400 dark:hover:text-white bg-emerald-50/40 dark:bg-slate-900/40 hover:bg-emerald-50/80 dark:hover:bg-slate-900 border-emerald-200/40 dark:border-slate-800'
+              }`}
+            >
+              <Camera className="w-4 h-4 text-emerald-600" /> 
+              <span>Verification Hub</span>
+            </button>
+
+            <button 
+              id="tab-scan-trigger" 
+              onClick={() => setActiveTab('scan')} 
+              className={`flex items-center gap-2 px-3.5 py-2 rounded-full text-xs font-bold whitespace-nowrap transition-all duration-200 active:scale-95 cursor-pointer border relative ${ 
+                activeTab === 'scan' 
+                  ? 'bg-[#FFE600] text-black border-transparent shadow-sm ring-4 ring-[#FFE600]/15' 
+                  : 'text-slate-600 hover:text-slate-950 dark:text-slate-400 dark:hover:text-white bg-rose-50/40 dark:bg-slate-900/40 hover:bg-rose-50/80 dark:hover:bg-slate-900 border-rose-200/40 dark:border-slate-800'
+              }`}
+            >
+              <Scan className="w-4 h-4 text-rose-500" /> 
               <span>Scan Barcode</span>
-              <span className="absolute -top-1 right-2 bg-red-500 text-[6.5px] font-black tracking-widest px-1.5 py-0.2 rounded-full uppercase text-white animate-pulse">New</span>
             </button>
-            <button id="tab-basket-trigger" onClick={() => setActiveTab('basket')} className={`flex items-center gap-2 px-2 py-2.5 rounded-md text-xs font-black whitespace-nowrap transition-all duration-200 active:scale-95 cursor-pointer relative ${ activeTab === 'basket' ? 'bg-[#FFE600] text-black border-transparent shadow-sm' : 'text-slate-500 hover:text-slate-900 bg-slate-50 hover:bg-slate-100 border border-slate-200'}`}>
-              <ShoppingBag className="w-4 h-4" /> Basket Optimizer
+
+            <button 
+              id="tab-basket-trigger" 
+              onClick={() => setActiveTab('basket')} 
+              className={`flex items-center gap-2 px-3.5 py-2 rounded-full text-xs font-bold whitespace-nowrap transition-all duration-200 active:scale-95 cursor-pointer border relative ${ 
+                activeTab === 'basket' 
+                  ? 'bg-[#FFE600] text-black border-transparent shadow-sm ring-4 ring-[#FFE600]/15' 
+                  : 'text-slate-500 hover:text-slate-950 dark:text-slate-400 dark:hover:text-white bg-slate-50/60 dark:bg-slate-900/60 hover:bg-slate-50 dark:hover:bg-slate-900 border-slate-200/50 dark:border-slate-800'
+              }`}
+            >
+              <ShoppingBag className="w-4 h-4 text-amber-500" /> Basket Optimizer
               {basket.length > 0 && (
-                <span className="absolute -top-1 -right-1 bg-rose-500 text-white font-extrabold text-[9px] rounded-full w-5 h-5 flex items-center justify-center border-2 border-white shadow-sm">
+                <span className="absolute -top-1 -right-1 bg-rose-500 text-white font-extrabold text-[9px] rounded-full w-5 h-5 flex items-center justify-center border-2 border-white shadow-xs">
                   {basket.reduce((a, b) => a + b.quantity, 0)}
                 </span>
               )}
             </button>
-            <button id="tab-stats-trigger" onClick={() => setActiveTab('stats')} className={`flex items-center gap-2 px-2 py-2.5 rounded-md text-xs font-black whitespace-nowrap transition-all duration-200 active:scale-95 cursor-pointer ${ activeTab === 'stats' ? 'bg-[#FFE600] text-black border-transparent shadow-sm' : 'text-slate-500 hover:text-slate-900 bg-slate-50 hover:bg-slate-100 border border-slate-200'}`}>
-              <TrendingUp className="w-4 h-4" /> Inflation Indices
+
+            <button 
+              id="tab-stats-trigger" 
+              onClick={() => setActiveTab('stats')} 
+              className={`flex items-center gap-2 px-3.5 py-2 rounded-full text-xs font-bold whitespace-nowrap transition-all duration-200 active:scale-95 cursor-pointer border ${ 
+                activeTab === 'stats' 
+                  ? 'bg-[#FFE600] text-black border-transparent shadow-sm ring-4 ring-[#FFE600]/15' 
+                  : 'text-slate-500 hover:text-slate-950 dark:text-slate-400 dark:hover:text-white bg-slate-50/60 dark:bg-slate-900/60 hover:bg-slate-50 dark:hover:bg-slate-900 border-slate-200/50 dark:border-slate-800'
+              }`}
+            >
+              <TrendingUp className="w-4 h-4 text-violet-500" /> Inflation Indices
             </button>
-            <button id="tab-custom-trigger" onClick={() => setActiveTab('custom')} className={`flex items-center gap-2 px-2 py-2.5 rounded-md text-xs font-black whitespace-nowrap transition-all duration-200 active:scale-95 cursor-pointer ${ activeTab === 'custom' ? 'bg-[#FFE600] text-black border-transparent shadow-sm' : 'text-slate-500 hover:text-slate-900 bg-slate-50 hover:bg-slate-100 border border-slate-200'}`}>
-              <Plus className="w-4 h-4" /> Log Custom Price
+
+            <button 
+              id="tab-custom-trigger" 
+              onClick={() => setActiveTab('custom')} 
+              className={`flex items-center gap-2 px-3.5 py-2 rounded-full text-xs font-bold whitespace-nowrap transition-all duration-200 active:scale-95 cursor-pointer border ${ 
+                activeTab === 'custom' 
+                  ? 'bg-[#FFE600] text-black border-transparent shadow-sm ring-4 ring-[#FFE600]/15' 
+                  : 'text-slate-500 hover:text-slate-950 dark:text-slate-400 dark:hover:text-white bg-slate-50/60 dark:bg-slate-900/60 hover:bg-slate-50 dark:hover:bg-slate-900 border-slate-200/50 dark:border-slate-800'
+              }`}
+            >
+              <Plus className="w-4 h-4 text-teal-500" /> Log Custom Price
             </button>
-            <button id="tab-settings-trigger" onClick={() => { if (!user) { return; } else { setActiveTab('settings'); } }} className={`flex items-center gap-2 px-2 py-2.5 rounded-md text-xs font-black whitespace-nowrap transition-all duration-200 active:scale-95 cursor-pointer ${ activeTab === 'settings' ? 'bg-[#FFE600] text-black border-transparent shadow-sm' : 'text-slate-500 hover:text-slate-900 bg-slate-50 hover:bg-slate-100 border border-slate-200'}`}>
-              <User className="w-4 h-4" /> <span>{user ? 'My Hub' : 'Sign In'}</span>
+
+            <button 
+              id="tab-settings-trigger" 
+              onClick={() => { if (!user) { window.location.href = '/auth'; } else { setActiveTab('settings'); } }} 
+              className={`flex items-center gap-2 px-3.5 py-2 rounded-full text-xs font-bold whitespace-nowrap transition-all duration-200 active:scale-95 cursor-pointer border ${ 
+                activeTab === 'settings' 
+                  ? 'bg-[#FFE600] text-black border-transparent shadow-sm ring-4 ring-[#FFE600]/15' 
+                  : 'text-slate-500 hover:text-slate-950 dark:text-slate-400 dark:hover:text-white bg-slate-50/60 dark:bg-slate-900/60 hover:bg-slate-50 dark:hover:bg-slate-900 border-slate-200/50 dark:border-slate-800'
+              }`}
+            >
+              <User className="w-4 h-4 text-slate-700" /> <span>{user ? 'My Hub' : 'Sign In'}</span>
             </button>
           </div>
         </div>
       </header>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-40">
-        {activeTab === 'specials' && (<InteractiveSpecialDeals products={products} addToBasket={addToBasket} basket={basket} onAddLiveProducts={handleAddLiveProducts}/>)}
-        {activeTab === 'catalog' && (<ProductCatalog products={products} basket={basket} addToBasket={addToBasket} updateQuantity={updateQuantity} removeFromBasket={removeFromBasket} onSearchRealTime={searchRealStorePricing} isSearchingRealTime={isSearchingRealTime} searchError={searchError}/>)}
-        {activeTab === 'basket' && (<BasketOptimizer products={products} basket={basket} updateQuantity={updateQuantity} removeFromBasket={removeFromBasket} clearBasket={clearBasket} />)}
-        {activeTab === 'stats' && (<StatsDashboard products={products} />)}
-        {activeTab === 'ai' && (<AISavingsWizard products={products} basket={basket} user={user} onAuthRequest={() => {return;}} />)}
-        {activeTab === 'custom' && (<AddCustomProduct onAddProduct={handleAddFieldCustomProduct} />)}
-        {activeTab === 'scan' && (<BarcodeScanner products={products} onAddToBasket={addToBasket} />)}
-        {activeTab === 'settings' && (<SettingsPage user={user} onUpdateUser={(updated) => setUser(updated)} onLogout={async () => { try { await auth.signOut(); } catch (e) { console.error("Firebase signOut failed", e); } setUser(null); localStorage.removeItem('sa_user_profile'); setActiveTab('specials'); }} onClearBasket={clearBasket} products={products} onUpdateProducts={saveProducts}/>)}
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={activeTab}
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -12 }}
+            transition={{ duration: 0.2, ease: "easeOut" }}
+          >
+            {activeTab === 'specials' && (<InteractiveSpecialDeals products={products} addToBasket={addToBasket} basket={basket} onAddLiveProducts={handleAddLiveProducts}/>)}
+            {activeTab === 'catalog' && (<ProductCatalog products={products} basket={basket} addToBasket={addToBasket} updateQuantity={updateQuantity} removeFromBasket={removeFromBasket} onSearchRealTime={searchRealStorePricing} isSearchingRealTime={isSearchingRealTime} searchError={searchError}/>)}
+            {activeTab === 'basket' && (<BasketOptimizer products={products} basket={basket} updateQuantity={updateQuantity} removeFromBasket={removeFromBasket} clearBasket={clearBasket} />)}
+            {activeTab === 'stats' && (<StatsDashboard products={products} />)}
+            {activeTab === 'ai' && (<AISavingsWizard products={products} basket={basket} user={user} onAuthRequest={() => {return;}} />)}
+            {activeTab === 'custom' && (<AddCustomProduct onAddProduct={handleAddFieldCustomProduct} />)}
+            {activeTab === 'scan' && (<BarcodeScanner products={products} onAddToBasket={addToBasket} />)}
+            {activeTab === 'lists' && (<ShoppingListsManager products={products} onAddToBasket={addToBasket} currentBasket={basket} />)}
+            {activeTab === 'reports' && (<PriceDiscrepancyReporter products={products} />)}
+            {activeTab === 'settings' && (
+              <SettingsPage 
+                user={user} 
+                onUpdateUser={(updated) => setUser(updated)} 
+                onLogout={async () => { 
+                  try { 
+                    await auth.signOut(); 
+                  } catch (e) { 
+                    console.error("Firebase signOut failed", e); 
+                  } 
+                  setUser(null); 
+                  localStorage.removeItem('sa_user_profile'); 
+                  setActiveTab('specials'); 
+                }} 
+                onClearBasket={clearBasket} 
+                products={products} 
+                onUpdateProducts={saveProducts}
+                isDarkMode={isDarkMode}
+                onToggleDarkMode={onToggleDarkMode}
+              />
+            )}
+          </motion.div>
+        </AnimatePresence>
         
-        <footer className="mt-12 py-8 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 border-t border-slate-200 flex flex-col md:flex-row justify-between items-center text-center md:text-left gap-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+        <footer className="mt-20 py-10 border-t border-slate-200/60 dark:border-slate-800/60 flex flex-col md:flex-row justify-between items-center text-center md:text-left gap-4 text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest font-mono">
           <div className="mb-4 md:mb-0">
             © {new Date().getFullYear()} Chuse. A product of 12 Links.
           </div>
           <div className="flex gap-x-6 gap-y-2 flex-wrap justify-center md:justify-end">
             <span>Smart Shopper & Xtra Savings Integrated</span>
             <span>Store API Status: Optimal</span>
-            <span className="text-slate-900 underline decoration-[#FFE600] decoration-2">Updates every 15 mins</span>
+            <span className="text-slate-900 dark:text-slate-200 underline decoration-[#FFE600] decoration-2">Updates every 15 mins</span>
           </div>
         </footer>
       </main>
@@ -344,6 +497,20 @@ function MainPage({ user, setUser }: MainPageProps) {
 }
 
 export default function App() {
+  const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
+    const saved = localStorage.getItem('theme');
+    if (saved) return saved === 'dark';
+    return false; // Default is light mode
+  });
+
+  useEffect(() => {
+    if (isDarkMode) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+    localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
+  }, [isDarkMode]);
   const [user, setUser] = useState<UserProfile | null | undefined>(undefined);
 
   useEffect(() => {
@@ -378,6 +545,18 @@ export default function App() {
           localStorage.removeItem('sa_user_profile');
         }
       } else {
+        const cachedProfile = localStorage.getItem('sa_user_profile');
+        if (cachedProfile) {
+          try {
+            const cachedData = JSON.parse(cachedProfile);
+            if (cachedData && (cachedData.isGuest || cachedData.email === 'guest@chuse.co.za')) {
+              setUser(cachedData);
+              return;
+            }
+          } catch (e) {
+            // fallback
+          }
+        }
         setUser(null);
         localStorage.removeItem('sa_user_profile');
       }
@@ -388,9 +567,9 @@ export default function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/auth" element={<AuthenticationPage />} />
+        <Route path="/auth" element={<AuthenticationPage setUser={setUser} />} />
         <Route element={<ProtectedRoute user={user} />}>
-          <Route path="/" element={<MainPage user={user} setUser={setUser} />} />
+          <Route path="/" element={<MainPage user={user} setUser={setUser} isDarkMode={isDarkMode} onToggleDarkMode={setIsDarkMode} />} />
         </Route>
       </Routes>
     </Router>

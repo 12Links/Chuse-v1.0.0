@@ -1,3 +1,82 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;750;800&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@variant dark (&:where(.dark, .dark *));
+
+@layer base {
+  body {
+    font-family: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
+    background-color: #f8fafc;
+    overflow-x: hidden;
+  }
+}
+
+/* Custom scrollbars for a premium developer feel */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Glassmorphic paneling */
+.glass-panel {
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(241, 245, 249, 0.6);
+}
+
+/* Modern pulsing glow effects */
+.glow-accent {
+  box-shadow: 0 0 25px rgba(255, 230, 0, 0.2);
+}
+
+.glow-emerald {
+  box-shadow: 0 0 25px rgba(16, 185, 129, 0.15);
+}
+
+/* Ambient backdrop blur blips */
+.ambient-blur-1 {
+  position: absolute;
+  width: 40vw;
+  height: 40vw;
+  border-radius: 9999px;
+  background: radial-gradient(circle, rgba(255, 230, 0, 0.04) 0%, rgba(255, 255, 255, 0) 70%);
+  filter: blur(50px);
+  z-index: -10;
+  pointer-events: none;
+}
+
+.ambient-blur-2 {
+  position: absolute;
+  width: 35vw;
+  height: 35vw;
+  border-radius: 9999px;
+  background: radial-gradient(circle, rgba(249, 115, 22, 0.03) 0%, rgba(255, 255, 255, 0) 70%);
+  filter: blur(60px);
+  z-index: -10;
+  pointer-events: none;
+}
+
+/* Hide scrollbar utility */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}

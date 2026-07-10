@@ -96,7 +96,7 @@ export function SignUpForm({ onToggleForm }: SignUpFormProps) {
       const userCred = credential.user;
       const idToken = await userCred.getIdToken();
 
-      const userProfile: UserProfile = {
+      let userProfile: UserProfile = {
         displayName: `${formData.firstName} ${formData.lastName}`,
         email: userCred.email || formData.email,
         avatarUrl: `https://api.dicebear.com/7.x/pixel-art/svg?seed=${encodeURIComponent(formData.email)}`,

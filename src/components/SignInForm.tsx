@@ -10,9 +10,10 @@ import { useNavigate } from 'react-router-dom';
 
 interface SignInFormProps {
   onToggleForm: () => void;
+  setUser?: (user: UserProfile | null) => void;
 }
 
-export function SignInForm({ onToggleForm }: SignInFormProps) {
+export function SignInForm({ onToggleForm, setUser }: SignInFormProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -181,13 +182,38 @@ export function SignInForm({ onToggleForm }: SignInFormProps) {
           <ArrowRight className="w-4 h-4 ml-2" />
         </Button>
       </form>
-      <div className="mt-5 text-center">
+      <div className="mt-5 text-center space-y-4">
         <p className="text-sm text-muted-foreground">
           Don't have an account?{' '}
           <button onClick={onToggleForm} className="text-primary hover:underline font-medium">
             Sign up
           </button>
         </p>
+
+        <div className="pt-4 border-t border-slate-100 flex flex-col items-center">
+          <Button
+            type="button"
+            variant="outline"
+            className="w-full h-11 text-xs font-black tracking-wider uppercase border border-dashed border-[#FFE600] hover:border-solid bg-[#FFE600]/5 hover:bg-[#FFE600] text-slate-800 hover:text-black transition-all shadow-2xs"
+            onClick={() => {
+              const guestProfile: UserProfile = {
+                displayName: 'Guest Explorer',
+                email: 'guest@chuse.co.za',
+                avatarUrl: `https://api.dicebear.com/7.x/pixel-art/svg?seed=guest`,
+                loyaltyCards: { checkers: false, pnp: false, woolworths: false, shoprite: false, spar: false },
+                preferredStoreLocation: 'Gauteng',
+                isGuest: true
+              };
+              localStorage.setItem('sa_user_profile', JSON.stringify(guestProfile));
+              if (setUser) {
+                setUser(guestProfile);
+              }
+              navigate('/');
+            }}
+          >
+            Explore as Guest (No Sign Up Required)
+          </Button>
+        </div>
       </div>
     </div>
   );
