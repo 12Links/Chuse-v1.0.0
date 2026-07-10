@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { SignUpCarousel } from './SignUpCarousel';
 import { SignUpForm } from './SignUpForm';
-import { SignInForm } from './SignInForm'; // This will be created next
+import { SignInForm } from './SignInForm';
+import { UserProfile } from '../types';
 
-export function AuthenticationPage() {
+export function AuthenticationPage({ setUser }: { setUser: (user: UserProfile | null) => void }) {
   const [showSignIn, setShowSignIn] = useState(true);
 
   const toggleForm = () => {
@@ -17,7 +18,7 @@ export function AuthenticationPage() {
       </div>
       <div className="w-full md:w-1/2 h-full flex items-center justify-center bg-background">
         {showSignIn ? (
-          <SignInForm onToggleForm={toggleForm} />
+          <SignInForm onToggleForm={toggleForm} setUser={setUser} />
         ) : (
           <SignUpForm onToggleForm={toggleForm} />
         )}

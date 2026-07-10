@@ -1,7 +1,19 @@
-from sqlalchemy import Column, Integer, String, Float, Boolean, DateTime, ForeignKey
+from sqlalchemy import Column, Integer, String, Float, Boolean, DateTime, ForeignKey, JSON
 from sqlalchemy.orm import relationship
 from .database import Base
 from datetime import datetime
+
+class User(Base):
+    __tablename__ = "users"
+
+    uid = Column(String, primary_key=True, index=True)  # Firebase UID
+    email = Column(String, unique=True, index=True)
+    displayName = Column(String)
+    avatarUrl = Column(String, nullable=True)
+    loyaltyCards = Column(JSON, default={})  # JSON: {checkers: bool, pnp: bool, ...}
+    preferredStoreLocation = Column(String, default="Gauteng")
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
 class Store(Base):
     __tablename__ = "stores"

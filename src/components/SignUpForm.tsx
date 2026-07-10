@@ -6,7 +6,8 @@ import { Label } from './ui/label';
 import { Checkbox } from './ui/checkbox';
 import { ArrowRight, ArrowLeft, Mail, Lock, User, MapPin, CheckCircle2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { auth, googleProvider, createUserWithEmailAndPassword, signInWithPopup, doc, setDoc, getDoc, db } from '../lib/firebase';
+import { auth, googleProvider, createUserWithEmailAndPassword, signInWithPopup } from '../lib/firebase';
+import { getCurrentUserProfile, registerUser, loginUser } from '../lib/api';
 import { UserProfile } from '../types';
 
 type FormData = {
@@ -93,8 +94,9 @@ export function SignUpForm({ onToggleForm }: SignUpFormProps) {
     try {
       const credential = await createUserWithEmailAndPassword(auth, formData.email, formData.password);
       const userCred = credential.user;
+      const idToken = await userCred.getIdToken();
 
-      const userProfile: UserProfile = {
+      let userProfile: UserProfile = {
         displayName: `${formData.firstName} ${formData.lastName}`,
         email: userCred.email || formData.email,
         avatarUrl: `https://api.dicebear.com/7.x/pixel-art/svg?seed=${encodeURIComponent(formData.email)}`,
@@ -102,16 +104,20 @@ export function SignUpForm({ onToggleForm }: SignUpFormProps) {
         preferredStoreLocation: formData.province,
       };
 
-      await setDoc(doc(db, "users", userCred.uid), {
-        uid: userCred.uid,
-        displayName: userProfile.displayName,
-        email: userProfile.email,
-        loyaltyCards: userProfile.loyaltyCards,
-        preferredStoreLocation: userProfile.preferredStoreLocation,
-        updatedAt: new Date().toISOString()
-      });
+      try {
+        await registerUser(
+          userCred.uid,
+          userProfile.email,
+          userProfile.displayName,
+          formData.province
+        );
+        userProfile = await getCurrentUserProfile();
+      } catch (apiError) {
+        console.warn('Backend registration failed, continuing with local auth:', apiError);
+      }
       
       localStorage.setItem('sa_user_profile', JSON.stringify(userProfile));
+      localStorage.setItem('firebase_token', idToken);
       navigate('/');
 
     } catch (err: any) {
@@ -133,35 +139,27 @@ export function SignUpForm({ onToggleForm }: SignUpFormProps) {
     try {
       const result = await signInWithPopup(auth, googleProvider);
       const userCred = result.user;
+      const idToken = await userCred.getIdToken();
       
-      let loyaltyCards = { checkers: false, pnp: false, woolworths: false, shoprite: false, spar: false };
-      let preferredStoreLocation = 'Gauteng';
-
-      const userDoc = await getDoc(doc(db, "users", userCred.uid));
-      if (userDoc.exists()) {
-        const data = userDoc.data();
-        if (data.loyaltyCards) loyaltyCards = data.loyaltyCards;
-        if (data.preferredStoreLocation) preferredStoreLocation = data.preferredStoreLocation;
-      } else {
-         await setDoc(doc(db, "users", userCred.uid), {
-            uid: userCred.uid,
-            displayName: userCred.displayName,
-            email: userCred.email,
-            loyaltyCards: loyaltyCards,
-            preferredStoreLocation: preferredStoreLocation,
-            updatedAt: new Date().toISOString()
-        });
-      }
-
-      const userProfile: UserProfile = {
+      const fallbackProfile: UserProfile = {
         displayName: userCred.displayName || userCred.email?.split('@')[0] || 'Member',
         email: userCred.email || '',
         avatarUrl: userCred.photoURL || `https://api.dicebear.com/7.x/pixel-art/svg?seed=${encodeURIComponent(userCred.email || '')}`,
-        loyaltyCards,
-        preferredStoreLocation
+        loyaltyCards: { checkers: false, pnp: false, woolworths: false, shoprite: false, spar: false },
+        preferredStoreLocation: formData.province
       };
 
+      let userProfile = fallbackProfile;
+
+      try {
+        await loginUser(userCred.uid, userCred.email || '');
+        userProfile = await getCurrentUserProfile();
+      } catch (apiError) {
+        console.warn('Backend sync failed, continuing with local auth:', apiError);
+      }
+
       localStorage.setItem('sa_user_profile', JSON.stringify(userProfile));
+      localStorage.setItem('firebase_token', idToken);
       navigate('/');
     } catch (err: any) {
       console.error(err);

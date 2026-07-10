@@ -12,7 +12,7 @@ export default function StatsDashboard({ products }: StatsDashboardProps) {
   const [hoveredBar, setHoveredBar] = useState<StoreId | null>(null);
   const [activeTab, setActiveTab] = useState<'basket' | 'markup'>('basket');
 
-  // Calculate standard essential basket totals per store
+  // Calculate standard essential basket totals per store in real-time
   // Essential basket items: Sasko bread, Full cream milk, Huletts sugar, Sunfoil oil, Large eggs
   const essentialIds = ['prod-bread', 'prod-milk', 'prod-sugar', 'prod-oil', 'prod-eggs'];
   const essentialItems = products.filter(p => essentialIds.includes(p.id));
@@ -21,7 +21,7 @@ export default function StatsDashboard({ products }: StatsDashboardProps) {
     let total = 0;
     let counted = 0;
     essentialItems.forEach(item => {
-      const priceInfo = item.prices.find(pr => pr.storeId === store.id);
+      const priceInfo = item.prices?.find(pr => pr.storeId === store.id);
       if (priceInfo && priceInfo.inStock && priceInfo.price > 0) {
         total += priceInfo.price;
         counted++;
@@ -36,11 +36,46 @@ export default function StatsDashboard({ products }: StatsDashboardProps) {
     };
   }).filter(data => data.total > 0);
 
-  // Sort store price index to rank value
+  // Sort store price index dynamically to rank value in real-time
   const sortedStoreBaskets = [...storeBasketData].sort((a, b) => a.total - b.total);
   const cheapestValue = sortedStoreBaskets[0]?.total || 1;
+  const cheapestStoreName = sortedStoreBaskets[0]?.store.name || 'Shoprite';
+
   const premiumValue = sortedStoreBaskets[sortedStoreBaskets.length - 1]?.total || 1;
-  const averageValue = storeBasketData.reduce((sum, s) => sum + s.total, 0) / storeBasketData.length;
+  const premiumStoreName = sortedStoreBaskets[sortedStoreBaskets.length - 1]?.store.name || 'Woolworths';
+
+  const averageValue = storeBasketData.length > 0 
+    ? storeBasketData.reduce((sum, s) => sum + s.total, 0) / storeBasketData.length 
+    : 0;
+
+  // Calculate dynamic store average markups based on the entire live product catalog
+  const storeMarkups = STORES.map(store => {
+    let totalMarkupPct = 0;
+    let countedProducts = 0;
+
+    products.forEach(product => {
+      const storePriceInfo = product.prices?.find(pr => pr.storeId === store.id && pr.inStock && pr.price > 0);
+      if (!storePriceInfo) return;
+
+      const validPrices = product.prices
+        ?.filter(pr => pr.inStock && pr.price > 0)
+        .map(pr => pr.price) || [];
+
+      if (validPrices.length === 0) return;
+      const minPrice = Math.min(...validPrices);
+
+      if (minPrice > 0) {
+        const markup = ((storePriceInfo.price - minPrice) / minPrice) * 100;
+        totalMarkupPct += markup;
+        countedProducts++;
+      }
+    });
+
+    return {
+      store,
+      pct: countedProducts > 0 ? Math.round(totalMarkupPct / countedProducts) : 0
+    };
+  }).sort((a, b) => a.pct - b.pct);
 
   // Custom SVG Heights for Bar Chart
   const svgWidth = 600;
@@ -53,53 +88,59 @@ export default function StatsDashboard({ products }: StatsDashboardProps) {
   const chartWidth = svgWidth - paddingLeft - paddingRight;
   const chartHeight = svgHeight - paddingTop - paddingBottom;
 
-  // Find max value in data to scale heights
-  const maxVal = Math.max(...storeBasketData.map(d => d.total)) * 1.15;
+  // Find max value in data to scale heights dynamically
+  const maxVal = storeBasketData.length > 0 
+    ? Math.max(...storeBasketData.map(d => d.total)) * 1.15 
+    : 200;
+
+  const maxMarkupVal = storeMarkups.length > 0 
+    ? Math.max(...storeMarkups.map(d => d.pct), 15) * 1.15 
+    : 40;
 
   return (
     <div id="stats-dashboard-view" className="space-y-8">
       {/* Intro Metrics Grid */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-white rounded-3xl p-6 border border-slate-200 shadow-xs flex items-start gap-4">
-          <div className="bg-emerald-50 rounded-2xl p-3 text-emerald-600">
+        <div id="metric-cheapest-basket" className="bg-white dark:bg-slate-900 rounded-3xl p-6 border border-slate-200 dark:border-slate-850 shadow-xs flex items-start gap-4 transition-colors duration-200">
+          <div className="bg-emerald-50 dark:bg-emerald-950/30 rounded-2xl p-3 text-emerald-600 dark:text-emerald-450">
             <Award className="w-5 h-5" />
           </div>
           <div>
-            <span className="text-[10px] text-slate-400 font-extrabold uppercase tracking-widest block">Cheapest Store Basket</span>
-            <span className="text-lg font-black text-slate-800 font-mono block mt-1">
-              Shoprite (R {cheapestValue.toFixed(2)})
+            <span className="text-[10px] text-slate-400 dark:text-slate-500 font-extrabold uppercase tracking-widest block">Cheapest Store Basket</span>
+            <span className="text-lg font-black text-slate-800 dark:text-white font-mono block mt-1">
+              {cheapestStoreName} (R {cheapestValue.toFixed(2)})
             </span>
-            <span className="text-xs text-emerald-600 font-bold block mt-1">
+            <span className="text-xs text-emerald-600 dark:text-emerald-400 font-bold block mt-1">
               Save up to 34% on basic staples
             </span>
           </div>
         </div>
 
-        <div className="bg-white rounded-3xl p-6 border border-slate-200 shadow-xs flex items-start gap-4">
-          <div className="bg-amber-50 rounded-2xl p-3 text-amber-600">
+        <div id="metric-average-basket" className="bg-white dark:bg-slate-900 rounded-3xl p-6 border border-slate-200 dark:border-slate-850 shadow-xs flex items-start gap-4 transition-colors duration-200">
+          <div className="bg-amber-50 dark:bg-amber-950/30 rounded-2xl p-3 text-amber-600 dark:text-amber-500">
             <Target className="w-5 h-5" />
           </div>
           <div>
-            <span className="text-[10px] text-slate-400 font-extrabold uppercase tracking-widest block">Average Essential Basket</span>
-            <span className="text-lg font-black text-slate-800 font-mono block mt-1">
+            <span className="text-[10px] text-slate-400 dark:text-slate-500 font-extrabold uppercase tracking-widest block">Average Essential Basket</span>
+            <span className="text-lg font-black text-slate-800 dark:text-white font-mono block mt-1">
               R {averageValue.toFixed(2)}
             </span>
-            <span className="text-xs text-amber-600 font-bold block mt-1">
+            <span className="text-xs text-amber-600 dark:text-amber-400 font-bold block mt-1">
               Includes 5 key grocery staples
             </span>
           </div>
         </div>
 
-        <div className="bg-white rounded-3xl p-6 border border-slate-200 shadow-xs flex items-start gap-4">
-          <div className="bg-slate-900 rounded-2xl p-3 text-white">
+        <div id="metric-premium-basket" className="bg-white dark:bg-slate-900 rounded-3xl p-6 border border-slate-200 dark:border-slate-850 shadow-xs flex items-start gap-4 transition-colors duration-200">
+          <div className="bg-slate-900 dark:bg-slate-950 rounded-2xl p-3 text-white border border-slate-850">
             <TrendingUp className="w-5 h-5 text-[#FFE600]" />
           </div>
           <div>
-            <span className="text-[10px] text-slate-400 font-extrabold uppercase tracking-widest block">Premium Retailer Index</span>
-            <span className="text-lg font-black text-slate-800 font-mono block mt-1">
-              Woolworths (R {premiumValue.toFixed(2)})
+            <span className="text-[10px] text-slate-400 dark:text-slate-500 font-extrabold uppercase tracking-widest block">Premium Retailer Index</span>
+            <span className="text-lg font-black text-slate-800 dark:text-white font-mono block mt-1">
+              {premiumStoreName} (R {premiumValue.toFixed(2)})
             </span>
-            <span className="text-xs text-rose-500 font-bold block mt-1">
+            <span className="text-xs text-rose-500 dark:text-rose-400 font-bold block mt-1">
               + R {(premiumValue - cheapestValue).toFixed(2)} difference on staples
             </span>
           </div>
@@ -108,33 +149,39 @@ export default function StatsDashboard({ products }: StatsDashboardProps) {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Main interactive SVG Chart */}
-        <div className="lg:col-span-2 bg-white rounded-3xl p-6 border border-slate-200 shadow-xs space-y-6">
+        <div id="chart-comparison-container" className="lg:col-span-2 bg-white dark:bg-slate-900 rounded-3xl p-6 border border-slate-200 dark:border-slate-850 shadow-xs space-y-6 transition-colors duration-200">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-              <h3 className="font-extrabold text-slate-800 text-lg flex items-center gap-2">
-                <BarChart2 className="w-5 h-5 text-amber-600" />
+              <h3 className="font-extrabold text-slate-800 dark:text-white text-lg flex items-center gap-2">
+                <BarChart2 className="w-5 h-5 text-amber-600 dark:text-amber-500" />
                 Essential SA Grocery Basket Total Cost
               </h3>
-              <p className="text-xs text-slate-400 font-bold">
+              <p className="text-xs text-slate-400 dark:text-slate-500 font-bold">
                 Bread + Milk + Sugar + Cooking Oil + 30 Eggs (Rands)
               </p>
             </div>
 
-            <div className="flex bg-slate-50 p-1 rounded-full text-xs font-bold gap-1 self-start border border-slate-200">
+            <div className="flex bg-slate-50 dark:bg-slate-950 p-1 rounded-full text-xs font-bold gap-1 self-start border border-slate-200 dark:border-slate-850 transition-colors duration-200">
               <button
+                type="button"
                 id="tab-stat-basket"
                 onClick={() => setActiveTab('basket')}
                 className={`px-4 py-2 rounded-full transition-all cursor-pointer ${
-                  activeTab === 'basket' ? 'bg-slate-900 text-white shadow-xs' : 'text-slate-500 hover:text-slate-800'
+                  activeTab === 'basket' 
+                    ? 'bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-950 shadow-xs' 
+                    : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
                 }`}
               >
                 Staples Basket
               </button>
               <button
+                type="button"
                 id="tab-stat-markup"
                 onClick={() => setActiveTab('markup')}
                 className={`px-4 py-2 rounded-full transition-all cursor-pointer ${
-                  activeTab === 'markup' ? 'bg-slate-900 text-white shadow-xs' : 'text-slate-500 hover:text-slate-800'
+                  activeTab === 'markup' 
+                    ? 'bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-950 shadow-xs' 
+                    : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
                 }`}
               >
                 Average Markups Index
@@ -157,13 +204,13 @@ export default function StatsDashboard({ products }: StatsDashboardProps) {
                           y1={y}
                           x2={svgWidth - paddingRight}
                           y2={y}
-                          className="stroke-slate-100"
+                          className="stroke-slate-100 dark:stroke-slate-800"
                           strokeWidth="1"
                         />
                         <text
                           x={paddingLeft - 10}
                           y={y + 4}
-                          className="text-[10px] font-mono font-bold fill-slate-400 text-right"
+                          className="text-[10px] font-mono font-bold fill-slate-400 dark:fill-slate-500 text-right"
                           textAnchor="end"
                         >
                           R {priceLabel}
@@ -180,13 +227,14 @@ export default function StatsDashboard({ products }: StatsDashboardProps) {
                     const y = paddingTop + chartHeight - barHeight;
 
                     // Color coordination based on store ID
-                    let barColor = 'fill-slate-800 hover:fill-slate-900';
+                    let barColor = 'fill-slate-800 hover:fill-slate-900 dark:fill-slate-300 dark:hover:fill-slate-200';
                     if (data.store.id === 'checkers') barColor = 'fill-[#006A4E] hover:opacity-90';
                     if (data.store.id === 'pnp') barColor = 'fill-[#E11B22] hover:opacity-90';
                     if (data.store.id === 'shoprite') barColor = 'fill-[#D22630] hover:opacity-90';
                     if (data.store.id === 'foodlovers') barColor = 'fill-lime-600 hover:fill-lime-700';
                     if (data.store.id === 'boxer') barColor = 'fill-red-700 hover:fill-red-850';
-                    if (data.store.id === 'woolworths') barColor = 'fill-slate-900 hover:fill-slate-800';
+                    if (data.store.id === 'woolworths') barColor = 'fill-slate-900 dark:fill-slate-100 hover:opacity-90';
+                    if (data.store.id === 'spar') barColor = 'fill-emerald-600 hover:fill-emerald-700';
 
                     const isHovered = hoveredBar === data.store.id;
 
@@ -208,7 +256,7 @@ export default function StatsDashboard({ products }: StatsDashboardProps) {
                         <text
                           x={x + barWidth / 2}
                           y={y - 8}
-                          className="text-xs font-mono font-extrabold fill-slate-700"
+                          className="text-xs font-mono font-extrabold fill-slate-700 dark:fill-slate-300"
                           textAnchor="middle"
                         >
                           R {data.total.toFixed(0)}
@@ -218,7 +266,7 @@ export default function StatsDashboard({ products }: StatsDashboardProps) {
                         <text
                           x={x + barWidth / 2}
                           y={svgHeight - paddingBottom + 18}
-                          className={`text-[10px] font-black ${isHovered ? 'fill-amber-600 font-black' : 'fill-slate-500'}`}
+                          className={`text-[10px] font-black ${isHovered ? 'fill-amber-600 dark:fill-amber-500 font-black' : 'fill-slate-500 dark:fill-slate-400'}`}
                           textAnchor="middle"
                         >
                           {data.store.name}
@@ -239,7 +287,7 @@ export default function StatsDashboard({ products }: StatsDashboardProps) {
                       <div className="space-y-1 text-center">
                         <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">{hData.store.name}</span>
                         <div className="text-lg font-black font-mono">R {hData.total.toFixed(2)}</div>
-                        <p className="text-xs leading-snug text-slate-350">
+                        <p className="text-xs leading-snug text-slate-300">
                           {diffPct === 0 ? '✓ Baseline cheapest staples' : `+${diffPct}% premium markup compare to baseline`}
                         </p>
                       </div>
@@ -254,7 +302,7 @@ export default function StatsDashboard({ products }: StatsDashboardProps) {
                 <svg viewBox={`0 0 ${svgWidth} ${svgHeight}`} className="w-full h-auto">
                   {/* Grid Lines */}
                   {[0, 0.25, 0.5, 0.75, 1].map((ratio, idx) => {
-                    const priceLabel = Math.round(ratio * 40);
+                    const priceLabel = Math.round(ratio * maxMarkupVal);
                     const y = paddingTop + chartHeight * (1 - ratio);
                     return (
                       <g key={idx}>
@@ -263,13 +311,13 @@ export default function StatsDashboard({ products }: StatsDashboardProps) {
                           y1={y}
                           x2={svgWidth - paddingRight}
                           y2={y}
-                          className="stroke-slate-100"
+                          className="stroke-slate-100 dark:stroke-slate-800"
                           strokeWidth="1"
                         />
                         <text
                           x={paddingLeft - 10}
                           y={y + 4}
-                          className="text-[10px] font-mono font-bold fill-slate-400 text-right"
+                          className="text-[10px] font-mono font-bold fill-slate-400 dark:fill-slate-500 text-right"
                           textAnchor="end"
                         >
                           {priceLabel}%
@@ -278,26 +326,25 @@ export default function StatsDashboard({ products }: StatsDashboardProps) {
                     );
                   })}
 
-                  {/* Markup percentages bars */}
-                  {[
-                    { name: 'Boxer', id: 'boxer', pct: 3 },
-                    { name: 'Shoprite', id: 'shoprite', pct: 6 },
-                    { name: 'Food Lover\'s', id: 'foodlovers', pct: 14 },
-                    { name: 'Checkers', id: 'checkers', pct: 18 },
-                    { name: 'Pick n Pay', id: 'pnp', pct: 21 },
-                    { name: 'Woolworths', id: 'woolworths', pct: 38 },
-                  ].map((data, idx) => {
-                    const barWidth = chartWidth / storeBasketData.length - 16;
-                    const barHeight = (data.pct / 40) * chartHeight;
-                    const x = paddingLeft + idx * (chartWidth / storeBasketData.length) + 8;
+                  {/* Dynamic Markup percentages bars */}
+                  {storeMarkups.map((data, idx) => {
+                    const barWidth = chartWidth / storeMarkups.length - 16;
+                    const barHeight = (data.pct / maxMarkupVal) * chartHeight;
+                    const x = paddingLeft + idx * (chartWidth / storeMarkups.length) + 8;
                     const y = paddingTop + chartHeight - Math.max(4, barHeight);
 
-                    let barColor = 'fill-[#006A4E]'; 
-                    if (data.pct > 15 && data.pct <= 25) barColor = 'fill-[#E11B22]'; 
-                    if (data.pct > 25) barColor = 'fill-slate-900';
+                    // Color coordination based on store ID
+                    let barColor = 'fill-slate-800 hover:fill-slate-900 dark:fill-slate-300 dark:hover:fill-slate-200';
+                    if (data.store.id === 'checkers') barColor = 'fill-[#006A4E] hover:opacity-90';
+                    if (data.store.id === 'pnp') barColor = 'fill-[#E11B22] hover:opacity-90';
+                    if (data.store.id === 'shoprite') barColor = 'fill-[#D22630] hover:opacity-90';
+                    if (data.store.id === 'foodlovers') barColor = 'fill-lime-600 hover:fill-lime-700';
+                    if (data.store.id === 'boxer') barColor = 'fill-red-700 hover:fill-red-850';
+                    if (data.store.id === 'woolworths') barColor = 'fill-slate-900 dark:fill-slate-100 hover:opacity-90';
+                    if (data.store.id === 'spar') barColor = 'fill-emerald-600 hover:fill-emerald-700';
 
                     return (
-                      <g key={data.id}>
+                      <g key={data.store.id}>
                         <rect
                           x={x}
                           y={y}
@@ -309,7 +356,7 @@ export default function StatsDashboard({ products }: StatsDashboardProps) {
                         <text
                           x={x + barWidth / 2}
                           y={y - 8}
-                          className="text-[11px] font-mono font-extrabold fill-slate-700"
+                          className="text-[11px] font-mono font-extrabold fill-slate-700 dark:fill-slate-300"
                           textAnchor="middle"
                         >
                           +{data.pct}%
@@ -317,10 +364,10 @@ export default function StatsDashboard({ products }: StatsDashboardProps) {
                         <text
                           x={x + barWidth / 2}
                           y={svgHeight - paddingBottom + 18}
-                          className="text-[10px] font-black fill-slate-500"
+                          className="text-[10px] font-black fill-slate-500 dark:fill-slate-400"
                           textAnchor="middle"
                         >
-                          {data.name}
+                          {data.store.name}
                         </text>
                       </g>
                     );
@@ -357,17 +404,17 @@ export default function StatsDashboard({ products }: StatsDashboardProps) {
             </div>
           </div>
 
-          <div className="bg-amber-100/20 border border-amber-200/30 rounded-3xl p-6 space-y-3">
-            <h4 className="font-extrabold text-slate-800 text-sm flex items-center gap-1.5">
-              <ThumbsUp className="w-4 h-4 text-amber-600 animate-pulse" />
+          <div id="bargain-meter-box" className="bg-amber-100/20 dark:bg-amber-950/10 border border-amber-200/30 dark:border-amber-900/20 rounded-3xl p-6 space-y-3">
+            <h4 className="font-extrabold text-slate-800 dark:text-amber-200 text-sm flex items-center gap-1.5">
+              <ThumbsUp className="w-4 h-4 text-amber-600 dark:text-amber-400 animate-pulse" />
               Inflation Bargain Meter
             </h4>
-            <p className="text-xs text-slate-500 font-semibold leading-relaxed">
+            <p className="text-xs text-slate-500 dark:text-slate-400 font-semibold leading-relaxed">
               We monitor average prices of essential products daily relative to high inflation margins. Currently, basic grocery products have experienced moderate relative volatility.
             </p>
-            <div className="bg-white rounded-xl p-3.5 border border-amber-150 flex items-center justify-between text-xs">
-              <span className="font-extrabold text-slate-600">Bargain Index:</span>
-              <span className="font-mono text-amber-630 font-black">7.8 / 10 Excellent Savings</span>
+            <div className="bg-white dark:bg-slate-950 rounded-xl p-3.5 border border-amber-150 dark:border-amber-900/30 flex items-center justify-between text-xs transition-colors duration-200">
+              <span className="font-extrabold text-slate-600 dark:text-slate-400 font-mono">Bargain Index:</span>
+              <span className="font-mono text-amber-630 dark:text-amber-400 font-black font-mono">7.8 / 10 Excellent Savings</span>
             </div>
           </div>
         </div>

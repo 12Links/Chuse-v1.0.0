@@ -794,5 +794,725 @@
         "specialDetail": "SPAR Fresh Deal"
       }
     ]
+  },
+  {
+    "id": "prod-coffee-jacobs",
+    "name": "Jacobs Kronung Instant Coffee",
+    "category": "Beverages",
+    "unit": "200g",
+    "isPopular": true,
+    "barcode": "4005111122334",
+    "imageUrl": "https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=400&auto=format&fit=crop&q=80",
+    "prices": [
+      {
+        "storeId": "woolworths",
+        "price": 142.8,
+        "onSpecial": true,
+        "specialDetail": "Special Promo Price",
+        "inStock": true
+      },
+      {
+        "storeId": "checkers",
+        "price": 138.71,
+        "onSpecial": true,
+        "specialDetail": "Save R15.50 with Xtra Savings",
+        "inStock": true
+      },
+      {
+        "storeId": "pnp",
+        "price": 153.25,
+        "onSpecial": false,
+        "specialDetail": "",
+        "inStock": true
+      },
+      {
+        "storeId": "shoprite",
+        "price": 115.74,
+        "onSpecial": true,
+        "specialDetail": "Special Promo Price",
+        "inStock": true
+      },
+      {
+        "storeId": "spar",
+        "price": 151.76,
+        "onSpecial": false,
+        "specialDetail": "",
+        "inStock": true
+      },
+      {
+        "storeId": "foodlovers",
+        "price": 138.95,
+        "onSpecial": false,
+        "specialDetail": "",
+        "inStock": false
+      },
+      {
+        "storeId": "boxer",
+        "price": 138.58,
+        "onSpecial": false,
+        "specialDetail": "",
+        "inStock": true
+      }
+    ]
+  },
+  {
+    "id": "prod-milk-clover",
+    "name": "Clover Full Cream Fresh Milk",
+    "category": "Dairy",
+    "unit": "2L",
+    "isPopular": true,
+    "barcode": "6001234567890",
+    "imageUrl": "https://images.unsplash.com/photo-1550583724-b2692b85b150?w=400&auto=format&fit=crop&q=80",
+    "prices": [
+      {
+        "storeId": "woolworths",
+        "price": 45.33,
+        "onSpecial": false,
+        "specialDetail": "",
+        "inStock": true
+      },
+      {
+        "storeId": "checkers",
+        "price": 37.67,
+        "onSpecial": false,
+        "specialDetail": "",
+        "inStock": true
+      },
+      {
+        "storeId": "pnp",
+        "price": 38.4,
+        "onSpecial": false,
+        "specialDetail": "",
+        "inStock": true
+      },
+      {
+        "storeId": "shoprite",
+        "price": 36.43,
+        "onSpecial": false,
+        "specialDetail": "",
+        "inStock": true
+      },
+      {
+        "storeId": "spar",
+        "price": 37.94,
+        "onSpecial": false,
+        "specialDetail": "",
+        "inStock": true
+      },
+      {
+        "storeId": "foodlovers",
+        "price": 38.61,
+        "onSpecial": false,
+        "specialDetail": "",
+        "inStock": true
+      },
+      {
+        "storeId": "boxer",
+        "price": 34.97,
+        "onSpecial": false,
+        "specialDetail": "",
+        "inStock": true
+      }
+    ]
+  },
+  {
+    "id": "prod-bread-sasko",
+    "name": "Sasko Premium White Bread",
+    "category": "Bakery",
+    "unit": "700g",
+    "isPopular": true,
+    "barcode": "6009876543210",
+    "imageUrl": "https://images.unsplash.com/photo-1509440159596-0249088772ff?w=400&auto=format&fit=crop&q=80",
+    "prices": [
+      {
+        "storeId": "woolworths",
+        "price": 20.47,
+        "onSpecial": false,
+        "specialDetail": "",
+        "inStock": true
+      },
+      {
+        "storeId": "checkers",
+        "price": 16.59,
+        "onSpecial": true,
+        "specialDetail": "Buy 2 for R33.20",
+        "inStock": true
+      },
+      {
+        "storeId": "pnp",
+        "price": 18.6,
+        "onSpecial": false,
+        "specialDetail": "",
+        "inStock": true
+      },
+      {
+        "storeId": "shoprite",
+        "price": 17.75,
+        "onSpecial": false,
+        "specialDetail": "",
+        "inStock": true
+      },
+      {
+        "storeId": "spar",
+        "price": 16.55,
+        "onSpecial": true,
+        "specialDetail": "Special Promo Price",
+        "inStock": true
+      },
+      {
+        "storeId": "foodlovers",
+        "price": 17.99,
+        "onSpecial": false,
+        "specialDetail": "",
+        "inStock": true
+      },
+      {
+        "storeId": "boxer",
+        "price": 17.5,
+        "onSpecial": false,
+        "specialDetail": "",
+        "inStock": true
+      }
+    ]
+  },
+  {
+    "id": "prod-sugar-selati",
+    "name": "Selati Pure White Sugar",
+    "category": "Groceries",
+    "unit": "2.5kg",
+    "isPopular": true,
+    "barcode": "6002135468700",
+    "imageUrl": "https://images.unsplash.com/photo-1581798459219-318e76aecc7b?w=400&auto=format&fit=crop&q=80",
+    "prices": [
+      {
+        "storeId": "woolworths",
+        "price": 63.32,
+        "onSpecial": true,
+        "specialDetail": "Special Promo Price",
+        "inStock": true
+      },
+      {
+        "storeId": "checkers",
+        "price": 65.35,
+        "onSpecial": false,
+        "specialDetail": "",
+        "inStock": true
+      },
+      {
+        "storeId": "pnp",
+        "price": 64.34,
+        "onSpecial": false,
+        "specialDetail": "",
+        "inStock": true
+      },
+      {
+        "storeId": "shoprite",
+        "price": 60.21,
+        "onSpecial": false,
+        "specialDetail": "",
+        "inStock": true
+      },
+      {
+        "storeId": "spar",
+        "price": 53.9,
+        "onSpecial": true,
+        "specialDetail": "Buy 2 for R107.80",
+        "inStock": true
+      },
+      {
+        "storeId": "foodlovers",
+        "price": 60.35,
+        "onSpecial": false,
+        "specialDetail": "",
+        "inStock": true
+      },
+      {
+        "storeId": "boxer",
+        "price": 47.37,
+        "onSpecial": true,
+        "specialDetail": "Weekly Special Price",
+        "inStock": true
+      }
+    ]
+  },
+  {
+    "id": "prod-oil-sunfoil",
+    "name": "Sunfoil Pure Sunflower Oil",
+    "category": "Groceries",
+    "unit": "2L",
+    "isPopular": true,
+    "barcode": "6003214568902",
+    "imageUrl": "https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?w=400&auto=format&fit=crop&q=80",
+    "prices": [
+      {
+        "storeId": "woolworths",
+        "price": 77.27,
+        "onSpecial": true,
+        "specialDetail": "Special Promo Price",
+        "inStock": true
+      },
+      {
+        "storeId": "checkers",
+        "price": 80.33,
+        "onSpecial": false,
+        "specialDetail": "",
+        "inStock": true
+      },
+      {
+        "storeId": "pnp",
+        "price": 84.25,
+        "onSpecial": false,
+        "specialDetail": "",
+        "inStock": true
+      },
+      {
+        "storeId": "shoprite",
+        "price": 74.99,
+        "onSpecial": false,
+        "specialDetail": "",
+        "inStock": true
+      },
+      {
+        "storeId": "spar",
+        "price": 77.92,
+        "onSpecial": false,
+        "specialDetail": "",
+        "inStock": true
+      },
+      {
+        "storeId": "foodlovers",
+        "price": 74.51,
+        "onSpecial": false,
+        "specialDetail": "",
+        "inStock": true
+      },
+      {
+        "storeId": "boxer",
+        "price": 76.44,
+        "onSpecial": false,
+        "specialDetail": "",
+        "inStock": true
+      }
+    ]
+  },
+  {
+    "id": "prod-maize-iwisa",
+    "name": "Iwisa Super Maize Meal",
+    "category": "Staples",
+    "unit": "10kg",
+    "isPopular": true,
+    "barcode": "6001056123456",
+    "imageUrl": "https://images.unsplash.com/photo-1590080875515-8a3a8dc5735e?w=400&auto=format&fit=crop&q=80",
+    "prices": [
+      {
+        "storeId": "woolworths",
+        "price": 146.73,
+        "onSpecial": false,
+        "specialDetail": "",
+        "inStock": true
+      },
+      {
+        "storeId": "checkers",
+        "price": 129.18,
+        "onSpecial": false,
+        "specialDetail": "",
+        "inStock": true
+      },
+      {
+        "storeId": "pnp",
+        "price": 134.93,
+        "onSpecial": false,
+        "specialDetail": "",
+        "inStock": true
+      },
+      {
+        "storeId": "shoprite",
+        "price": 125.94,
+        "onSpecial": false,
+        "specialDetail": "",
+        "inStock": true
+      },
+      {
+        "storeId": "spar",
+        "price": 132.61,
+        "onSpecial": false,
+        "specialDetail": "",
+        "inStock": true
+      },
+      {
+        "storeId": "foodlovers",
+        "price": 126.95,
+        "onSpecial": false,
+        "specialDetail": "",
+        "inStock": true
+      },
+      {
+        "storeId": "boxer",
+        "price": 115.47,
+        "onSpecial": false,
+        "specialDetail": "",
+        "inStock": true
+      }
+    ]
+  },
+  {
+    "id": "prod-rice-tastic",
+    "name": "Tastic Parboiled Long Grain Rice",
+    "category": "Staples",
+    "unit": "2kg",
+    "isPopular": true,
+    "barcode": "6001016112233",
+    "imageUrl": "https://images.unsplash.com/photo-1586201375761-83865001e31c?w=400&auto=format&fit=crop&q=80",
+    "prices": [
+      {
+        "storeId": "woolworths",
+        "price": 50.84,
+        "onSpecial": false,
+        "specialDetail": "",
+        "inStock": true
+      },
+      {
+        "storeId": "checkers",
+        "price": 45.23,
+        "onSpecial": false,
+        "specialDetail": "",
+        "inStock": true
+      },
+      {
+        "storeId": "pnp",
+        "price": 46.84,
+        "onSpecial": false,
+        "specialDetail": "",
+        "inStock": true
+      },
+      {
+        "storeId": "shoprite",
+        "price": 42.43,
+        "onSpecial": false,
+        "specialDetail": "",
+        "inStock": true
+      },
+      {
+        "storeId": "spar",
+        "price": 43.67,
+        "onSpecial": false,
+        "specialDetail": "",
+        "inStock": true
+      },
+      {
+        "storeId": "foodlovers",
+        "price": 44.11,
+        "onSpecial": false,
+        "specialDetail": "",
+        "inStock": true
+      },
+      {
+        "storeId": "boxer",
+        "price": 41.67,
+        "onSpecial": false,
+        "specialDetail": "",
+        "inStock": true
+      }
+    ]
+  },
+  {
+    "id": "prod-6001253010178",
+    "name": "White Bread",
+    "category": "Plant based foods and beverages",
+    "unit": "700g",
+    "isPopular": false,
+    "barcode": "6001253010178",
+    "imageUrl": "https://images.openfoodfacts.org/images/products/600/125/301/0178/front_en.18.400.jpg",
+    "prices": [
+      {
+        "storeId": "woolworths",
+        "price": 81.7,
+        "onSpecial": false,
+        "specialDetail": "",
+        "inStock": true
+      },
+      {
+        "storeId": "checkers",
+        "price": 68.2,
+        "onSpecial": false,
+        "specialDetail": "",
+        "inStock": true
+      },
+      {
+        "storeId": "pnp",
+        "price": 69.53,
+        "onSpecial": false,
+        "specialDetail": "",
+        "inStock": true
+      },
+      {
+        "storeId": "shoprite",
+        "price": 65.87,
+        "onSpecial": false,
+        "specialDetail": "",
+        "inStock": true
+      },
+      {
+        "storeId": "spar",
+        "price": 65.9,
+        "onSpecial": true,
+        "specialDetail": "Buy 2 for R131.80",
+        "inStock": true
+      },
+      {
+        "storeId": "foodlovers",
+        "price": 65.63,
+        "onSpecial": false,
+        "specialDetail": "",
+        "inStock": true
+      },
+      {
+        "storeId": "boxer",
+        "price": 63.76,
+        "onSpecial": false,
+        "specialDetail": "",
+        "inStock": true
+      }
+    ]
+  },
+  {
+    "id": "prod-6001253010185",
+    "name": "SUPERIOR BROWN BREAD",
+    "category": "Plant based foods and beverages",
+    "unit": "700g",
+    "isPopular": false,
+    "barcode": "6001253010185",
+    "imageUrl": "https://images.openfoodfacts.org/images/products/600/125/301/0185/front_en.30.400.jpg",
+    "prices": [
+      {
+        "storeId": "woolworths",
+        "price": 97.12,
+        "onSpecial": false,
+        "specialDetail": "",
+        "inStock": true
+      },
+      {
+        "storeId": "checkers",
+        "price": 84.87,
+        "onSpecial": false,
+        "specialDetail": "",
+        "inStock": true
+      },
+      {
+        "storeId": "pnp",
+        "price": 69.4,
+        "onSpecial": true,
+        "specialDetail": "Buy 2 for R138.80",
+        "inStock": true
+      },
+      {
+        "storeId": "shoprite",
+        "price": 75.68,
+        "onSpecial": false,
+        "specialDetail": "",
+        "inStock": true
+      },
+      {
+        "storeId": "spar",
+        "price": 86.65,
+        "onSpecial": false,
+        "specialDetail": "",
+        "inStock": true
+      },
+      {
+        "storeId": "foodlovers",
+        "price": 77.34,
+        "onSpecial": false,
+        "specialDetail": "",
+        "inStock": true
+      },
+      {
+        "storeId": "boxer",
+        "price": 78.45,
+        "onSpecial": false,
+        "specialDetail": "",
+        "inStock": true
+      }
+    ]
+  },
+  {
+    "id": "prod-6001345002203",
+    "name": "White Sugar",
+    "category": "Groceries",
+    "unit": "10kg",
+    "isPopular": false,
+    "barcode": "6001345002203",
+    "imageUrl": "https://images.openfoodfacts.org/images/products/600/134/500/2203/front_en.3.400.jpg",
+    "prices": [
+      {
+        "storeId": "woolworths",
+        "price": 62.16,
+        "onSpecial": false,
+        "specialDetail": "",
+        "inStock": true
+      },
+      {
+        "storeId": "checkers",
+        "price": 52.84,
+        "onSpecial": false,
+        "specialDetail": "",
+        "inStock": true
+      },
+      {
+        "storeId": "pnp",
+        "price": 51.21,
+        "onSpecial": false,
+        "specialDetail": "",
+        "inStock": true
+      },
+      {
+        "storeId": "shoprite",
+        "price": 47.33,
+        "onSpecial": false,
+        "specialDetail": "",
+        "inStock": true
+      },
+      {
+        "storeId": "spar",
+        "price": 53.08,
+        "onSpecial": false,
+        "specialDetail": "",
+        "inStock": true
+      },
+      {
+        "storeId": "foodlovers",
+        "price": 49.52,
+        "onSpecial": false,
+        "specialDetail": "",
+        "inStock": true
+      },
+      {
+        "storeId": "boxer",
+        "price": 49.19,
+        "onSpecial": false,
+        "specialDetail": "",
+        "inStock": false
+      }
+    ]
+  },
+  {
+    "id": "prod-6001710010253",
+    "name": "Premium Slices Brown Bread",
+    "category": "Plant based foods and beverages",
+    "unit": "700g",
+    "isPopular": false,
+    "barcode": "6001710010253",
+    "imageUrl": "https://images.openfoodfacts.org/images/products/600/171/001/0253/front_en.19.400.jpg",
+    "prices": [
+      {
+        "storeId": "woolworths",
+        "price": 60.53,
+        "onSpecial": false,
+        "specialDetail": "",
+        "inStock": true
+      },
+      {
+        "storeId": "checkers",
+        "price": 56.12,
+        "onSpecial": false,
+        "specialDetail": "",
+        "inStock": true
+      },
+      {
+        "storeId": "pnp",
+        "price": 56.49,
+        "onSpecial": false,
+        "specialDetail": "",
+        "inStock": true
+      },
+      {
+        "storeId": "shoprite",
+        "price": 50.01,
+        "onSpecial": false,
+        "specialDetail": "",
+        "inStock": true
+      },
+      {
+        "storeId": "spar",
+        "price": 56.93,
+        "onSpecial": false,
+        "specialDetail": "",
+        "inStock": true
+      },
+      {
+        "storeId": "foodlovers",
+        "price": 47.13,
+        "onSpecial": true,
+        "specialDetail": "Weekly Special Price",
+        "inStock": true
+      },
+      {
+        "storeId": "boxer",
+        "price": 48.15,
+        "onSpecial": false,
+        "specialDetail": "",
+        "inStock": true
+      }
+    ]
+  },
+  {
+    "id": "prod-6001710010192",
+    "name": "WHITE BREAD",
+    "category": "Plant based foods and beverages",
+    "unit": "1 Unit",
+    "isPopular": false,
+    "barcode": "6001710010192",
+    "imageUrl": "https://images.openfoodfacts.org/images/products/600/171/001/0192/front_en.7.400.jpg",
+    "prices": [
+      {
+        "storeId": "woolworths",
+        "price": 55.96,
+        "onSpecial": false,
+        "specialDetail": "",
+        "inStock": true
+      },
+      {
+        "storeId": "checkers",
+        "price": 52.39,
+        "onSpecial": false,
+        "specialDetail": "",
+        "inStock": false
+      },
+      {
+        "storeId": "pnp",
+        "price": 52.47,
+        "onSpecial": false,
+        "specialDetail": "",
+        "inStock": true
+      },
+      {
+        "storeId": "shoprite",
+        "price": 47.75,
+        "onSpecial": false,
+        "specialDetail": "",
+        "inStock": true
+      },
+      {
+        "storeId": "spar",
+        "price": 51.47,
+        "onSpecial": false,
+        "specialDetail": "",
+        "inStock": true
+      },
+      {
+        "storeId": "foodlovers",
+        "price": 47.62,
+        "onSpecial": false,
+        "specialDetail": "",
+        "inStock": true
+      },
+      {
+        "storeId": "boxer",
+        "price": 46.19,
+        "onSpecial": false,
+        "specialDetail": "",
+        "inStock": true
+      }
+    ]
   }
 ]
