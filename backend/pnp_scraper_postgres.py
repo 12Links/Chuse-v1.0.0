@@ -102,9 +102,9 @@ SLEEP_BETWEEN_PAGES = 0.5
 MAX_RETRIES = 3
 RETRY_BACKOFF_BASE = 2
 
-# DB CONNECTION (Cloud SQL Auth Proxy on localhost) 
+# DB CONNECTION (Cloud SQL Auth Proxy, host passed from start script)
 DB_CONFIG = {
-    "host": "127.0.0.1",
+    "host": os.environ.get("DB_HOST", "127.0.0.1"),
     "port": 5432,
     "dbname": "choose-edec8-database",
     "user": "scraper_user",
