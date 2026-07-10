@@ -137,11 +137,6 @@ extend type Query {
   """
   price(
     """
-    The unique ID of the object.
-    """
-    id: UUID
-
-    """
     The key used to identify the object.
     """
     key: Price_Key
@@ -175,11 +170,6 @@ extend type Query {
   """
   priceHistory(
     """
-    The unique ID of the object.
-    """
-    id: UUID
-
-    """
     The key used to identify the object.
     """
     key: PriceHistory_Key
@@ -193,11 +183,6 @@ extend type Query {
   ✨ Look up a single `Product` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
   """
   product(
-    """
-    The unique ID of the object.
-    """
-    id: UUID
-
     """
     The key used to identify the object.
     """
@@ -231,11 +216,6 @@ extend type Query {
   ✨ Look up a single `Store` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
   """
   store(
-    """
-    The unique ID of the object.
-    """
-    id: UUID
-
     """
     The key used to identify the object.
     """

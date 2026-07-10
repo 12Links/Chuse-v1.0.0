@@ -24,13 +24,13 @@ extend type Availability {
   """
   id: UUID! @default(expr: "uuidV4()") @fdc_generated(from: "Availability", purpose: IMPLICIT_KEY_FIELD)
   """
-  ✨ Implicit foreign key field based on `Availability`.`product`. It must match the value of `Product`.`id`. See `@ref` for how to customize it.
+  ✨ Implicit foreign key field based on `Availability`.`product`. It must match the value of `Product`.`productCode`. See `@ref` for how to customize it.
   """
-  productId: UUID! @fdc_generated(from: "Availability.product", purpose: IMPLICIT_REF_FIELD)
+  productProductCode: String! @fdc_generated(from: "Availability.product", purpose: IMPLICIT_REF_FIELD)
   """
-  ✨ Implicit foreign key field based on `Availability`.`store`. It must match the value of `Store`.`id`. See `@ref` for how to customize it.
+  ✨ Implicit foreign key field based on `Availability`.`store`. It must match the value of `Store`.`storeCode`. See `@ref` for how to customize it.
   """
-  storeId: UUID! @fdc_generated(from: "Availability.store", purpose: IMPLICIT_REF_FIELD)
+  storeStoreCode: String! @fdc_generated(from: "Availability.store", purpose: IMPLICIT_REF_FIELD)
 }
 extend type DietaryPreference {
   """
@@ -62,9 +62,9 @@ extend type ListItem {
   """
   listId: UUID! @fdc_generated(from: "ListItem.list", purpose: IMPLICIT_REF_FIELD)
   """
-  ✨ Implicit foreign key field based on `ListItem`.`product`. It must match the value of `Product`.`id`. See `@ref` for how to customize it.
+  ✨ Implicit foreign key field based on `ListItem`.`product`. It must match the value of `Product`.`productCode`. See `@ref` for how to customize it.
   """
-  productId: UUID! @fdc_generated(from: "ListItem.product", purpose: IMPLICIT_REF_FIELD)
+  productProductCode: String! @fdc_generated(from: "ListItem.product", purpose: IMPLICIT_REF_FIELD)
 }
 extend type NutritionConstraint {
   """
@@ -78,17 +78,13 @@ extend type NutritionConstraint {
 }
 extend type Price {
   """
-  ✨ Implicit primary key field. It's a UUID column default to a generated new value. See `@table` for how to customize it.
+  ✨ Implicit foreign key field based on `Price`.`product`. It must match the value of `Product`.`productCode`. See `@ref` for how to customize it.
   """
-  id: UUID! @default(expr: "uuidV4()") @fdc_generated(from: "Price", purpose: IMPLICIT_KEY_FIELD)
+  productProductCode: String! @fdc_generated(from: "Price.product", purpose: IMPLICIT_REF_FIELD)
   """
-  ✨ Implicit foreign key field based on `Price`.`product`. It must match the value of `Product`.`id`. See `@ref` for how to customize it.
+  ✨ Implicit foreign key field based on `Price`.`store`. It must match the value of `Store`.`storeCode`. See `@ref` for how to customize it.
   """
-  productId: UUID! @fdc_generated(from: "Price.product", purpose: IMPLICIT_REF_FIELD)
-  """
-  ✨ Implicit foreign key field based on `Price`.`store`. It must match the value of `Store`.`id`. See `@ref` for how to customize it.
-  """
-  storeId: UUID! @fdc_generated(from: "Price.store", purpose: IMPLICIT_REF_FIELD)
+  storeStoreCode: String! @fdc_generated(from: "Price.store", purpose: IMPLICIT_REF_FIELD)
 }
 extend type PriceAlert {
   """
@@ -96,9 +92,9 @@ extend type PriceAlert {
   """
   id: UUID! @default(expr: "uuidV4()") @fdc_generated(from: "PriceAlert", purpose: IMPLICIT_KEY_FIELD)
   """
-  ✨ Implicit foreign key field based on `PriceAlert`.`product`. It must match the value of `Product`.`id`. See `@ref` for how to customize it.
+  ✨ Implicit foreign key field based on `PriceAlert`.`product`. It must match the value of `Product`.`productCode`. See `@ref` for how to customize it.
   """
-  productId: UUID! @fdc_generated(from: "PriceAlert.product", purpose: IMPLICIT_REF_FIELD)
+  productProductCode: String! @fdc_generated(from: "PriceAlert.product", purpose: IMPLICIT_REF_FIELD)
   """
   ✨ Implicit foreign key field based on `PriceAlert`.`user`. It must match the value of `User`.`id`. See `@ref` for how to customize it.
   """
@@ -106,23 +102,13 @@ extend type PriceAlert {
 }
 extend type PriceHistory {
   """
-  ✨ Implicit primary key field. It's a UUID column default to a generated new value. See `@table` for how to customize it.
+  ✨ Implicit foreign key field based on `PriceHistory`.`product`. It must match the value of `Product`.`productCode`. See `@ref` for how to customize it.
   """
-  id: UUID! @default(expr: "uuidV4()") @fdc_generated(from: "PriceHistory", purpose: IMPLICIT_KEY_FIELD)
+  productProductCode: String! @fdc_generated(from: "PriceHistory.product", purpose: IMPLICIT_REF_FIELD)
   """
-  ✨ Implicit foreign key field based on `PriceHistory`.`product`. It must match the value of `Product`.`id`. See `@ref` for how to customize it.
+  ✨ Implicit foreign key field based on `PriceHistory`.`store`. It must match the value of `Store`.`storeCode`. See `@ref` for how to customize it.
   """
-  productId: UUID! @fdc_generated(from: "PriceHistory.product", purpose: IMPLICIT_REF_FIELD)
-  """
-  ✨ Implicit foreign key field based on `PriceHistory`.`store`. It must match the value of `Store`.`id`. See `@ref` for how to customize it.
-  """
-  storeId: UUID! @fdc_generated(from: "PriceHistory.store", purpose: IMPLICIT_REF_FIELD)
-}
-extend type Product {
-  """
-  ✨ Implicit primary key field. It's a UUID column default to a generated new value. See `@table` for how to customize it.
-  """
-  id: UUID! @default(expr: "uuidV4()") @fdc_generated(from: "Product", purpose: IMPLICIT_KEY_FIELD)
+  storeStoreCode: String! @fdc_generated(from: "PriceHistory.store", purpose: IMPLICIT_REF_FIELD)
 }
 extend type SpendingConstraint {
   """
@@ -133,12 +119,6 @@ extend type SpendingConstraint {
   ✨ Implicit foreign key field based on `SpendingConstraint`.`user`. It must match the value of `User`.`id`. See `@ref` for how to customize it.
   """
   userId: UUID! @fdc_generated(from: "SpendingConstraint.user", purpose: IMPLICIT_REF_FIELD)
-}
-extend type Store {
-  """
-  ✨ Implicit primary key field. It's a UUID column default to a generated new value. See `@table` for how to customize it.
-  """
-  id: UUID! @default(expr: "uuidV4()") @fdc_generated(from: "Store", purpose: IMPLICIT_KEY_FIELD)
 }
 extend type User {
   """

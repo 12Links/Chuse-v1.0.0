@@ -1,33 +1,33 @@
-mutation CreateUserAccount($userName: String!, $firstName: String!, $lastName: String!, $city: String!, $province: String!, $postalCode: String!, $homeAddress: String!, $email: String!, $phoneNumber: String!, $gender: String!, $password: String!) @auth(level: PUBLIC) {
-  account_insert(data: {user: {id_expr: "auth.uid"}, userName: $userName, firstName: $firstName, lastName: $lastName, city: $city, province: $province, postalCode: $postalCode, homeAddress: $homeAddress, email: $email, phoneNumber: $phoneNumber, gender: $gender, password: $password})
-}
+# mutation CreateUserAccount($userName: String!, $firstName: String!, $lastName: String!, $city: String!, $province: String!, $postalCode: String!, $homeAddress: String!, $email: String!, $phoneNumber: String!, $gender: String!, $password: String!) @auth(level: PUBLIC) {
+#   account_insert(data: {user: {id_expr: "auth.uid"}, userName: $userName, firstName: $firstName, lastName: $lastName, city: $city, province: $province, postalCode: $postalCode, homeAddress: $homeAddress, email: $email, phoneNumber: $phoneNumber, gender: $gender, password: $password})
+# }
 
-query GetUserLists @auth(level: USER) {
-  lists(where: {user: {id: {eq_expr: "auth.uid"}}}) {
-    id
-    name
-    createdAt
-    listItems_on_list {
-      product {
-        name
-        brand
-      }
-    }
-  }
-}
+# query GetUserLists @auth(level: USER) {
+#   lists(where: {user: {id: {eq_expr: "auth.uid"}}}) {
+#     id
+#     name
+#     createdAt
+#     listItems_on_list {
+#       product {
+#         name
+#         brand
+#       }
+#     }
+#   }
+# }
 
-mutation AddProductToList($listId: UUID!, $productId: UUID!) @auth(level: USER) {
-  listItem_insert(data: {list: {id: $listId}, product: {id: $productId}})
-}
+# mutation AddProductToList($listId: UUID!, $productId: UUID!) @auth(level: USER) {
+#   listItem_insert(data: {list: {id: $listId}, product: {id: $productId}})
+# }
 
-query SearchProductsByBarcode($barcode: String!) @auth(level: PUBLIC) {
-  oFFProducts(where: {barcode: {eq: $barcode}}) {
-    name
-    brand
-    ingredients
-    nutrients_on_product {
-      name
-      value
-    }
-  }
-}
+# query SearchProductsByBarcode($barcode: String!) @auth(level: PUBLIC) {
+#   oFFProducts(where: {barcode: {eq: $barcode}}) {
+#     name
+#     brand
+#     ingredients
+#     nutrients_on_product {
+#       name
+#       value
+#     }
+#   }
+# }

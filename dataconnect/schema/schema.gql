@@ -1,3 +1,11 @@
+enum Retailer {
+  PNP
+  SHOPRITE
+  CHECKERS
+  BOXER
+  EVERGREEN
+}
+
 type User @table {
   isGuest: Boolean!
   lastActive: Timestamp
@@ -46,7 +54,8 @@ type List @table {
   createdAt: Timestamp!
 }
 
-type Store @table {
+type Store @table(key: "storeCode") {
+  storeCode: String!
   name: String!
   city: String!
   province: String!
@@ -54,18 +63,18 @@ type Store @table {
   streetAddress: String!
 }
 
-type Product @table {
-  productCode: String!
+type Product @table(key: "productCode") {
+  productCode: String! 
   description: String
   barcode: String
   name: String!
   category: String
   subcategory: String
-  store: String!
+  store: Retailer!
   imageUrl: String
 }
 
-type Price @table {
+type Price @table(key: "product") {
   product: Product!
   store: Store!
   price: Float!
@@ -92,11 +101,13 @@ type PriceAlert @table {
   user: User!
   product: Product!
   thresholdPrice: Float!
+  createdAt: Timestamp!
 }
 
-type PriceHistory @table {
+type PriceHistory @table(key: "product") {
   product: Product!
   store: Store!
   price: Float!
+  promotionPrice: Float!
   recordedAt: Timestamp!
 }

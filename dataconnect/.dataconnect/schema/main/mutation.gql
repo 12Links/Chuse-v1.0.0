@@ -676,11 +676,6 @@ extend type Mutation {
   """
   price_update(
     """
-    The unique ID of the object.
-    """
-    id: UUID
-
-    """
     The key used to identify the object.
     """
     key: Price_Key
@@ -724,11 +719,6 @@ extend type Mutation {
   """
   priceHistory_update(
     """
-    The unique ID of the object.
-    """
-    id: UUID
-
-    """
     The key used to identify the object.
     """
     key: PriceHistory_Key
@@ -747,11 +737,6 @@ extend type Mutation {
   ✨ Update a single `Product` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `Product` or `null` if not found.
   """
   product_update(
-    """
-    The unique ID of the object.
-    """
-    id: UUID
-
     """
     The key used to identify the object.
     """
@@ -795,11 +780,6 @@ extend type Mutation {
   ✨ Update a single `Store` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `Store` or `null` if not found.
   """
   store_update(
-    """
-    The unique ID of the object.
-    """
-    id: UUID
-
     """
     The key used to identify the object.
     """
@@ -1243,11 +1223,6 @@ extend type Mutation {
   """
   price_delete(
     """
-    The unique ID of the object.
-    """
-    id: UUID
-
-    """
     The key used to identify the object.
     """
     key: Price_Key
@@ -1281,11 +1256,6 @@ extend type Mutation {
   """
   priceHistory_delete(
     """
-    The unique ID of the object.
-    """
-    id: UUID
-
-    """
     The key used to identify the object.
     """
     key: PriceHistory_Key
@@ -1299,11 +1269,6 @@ extend type Mutation {
   ✨ Delete a single `Product` based on `id`, `key` or `first` and return its key (or `null` if not found).
   """
   product_delete(
-    """
-    The unique ID of the object.
-    """
-    id: UUID
-
     """
     The key used to identify the object.
     """
@@ -1337,11 +1302,6 @@ extend type Mutation {
   ✨ Delete a single `Store` based on `id`, `key` or `first` and return its key (or `null` if not found).
   """
   store_delete(
-    """
-    The unique ID of the object.
-    """
-    id: UUID
-
     """
     The key used to identify the object.
     """

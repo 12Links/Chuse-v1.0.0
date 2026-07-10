@@ -198,23 +198,23 @@ extend type Availability {
     distinct: Boolean = false
   ): Int! @fdc_generated(from: "Availability.id", purpose: QUERY_COUNT)
   """
-  ✨ Count the number of rows in the `Availability` table where the `productId` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  ✨ Count the number of rows in the `Availability` table where the `productProductCode` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
   """
-  productId_count(
+  productProductCode_count(
     """
     Set to true to count the number of distinct values.
     """
     distinct: Boolean = false
-  ): Int! @fdc_generated(from: "Availability.productId", purpose: QUERY_COUNT)
+  ): Int! @fdc_generated(from: "Availability.productProductCode", purpose: QUERY_COUNT)
   """
-  ✨ Count the number of rows in the `Availability` table where the `storeId` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  ✨ Count the number of rows in the `Availability` table where the `storeStoreCode` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
   """
-  storeId_count(
+  storeStoreCode_count(
     """
     Set to true to count the number of distinct values.
     """
     distinct: Boolean = false
-  ): Int! @fdc_generated(from: "Availability.storeId", purpose: QUERY_COUNT)
+  ): Int! @fdc_generated(from: "Availability.storeStoreCode", purpose: QUERY_COUNT)
   """
   A generated field that is used for caching results in SDKs.
   """
@@ -390,14 +390,14 @@ extend type ListItem {
     distinct: Boolean = false
   ): Int! @fdc_generated(from: "ListItem.listId", purpose: QUERY_COUNT)
   """
-  ✨ Count the number of rows in the `ListItem` table where the `productId` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  ✨ Count the number of rows in the `ListItem` table where the `productProductCode` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
   """
-  productId_count(
+  productProductCode_count(
     """
     Set to true to count the number of distinct values.
     """
     distinct: Boolean = false
-  ): Int! @fdc_generated(from: "ListItem.productId", purpose: QUERY_COUNT)
+  ): Int! @fdc_generated(from: "ListItem.productProductCode", purpose: QUERY_COUNT)
   """
   ✨ Count the number of rows in the `ListItem` table where the `quantity` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
   """
@@ -582,15 +582,6 @@ extend type Price {
     distinct: Boolean = false
   ): Int! @fdc_generated(from: "Price.dateRecorded", purpose: QUERY_COUNT)
   """
-  ✨ Count the number of rows in the `Price` table where the `id` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
-  """
-  id_count(
-    """
-    Set to true to count the number of distinct values.
-    """
-    distinct: Boolean = false
-  ): Int! @fdc_generated(from: "Price.id", purpose: QUERY_COUNT)
-  """
   ✨ Count the number of rows in the `Price` table where the `onSpecial` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
   """
   onSpecial_count(
@@ -618,14 +609,14 @@ extend type Price {
     distinct: Boolean = false
   ): Int! @fdc_generated(from: "Price.price", purpose: QUERY_COUNT)
   """
-  ✨ Count the number of rows in the `Price` table where the `productId` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  ✨ Count the number of rows in the `Price` table where the `productProductCode` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
   """
-  productId_count(
+  productProductCode_count(
     """
     Set to true to count the number of distinct values.
     """
     distinct: Boolean = false
-  ): Int! @fdc_generated(from: "Price.productId", purpose: QUERY_COUNT)
+  ): Int! @fdc_generated(from: "Price.productProductCode", purpose: QUERY_COUNT)
   """
   ✨ Count the number of rows in the `Price` table where the `promotionDescription` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
   """
@@ -645,14 +636,14 @@ extend type Price {
     distinct: Boolean = false
   ): Int! @fdc_generated(from: "Price.savings", purpose: QUERY_COUNT)
   """
-  ✨ Count the number of rows in the `Price` table where the `storeId` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  ✨ Count the number of rows in the `Price` table where the `storeStoreCode` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
   """
-  storeId_count(
+  storeStoreCode_count(
     """
     Set to true to count the number of distinct values.
     """
     distinct: Boolean = false
-  ): Int! @fdc_generated(from: "Price.storeId", purpose: QUERY_COUNT)
+  ): Int! @fdc_generated(from: "Price.storeStoreCode", purpose: QUERY_COUNT)
   """
   ✨ Sum the `originalPrice` field in the `Price` table.
   """
@@ -742,7 +733,7 @@ extend type Price {
   """
   A generated field that is used for caching results in SDKs.
   """
-  _id: ID! @fdc_generated(from: "Price.id", purpose: ENTITY_ID)
+  _id: ID! @fdc_generated(from: "Price.productProductCode", purpose: ENTITY_ID)
 }
 extend type PriceAlert {
   """
@@ -754,6 +745,15 @@ extend type PriceAlert {
   """
   _count: Int! @fdc_generated(from: "PriceAlert.", purpose: QUERY_COUNT)
   """
+  ✨ Count the number of rows in the `PriceAlert` table where the `createdAt` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  createdAt_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "PriceAlert.createdAt", purpose: QUERY_COUNT)
+  """
   ✨ Count the number of rows in the `PriceAlert` table where the `id` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
   """
   id_count(
@@ -763,14 +763,14 @@ extend type PriceAlert {
     distinct: Boolean = false
   ): Int! @fdc_generated(from: "PriceAlert.id", purpose: QUERY_COUNT)
   """
-  ✨ Count the number of rows in the `PriceAlert` table where the `productId` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  ✨ Count the number of rows in the `PriceAlert` table where the `productProductCode` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
   """
-  productId_count(
+  productProductCode_count(
     """
     Set to true to count the number of distinct values.
     """
     distinct: Boolean = false
-  ): Int! @fdc_generated(from: "PriceAlert.productId", purpose: QUERY_COUNT)
+  ): Int! @fdc_generated(from: "PriceAlert.productProductCode", purpose: QUERY_COUNT)
   """
   ✨ Count the number of rows in the `PriceAlert` table where the `thresholdPrice` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
   """
@@ -808,9 +808,17 @@ extend type PriceAlert {
     distinct: Boolean = false
   ): Float @fdc_generated(from: "PriceAlert.thresholdPrice", purpose: QUERY_AVG)
   """
+  ✨ Minimum of the `createdAt` field in the `PriceAlert` table.
+  """
+  createdAt_min: Timestamp @fdc_generated(from: "PriceAlert.createdAt", purpose: QUERY_MIN)
+  """
   ✨ Minimum of the `thresholdPrice` field in the `PriceAlert` table.
   """
   thresholdPrice_min: Float @fdc_generated(from: "PriceAlert.thresholdPrice", purpose: QUERY_MIN)
+  """
+  ✨ Maximum of the `createdAt` field in the `PriceAlert` table.
+  """
+  createdAt_max: Timestamp @fdc_generated(from: "PriceAlert.createdAt", purpose: QUERY_MAX)
   """
   ✨ Maximum of the `thresholdPrice` field in the `PriceAlert` table.
   """
@@ -830,15 +838,6 @@ extend type PriceHistory {
   """
   _count: Int! @fdc_generated(from: "PriceHistory.", purpose: QUERY_COUNT)
   """
-  ✨ Count the number of rows in the `PriceHistory` table where the `id` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
-  """
-  id_count(
-    """
-    Set to true to count the number of distinct values.
-    """
-    distinct: Boolean = false
-  ): Int! @fdc_generated(from: "PriceHistory.id", purpose: QUERY_COUNT)
-  """
   ✨ Count the number of rows in the `PriceHistory` table where the `price` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
   """
   price_count(
@@ -848,14 +847,23 @@ extend type PriceHistory {
     distinct: Boolean = false
   ): Int! @fdc_generated(from: "PriceHistory.price", purpose: QUERY_COUNT)
   """
-  ✨ Count the number of rows in the `PriceHistory` table where the `productId` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  ✨ Count the number of rows in the `PriceHistory` table where the `productProductCode` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
   """
-  productId_count(
+  productProductCode_count(
     """
     Set to true to count the number of distinct values.
     """
     distinct: Boolean = false
-  ): Int! @fdc_generated(from: "PriceHistory.productId", purpose: QUERY_COUNT)
+  ): Int! @fdc_generated(from: "PriceHistory.productProductCode", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `PriceHistory` table where the `promotionPrice` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  promotionPrice_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "PriceHistory.promotionPrice", purpose: QUERY_COUNT)
   """
   ✨ Count the number of rows in the `PriceHistory` table where the `recordedAt` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
   """
@@ -866,14 +874,14 @@ extend type PriceHistory {
     distinct: Boolean = false
   ): Int! @fdc_generated(from: "PriceHistory.recordedAt", purpose: QUERY_COUNT)
   """
-  ✨ Count the number of rows in the `PriceHistory` table where the `storeId` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  ✨ Count the number of rows in the `PriceHistory` table where the `storeStoreCode` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
   """
-  storeId_count(
+  storeStoreCode_count(
     """
     Set to true to count the number of distinct values.
     """
     distinct: Boolean = false
-  ): Int! @fdc_generated(from: "PriceHistory.storeId", purpose: QUERY_COUNT)
+  ): Int! @fdc_generated(from: "PriceHistory.storeStoreCode", purpose: QUERY_COUNT)
   """
   ✨ Sum the `price` field in the `PriceHistory` table.
   """
@@ -884,6 +892,15 @@ extend type PriceHistory {
     distinct: Boolean = false
   ): Float @fdc_generated(from: "PriceHistory.price", purpose: QUERY_SUM)
   """
+  ✨ Sum the `promotionPrice` field in the `PriceHistory` table.
+  """
+  promotionPrice_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "PriceHistory.promotionPrice", purpose: QUERY_SUM)
+  """
   ✨ Average the `price` field in the `PriceHistory` table.
   """
   price_avg(
@@ -893,9 +910,22 @@ extend type PriceHistory {
     distinct: Boolean = false
   ): Float @fdc_generated(from: "PriceHistory.price", purpose: QUERY_AVG)
   """
+  ✨ Average the `promotionPrice` field in the `PriceHistory` table.
+  """
+  promotionPrice_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "PriceHistory.promotionPrice", purpose: QUERY_AVG)
+  """
   ✨ Minimum of the `price` field in the `PriceHistory` table.
   """
   price_min: Float @fdc_generated(from: "PriceHistory.price", purpose: QUERY_MIN)
+  """
+  ✨ Minimum of the `promotionPrice` field in the `PriceHistory` table.
+  """
+  promotionPrice_min: Float @fdc_generated(from: "PriceHistory.promotionPrice", purpose: QUERY_MIN)
   """
   ✨ Minimum of the `recordedAt` field in the `PriceHistory` table.
   """
@@ -905,13 +935,17 @@ extend type PriceHistory {
   """
   price_max: Float @fdc_generated(from: "PriceHistory.price", purpose: QUERY_MAX)
   """
+  ✨ Maximum of the `promotionPrice` field in the `PriceHistory` table.
+  """
+  promotionPrice_max: Float @fdc_generated(from: "PriceHistory.promotionPrice", purpose: QUERY_MAX)
+  """
   ✨ Maximum of the `recordedAt` field in the `PriceHistory` table.
   """
   recordedAt_max: Timestamp @fdc_generated(from: "PriceHistory.recordedAt", purpose: QUERY_MAX)
   """
   A generated field that is used for caching results in SDKs.
   """
-  _id: ID! @fdc_generated(from: "PriceHistory.id", purpose: ENTITY_ID)
+  _id: ID! @fdc_generated(from: "PriceHistory.productProductCode", purpose: ENTITY_ID)
 }
 extend type Product {
   """
@@ -983,40 +1017,6 @@ extend type Product {
     having: ListItem_Having
   ): [ListItem!]! @fdc_generated(from: "ListItem.product", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
   """
-  ✨ List `Price` objects in a one-to-many relationship (where `Price`.`product` is this object).
-  """
-  prices_on_product(
-    """
-    Filter condition to narrow down the query results.
-    """
-    where: Price_Filter
-
-    """
-    Order the query results by specific fields.
-    """
-    orderBy: [Price_Order!]
-
-    """
-    Number of rows to skip before starting to return the results.
-    """
-    offset: Int
-
-    """
-    Maximum number of rows to return (defaults to 100 rows).
-    """
-    limit: Int = 100
-
-    """
-    Set to true to return distinct results.
-    """
-    distinct: Boolean = false
-
-    """
-    Filter condition to apply to the groups of aggregate queries.
-    """
-    having: Price_Having
-  ): [Price!]! @fdc_generated(from: "Price.product", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
-  """
   ✨ List `PriceAlert` objects in a one-to-many relationship (where `PriceAlert`.`product` is this object).
   """
   priceAlerts_on_product(
@@ -1051,39 +1051,13 @@ extend type Product {
     having: PriceAlert_Having
   ): [PriceAlert!]! @fdc_generated(from: "PriceAlert.product", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
   """
-  ✨ List `PriceHistory` objects in a one-to-many relationship (where `PriceHistory`.`product` is this object).
+  ✨ List `Price` objects in a one-to-one relationship (where `Price`.`product` is this object).
   """
-  priceHistories_on_product(
-    """
-    Filter condition to narrow down the query results.
-    """
-    where: PriceHistory_Filter
-
-    """
-    Order the query results by specific fields.
-    """
-    orderBy: [PriceHistory_Order!]
-
-    """
-    Number of rows to skip before starting to return the results.
-    """
-    offset: Int
-
-    """
-    Maximum number of rows to return (defaults to 100 rows).
-    """
-    limit: Int = 100
-
-    """
-    Set to true to return distinct results.
-    """
-    distinct: Boolean = false
-
-    """
-    Filter condition to apply to the groups of aggregate queries.
-    """
-    having: PriceHistory_Having
-  ): [PriceHistory!]! @fdc_generated(from: "PriceHistory.product", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
+  price_on_product: Price @fdc_generated(from: "Price.product", purpose: QUERY_SINGLE_ONE_TO_ONE)
+  """
+  ✨ List `PriceHistory` objects in a one-to-one relationship (where `PriceHistory`.`product` is this object).
+  """
+  priceHistory_on_product: PriceHistory @fdc_generated(from: "PriceHistory.product", purpose: QUERY_SINGLE_ONE_TO_ONE)
   """
   Implicit metadata field that cannot be written. It provides extra information about query results.
   """
@@ -1119,15 +1093,6 @@ extend type Product {
     """
     distinct: Boolean = false
   ): Int! @fdc_generated(from: "Product.description", purpose: QUERY_COUNT)
-  """
-  ✨ Count the number of rows in the `Product` table where the `id` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
-  """
-  id_count(
-    """
-    Set to true to count the number of distinct values.
-    """
-    distinct: Boolean = false
-  ): Int! @fdc_generated(from: "Product.id", purpose: QUERY_COUNT)
   """
   ✨ Count the number of rows in the `Product` table where the `imageUrl` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
   """
@@ -1176,7 +1141,7 @@ extend type Product {
   """
   A generated field that is used for caching results in SDKs.
   """
-  _id: ID! @fdc_generated(from: "Product.id", purpose: ENTITY_ID)
+  _id: ID! @fdc_generated(from: "Product.productCode", purpose: ENTITY_ID)
 }
 extend type SpendingConstraint {
   """
@@ -1401,15 +1366,6 @@ extend type Store {
     distinct: Boolean = false
   ): Int! @fdc_generated(from: "Store.city", purpose: QUERY_COUNT)
   """
-  ✨ Count the number of rows in the `Store` table where the `id` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
-  """
-  id_count(
-    """
-    Set to true to count the number of distinct values.
-    """
-    distinct: Boolean = false
-  ): Int! @fdc_generated(from: "Store.id", purpose: QUERY_COUNT)
-  """
   ✨ Count the number of rows in the `Store` table where the `name` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
   """
   name_count(
@@ -1437,6 +1393,15 @@ extend type Store {
     distinct: Boolean = false
   ): Int! @fdc_generated(from: "Store.province", purpose: QUERY_COUNT)
   """
+  ✨ Count the number of rows in the `Store` table where the `storeCode` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  storeCode_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Store.storeCode", purpose: QUERY_COUNT)
+  """
   ✨ Count the number of rows in the `Store` table where the `streetAddress` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
   """
   streetAddress_count(
@@ -1448,7 +1413,7 @@ extend type Store {
   """
   A generated field that is used for caching results in SDKs.
   """
-  _id: ID! @fdc_generated(from: "Store.id", purpose: ENTITY_ID)
+  _id: ID! @fdc_generated(from: "Store.storeCode", purpose: ENTITY_ID)
 }
 extend type User {
   """
