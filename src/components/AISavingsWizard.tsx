@@ -18,7 +18,7 @@ import { Product, BasketItem, UserProfile } from '../types';
 interface AISavingsWizardProps {
   products: Product[];
   basket: BasketItem[];
-  user: UserProfile | null;
+  user: UserProfile | null | undefined;
   onAuthRequest: () => void;
 }
 

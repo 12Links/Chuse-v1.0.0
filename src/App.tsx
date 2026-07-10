@@ -38,7 +38,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
-function ProtectedRoute({ user }: { user: UserProfile | null }) {
+function ProtectedRoute({ user }: { user: UserProfile | null | undefined }) {
   if (user === undefined) {
     return <div>Loading...</div>; // Or a spinner
   }
@@ -49,7 +49,7 @@ function ProtectedRoute({ user }: { user: UserProfile | null }) {
 }
 
 interface MainPageProps {
-    user: UserProfile | null;
+    user: UserProfile | null | undefined;
     setUser: (user: UserProfile | null) => void;
     isDarkMode: boolean;
     onToggleDarkMode: (isDark: boolean) => void;

@@ -21,7 +21,7 @@ import { UserProfile, Product } from '../types';
 import { updateUserProfile } from '../lib/api';
 
 interface SettingsPageProps {
-  user: UserProfile | null;
+  user: UserProfile | null | undefined;
   onUpdateUser: (updated: UserProfile) => void;
   onLogout: () => void;
   onClearBasket: () => void;

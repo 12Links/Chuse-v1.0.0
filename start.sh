@@ -73,4 +73,4 @@ done
 # ── Start FastAPI ──────────────────────────────────────────────────────────────
 
 echo "→ Starting FastAPI..."
-cd "$BACKEND_DIR" && source venv/bin/activate && python main_fastapi.py
+cd "$BACKEND_DIR" && source venv/bin/activate && python pnp_scraper_postgres.py
