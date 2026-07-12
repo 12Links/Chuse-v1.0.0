@@ -8,7 +8,9 @@ SETUP (once):
   3. Start the Cloud SQL Auth Proxy in a separate terminal:
        cloud-sql-proxy --port 5432 choose-edec8:us-east4:frontend-fdc
   4. Set the DB password as an env var (PowerShell):
-       $env:CHUSE_DB_PASSWORD = "the-password-you-set-in-the-sql-file"
+       $env:CHUSE_DB_PASSWORD = "the-password-you-set-in-the-sql-file" or use export CHUSE_DB_PASSWORD="the password" for Linux/MacOS
+       PLEASE NOTE: The password is stored in the .env file for local development, but you should not commit it to version control.
+       AND GENTS READ THE README.md FOR MORE INFO ON HOW TO SETUP THE DATABASE AND RUN THE SCRAPER.
 
 """
 
