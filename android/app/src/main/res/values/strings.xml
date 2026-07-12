@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">chuse</string>
+    <string name="title_activity_main">chuse</string>
+    <string name="package_name">com.chuse.app</string>
+    <string name="custom_url_scheme">com.chuse.app</string>
+</resources>
