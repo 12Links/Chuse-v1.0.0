@@ -36,7 +36,7 @@ interface ProductCatalogProps {
 const STORE_BADGE_STYLES: Record<string, { bg: string; text: string; label: string }> = {
   checkers: { bg: 'bg-[#008374] text-white', text: 'text-[#008374]', label: 'Checkers' },
   pnp: { bg: 'bg-[#002B49] text-white', text: 'text-[#002B49]', label: 'Pick n Pay' },
-  woolworths: { bg: 'bg-black text-white', text: 'text-black dark:text-white', label: 'Woolworths' },
+  woolworths: { bg: 'bg-black text-white', text: 'text-black', label: 'Woolworths' },
   shoprite: { bg: 'bg-[#D61B28] text-white', text: 'text-[#D61B28]', label: 'Shoprite' },
   spar: { bg: 'bg-[#007A3D] text-white', text: 'text-[#007A3D]', label: 'SPAR' },
   boxer: { bg: 'bg-[#FF6A13] text-white', text: 'text-[#FF6A13]', label: 'Boxer' },
@@ -133,7 +133,7 @@ export default function ProductCatalog({
   return (
     <div id="product-catalog-view" className="space-y-4">
       {/* Category Scrolling Bar & Sort Controls */}
-      <div className="bg-[#FFFFFF] dark:bg-slate-900 rounded-[6px] p-3.5 sm:p-4 border border-[#E2E0D8] dark:border-slate-800 shadow-2xs space-y-3">
+      <div className="bg-[#FFFFFF] rounded-[6px] p-3.5 sm:p-4 border border-[#E2E0D8] shadow-2xs space-y-3">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
           {/* Category scrolling tabs */}
           <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5 flex-1">
@@ -143,10 +143,10 @@ export default function ProductCatalog({
                 <button
                   key={cat}
                   onClick={() => onSelectCategoryFilter?.(cat)}
-                  className={`px-3 py-1.5 rounded-[4px] text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${
+                  className={`px-3 py-1.5 rounded-[4px] text-xs font-bold whitespace-nowrap transition-all cursor-pointer font-sans ${
                     isSelected
-                      ? 'bg-slate-950 dark:bg-white text-white dark:text-black font-black'
-                      : 'bg-[#F7F6F0] dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
+                      ? 'bg-slate-950 text-white font-black'
+                      : 'bg-[#F7F6F0] text-slate-700 hover:bg-slate-200'
                   }`}
                 >
                   {cat}
@@ -156,14 +156,14 @@ export default function ProductCatalog({
           </div>
 
           {/* Sort selector */}
-          <div className="flex items-center gap-2 shrink-0 self-end md:self-auto">
-            <span className="text-[10px] font-mono uppercase tracking-wider text-slate-400 hidden sm:inline flex items-center gap-1">
+          <div className="flex items-center gap-2 shrink-0 self-end md:self-auto font-sans">
+            <span className="text-[10px] uppercase font-bold tracking-wider text-slate-400 hidden sm:inline flex items-center gap-1 font-mono">
               <ArrowUpDown className="w-3 h-3" /> Sort:
             </span>
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value as any)}
-              className="px-3 py-1.5 rounded-[4px] bg-[#F7F6F0] dark:bg-slate-800 border border-[#E2E0D8] dark:border-slate-700 text-xs font-bold text-slate-800 dark:text-slate-200 focus:outline-none cursor-pointer"
+              className="px-3 py-1.5 rounded-[4px] bg-[#F7F6F0] border border-[#E2E0D8] text-xs font-bold text-slate-800 focus:outline-none cursor-pointer"
             >
               <option value="popular">Most Popular</option>
               <option value="lowestPrice">Price: Low to High</option>
@@ -174,16 +174,16 @@ export default function ProductCatalog({
         </div>
 
         {/* Filter status strip */}
-        <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 pt-2 border-t border-[#E2E0D8] dark:border-slate-800 font-mono">
+        <div className="flex items-center justify-between text-xs text-slate-500 pt-2 border-t border-[#E2E0D8] font-sans">
           <div className="flex items-center gap-2">
-            <span>{processedProducts.length} items in view</span>
+            <span className="font-semibold text-slate-700">{processedProducts.length} items in view</span>
             {activeSearch && (
-              <span className="bg-[#FFE600] text-black px-2 py-0.5 rounded-[3px] text-[10px] font-black uppercase">
+              <span className="bg-[#FFE600] text-black px-2 py-0.5 rounded-[2px] text-[10px] font-black uppercase font-mono">
                 "{activeSearch}"
               </span>
             )}
             {selectedCategoryFilter !== 'All' && (
-              <span className="text-slate-600 dark:text-slate-300 text-[11px]">
+              <span className="text-slate-600 text-[11px] font-medium">
                 • {selectedCategoryFilter}
               </span>
             )}
@@ -197,7 +197,7 @@ export default function ProductCatalog({
                 onSelectCategoryFilter?.('All');
                 onSelectStoreFilter?.('all');
               }}
-              className="text-[11px] text-slate-600 dark:text-slate-300 hover:text-black dark:hover:text-white underline cursor-pointer"
+              className="text-[11px] text-slate-600 hover:text-black underline cursor-pointer font-medium"
             >
               Reset filters
             </button>
@@ -233,26 +233,26 @@ export default function ProductCatalog({
           return (
             <div
               key={product.id}
-              className="bg-[#FFFFFF] dark:bg-slate-900 rounded-[6px] border border-[#E2E0D8] dark:border-slate-800 p-3.5 flex flex-col justify-between hover:border-slate-400 dark:hover:border-slate-600 transition-all duration-150"
+              className="bg-[#FFFFFF] rounded-[6px] border border-[#E2E0D8] p-3.5 flex flex-col justify-between hover:border-slate-400 transition-all duration-150 shadow-2xs"
               id={`product-card-${product.id}`}
             >
               <div>
                 {/* Product Image Container */}
                 <div 
                   onClick={() => setInspectProduct(product)}
-                  className="relative aspect-square w-full rounded-[4px] bg-[#F7F6F0] dark:bg-slate-800 p-3 mb-2.5 flex items-center justify-center cursor-pointer group"
+                  className="relative aspect-square w-full rounded-[4px] bg-[#F7F6F0] p-3 mb-2.5 flex items-center justify-center cursor-pointer group"
                 >
                   <img
                     src={product.imageUrl || 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=300'}
                     alt={product.name}
-                    className="w-full h-full object-contain mix-blend-multiply dark:mix-blend-normal group-hover:scale-105 transition-transform duration-200"
+                    className="w-full h-full object-contain mix-blend-multiply group-hover:scale-105 transition-transform duration-200"
                     loading="lazy"
                     onError={(e) => {
                       (e.target as HTMLImageElement).src = `https://placehold.co/200x200?text=${encodeURIComponent(product.name.charAt(0))}`;
                     }}
                   />
                   {product.unit && (
-                    <span className="absolute bottom-1.5 right-1.5 text-[9.5px] font-mono bg-white/90 dark:bg-slate-900/90 text-slate-700 dark:text-slate-300 px-1.5 py-0.5 rounded-[2px] border border-[#E2E0D8] dark:border-slate-700 font-bold">
+                    <span className="absolute bottom-1.5 right-1.5 text-[9.5px] font-mono bg-white/95 text-slate-700 px-1.5 py-0.5 rounded-[2px] border border-[#E2E0D8] font-bold">
                       {product.unit}
                     </span>
                   )}
@@ -265,20 +265,20 @@ export default function ProductCatalog({
                   </span>
                   <h4 
                     onClick={() => setInspectProduct(product)}
-                    className="font-bold text-slate-900 dark:text-white text-xs leading-snug line-clamp-2 hover:underline cursor-pointer"
+                    className="font-bold text-slate-900 text-xs leading-snug line-clamp-2 hover:underline cursor-pointer font-sans"
                   >
                     {product.name}
                   </h4>
                 </div>
 
                 {/* Lead with ONE Winning Price */}
-                <div className="pt-2 border-t border-[#E2E0D8] dark:border-slate-800 mb-3">
+                <div className="pt-2 border-t border-[#E2E0D8] mb-3">
                   <div className="flex items-baseline justify-between gap-1 mb-1">
-                    <span className="text-lg font-black text-slate-900 dark:text-white font-mono tracking-tight">
+                    <span className="text-lg font-black text-slate-950 font-mono tracking-tight tabular-nums">
                       R{cheapest ? cheapest.price.toFixed(2) : '--'}
                     </span>
                     {bestBadge && (
-                      <span className={`text-[9.5px] font-bold px-2 py-0.5 rounded-[3px] uppercase font-mono ${bestBadge.bg}`}>
+                      <span className={`text-[9.5px] font-bold px-2 py-0.5 rounded-[2px] uppercase font-mono ${bestBadge.bg}`}>
                         {bestBadge.label}
                       </span>
                     )}
@@ -288,13 +288,13 @@ export default function ProductCatalog({
                   {comparisonSummary ? (
                     <p 
                       onClick={() => setInspectProduct(product)}
-                      className="text-[10px] text-slate-500 dark:text-slate-400 font-mono truncate cursor-pointer hover:underline"
+                      className="text-[10.5px] text-slate-500 font-mono truncate cursor-pointer hover:underline"
                       title="Click to compare all 7 stores"
                     >
                       {comparisonSummary}
                     </p>
                   ) : (
-                    <p className="text-[10px] text-slate-400 font-mono">
+                    <p className="text-[10.5px] text-slate-400 font-mono">
                       Single store available
                     </p>
                   )}
@@ -302,12 +302,12 @@ export default function ProductCatalog({
               </div>
 
               {/* Action Buttons: Add / Stepper + Compare Link */}
-              <div className="flex items-center gap-2 pt-2 border-t border-[#E2E0D8] dark:border-slate-800">
+              <div className="flex items-center gap-2 pt-2 border-t border-[#E2E0D8]">
                 {basketQty > 0 ? (
-                  <div className="flex-1 flex items-center justify-between bg-slate-900 dark:bg-slate-800 text-white rounded-[4px] p-1">
+                  <div className="flex-1 flex items-center justify-between bg-slate-950 text-white rounded-[4px] p-1">
                     <button
                       onClick={() => updateQuantity(product.id, -1)}
-                      className="w-6 h-6 rounded-[2px] hover:bg-slate-700 flex items-center justify-center text-[#FFE600] active:scale-95 transition-all cursor-pointer"
+                      className="w-6 h-6 rounded-[2px] hover:bg-slate-800 flex items-center justify-center text-[#FFE600] active:scale-95 transition-all cursor-pointer"
                       aria-label="Decrease quantity"
                     >
                       <Minus className="w-3.5 h-3.5" />
@@ -317,7 +317,7 @@ export default function ProductCatalog({
                     </span>
                     <button
                       onClick={() => updateQuantity(product.id, 1)}
-                      className="w-6 h-6 rounded-[2px] hover:bg-slate-700 flex items-center justify-center text-[#FFE600] active:scale-95 transition-all cursor-pointer"
+                      className="w-6 h-6 rounded-[2px] hover:bg-slate-800 flex items-center justify-center text-[#FFE600] active:scale-95 transition-all cursor-pointer"
                       aria-label="Increase quantity"
                     >
                       <Plus className="w-3.5 h-3.5" />
@@ -326,7 +326,7 @@ export default function ProductCatalog({
                 ) : (
                   <button
                     onClick={() => addToBasket(product.id)}
-                    className="flex-1 py-2 px-3 rounded-[4px] bg-[#FFE600] hover:bg-yellow-400 active:scale-98 text-black font-extrabold text-xs transition-all cursor-pointer flex items-center justify-center gap-1.5"
+                    className="flex-1 py-2 px-3 rounded-[4px] bg-[#FFE600] hover:bg-yellow-400 active:scale-98 text-black font-extrabold text-xs transition-all cursor-pointer flex items-center justify-center gap-1.5 font-sans"
                   >
                     <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
                     <span>Add to Basket</span>
@@ -335,7 +335,7 @@ export default function ProductCatalog({
 
                 <button
                   onClick={() => setInspectProduct(product)}
-                  className="px-2.5 py-2 rounded-[4px] border border-[#E2E0D8] dark:border-slate-700 bg-[#F7F6F0] dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-[11px] font-bold font-mono transition-colors cursor-pointer"
+                  className="px-2.5 py-2 rounded-[4px] border border-[#E2E0D8] bg-[#F7F6F0] hover:bg-slate-200 text-slate-700 text-[11px] font-bold font-mono transition-colors cursor-pointer"
                   title="Compare all 7 stores"
                 >
                   Compare
@@ -347,14 +347,14 @@ export default function ProductCatalog({
 
         {/* Empty Search State */}
         {processedProducts.length === 0 && (
-          <div className="col-span-full py-16 text-center bg-[#FFFFFF] dark:bg-slate-900 rounded-[6px] border border-[#E2E0D8] dark:border-slate-800 p-6 space-y-3">
-            <div className="w-12 h-12 rounded-full bg-[#F7F6F0] dark:bg-slate-800 flex items-center justify-center text-slate-400 mx-auto">
+          <div className="col-span-full py-16 text-center bg-[#FFFFFF] rounded-[6px] border border-[#E2E0D8] p-6 space-y-3">
+            <div className="w-12 h-12 rounded-full bg-[#F7F6F0] flex items-center justify-center text-slate-400 mx-auto">
               <Search className="w-6 h-6" />
             </div>
-            <h4 className="font-bold text-slate-900 dark:text-white text-sm">
+            <h4 className="font-bold text-slate-900 text-sm font-sans">
               No products found matching "{activeSearch}"
             </h4>
-            <p className="text-xs text-slate-500 max-w-sm mx-auto">
+            <p className="text-xs text-slate-500 max-w-sm mx-auto font-sans">
               Try searching for basic grocery staples like milk, bread, sunflower oil, eggs, or rice.
             </p>
           </div>
@@ -370,34 +370,34 @@ export default function ProductCatalog({
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setInspectProduct(null)}
-              className="fixed inset-0 bg-black/60 backdrop-blur-xs"
+              className="fixed inset-0 bg-black/50 backdrop-blur-xs"
             />
 
             <motion.div
               initial={{ scale: 0.98, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.98, opacity: 0 }}
-              className="bg-white dark:bg-slate-900 rounded-[6px] p-5 sm:p-6 max-w-xl w-full max-h-[90vh] overflow-y-auto shadow-xl relative z-10 border border-[#E2E0D8] dark:border-slate-800 space-y-5"
+              className="bg-white rounded-[6px] p-5 sm:p-6 max-w-xl w-full max-h-[90vh] overflow-y-auto shadow-xl relative z-10 border border-[#E2E0D8] space-y-5"
             >
-              <div className="flex items-start justify-between border-b border-[#E2E0D8] dark:border-slate-800 pb-4">
+              <div className="flex items-start justify-between border-b border-[#E2E0D8] pb-4">
                 <div className="flex items-center gap-3.5">
                   <img
                     src={inspectProduct.imageUrl || 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=120'}
                     alt={inspectProduct.name}
-                    className="w-14 h-14 rounded-[4px] object-contain bg-[#F7F6F0] dark:bg-slate-800 p-2 border border-[#E2E0D8] dark:border-slate-700 shrink-0"
+                    className="w-14 h-14 rounded-[4px] object-contain bg-[#F7F6F0] p-2 border border-[#E2E0D8] shrink-0"
                   />
                   <div>
                     <span className="text-[10px] font-mono uppercase tracking-widest text-slate-400 block">
                       {inspectProduct.category} • {inspectProduct.unit}
                     </span>
-                    <h3 className="text-base font-bold text-slate-900 dark:text-white leading-tight">
+                    <h3 className="text-base font-bold text-slate-950 leading-tight font-sans">
                       {inspectProduct.name}
                     </h3>
                   </div>
                 </div>
                 <button
                   onClick={() => setInspectProduct(null)}
-                  className="w-8 h-8 rounded-[4px] bg-[#F7F6F0] dark:bg-slate-800 flex items-center justify-center text-slate-500 hover:text-black dark:hover:text-white transition-all cursor-pointer"
+                  className="w-8 h-8 rounded-[4px] bg-[#F7F6F0] flex items-center justify-center text-slate-500 hover:text-black transition-all cursor-pointer"
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -408,7 +408,7 @@ export default function ProductCatalog({
                 <h5 className="text-xs font-mono font-bold uppercase tracking-wider text-slate-500">
                   Store Price Breakdown
                 </h5>
-                <div className="space-y-1.5">
+                <div className="space-y-1.5 font-sans">
                   {[...inspectProduct.prices].sort((a, b) => a.price - b.price).map((pr, idx) => {
                     const store = STORES.find(s => s.id === pr.storeId);
                     const isLowest = idx === 0;
@@ -417,22 +417,22 @@ export default function ProductCatalog({
                         key={pr.storeId}
                         className={`p-3 rounded-[4px] flex items-center justify-between border ${
                           isLowest 
-                            ? 'bg-[#F0FDF4] dark:bg-emerald-950/40 border-emerald-300 dark:border-emerald-800' 
-                            : 'bg-[#F7F6F0] dark:bg-slate-800/40 border-[#E2E0D8] dark:border-slate-700'
+                            ? 'bg-[#F0FDF4] border-emerald-300' 
+                            : 'bg-[#F7F6F0] border-[#E2E0D8]'
                         }`}
                       >
                         <div className="flex items-center gap-2.5">
                           <span className={`w-5 h-5 rounded-[2px] flex items-center justify-center text-[10px] font-mono font-bold ${
-                            isLowest ? 'bg-emerald-700 text-white' : 'bg-slate-300 dark:bg-slate-700 text-slate-800 dark:text-slate-200'
+                            isLowest ? 'bg-emerald-700 text-white' : 'bg-slate-300 text-slate-800'
                           }`}>
                             {idx + 1}
                           </span>
                           <div>
-                            <span className="text-xs font-bold text-slate-900 dark:text-white block">
+                            <span className="text-xs font-bold text-slate-900 block font-sans">
                               {store?.name || pr.storeId}
                             </span>
                             {pr.onSpecial && (
-                              <span className="text-[10px] font-bold text-amber-700 dark:text-amber-400 font-mono">
+                              <span className="text-[10px] font-bold text-amber-700 font-mono">
                                 {pr.specialDetail || 'Special Deal'}
                               </span>
                             )}
@@ -440,11 +440,11 @@ export default function ProductCatalog({
                         </div>
 
                         <div className="text-right">
-                          <span className={`text-sm font-black font-mono ${isLowest ? 'text-emerald-700 dark:text-emerald-400' : 'text-slate-900 dark:text-white'}`}>
+                          <span className={`text-sm font-black font-mono ${isLowest ? 'text-emerald-700' : 'text-slate-900'}`}>
                             R{pr.price.toFixed(2)}
                           </span>
                           {isLowest && (
-                            <span className="block text-[9px] font-bold text-emerald-700 dark:text-emerald-400 uppercase font-mono">
+                            <span className="block text-[9px] font-bold text-emerald-700 uppercase font-mono">
                               Cheapest
                             </span>
                           )}
@@ -461,7 +461,7 @@ export default function ProductCatalog({
               </div>
 
               {/* Modal Actions: Add to Basket + Subtle Report Discrepancy Link */}
-              <div className="pt-2 border-t border-[#E2E0D8] dark:border-slate-800 space-y-3">
+              <div className="pt-2 border-t border-[#E2E0D8] space-y-3 font-sans">
                 <button
                   onClick={() => {
                     addToBasket(inspectProduct.id);
@@ -481,7 +481,7 @@ export default function ProductCatalog({
                       setInspectProduct(null);
                       onReportDiscrepancy?.(prodToReport);
                     }}
-                    className="text-[11px] text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 underline underline-offset-2 inline-flex items-center gap-1 cursor-pointer"
+                    className="text-[11px] text-slate-400 hover:text-slate-700 underline underline-offset-2 inline-flex items-center gap-1 cursor-pointer"
                   >
                     <AlertCircle className="w-3.5 h-3.5" />
                     <span>Wrong price? Report discrepancy</span>

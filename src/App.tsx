@@ -20,8 +20,6 @@ import {
   ChevronDown, 
   Scan, 
   X, 
-  Moon, 
-  Sun, 
   Check 
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
@@ -41,12 +39,10 @@ const SA_PROVINCES = [
 interface MainPageProps {
   user: UserProfile | null | undefined;
   setUser: (user: UserProfile | null) => void;
-  isDarkMode: boolean;
-  onToggleDarkMode: (isDark: boolean) => void;
 }
 
-function MainPage({ user, setUser, isDarkMode, onToggleDarkMode }: MainPageProps) {
-  // 4 clean core views
+function MainPage({ user, setUser }: MainPageProps) {
+  // 4 clean core views: Groceries, Specials, Shopping List, Inflation Index
   const [activeTab, setActiveTab] = useState<'catalog' | 'specials' | 'lists' | 'stats' | 'settings'>('catalog');
   const [products, setProducts] = useState<Product[]>([]);
   const [basket, setBasket] = useState<BasketItem[]>([]);
@@ -241,10 +237,10 @@ function MainPage({ user, setUser, isDarkMode, onToggleDarkMode }: MainPageProps
   };
 
   return (
-    <div id="chuse-container" className="min-h-screen bg-[#F7F6F0] dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-sans selection:bg-[#FFE600] selection:text-black transition-colors duration-200">
+    <div id="chuse-container" className="min-h-screen bg-[#F7F6F0] text-slate-900 font-sans selection:bg-[#FFE600] selection:text-black">
       
-      {/* Clean Single Utility Header */}
-      <header className="bg-[#FFFFFF] dark:bg-slate-900 border-b border-[#E2E0D8] dark:border-slate-800 sticky top-0 z-30 transition-colors">
+      {/* Clean Utility Header */}
+      <header className="bg-[#FFFFFF] border-b border-[#E2E0D8] sticky top-0 z-30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
           <div className="flex items-center justify-between gap-3 sm:gap-6">
             
@@ -255,7 +251,7 @@ function MainPage({ user, setUser, isDarkMode, onToggleDarkMode }: MainPageProps
                 onClick={() => { setActiveTab('catalog'); setSelectedStoreFilter('all'); setSelectedCategoryFilter('All'); }}
                 className="flex items-center gap-1.5 cursor-pointer group"
               >
-                <span className="text-2xl font-black font-mono lowercase tracking-tight text-slate-900 dark:text-white leading-none">
+                <span className="text-2xl font-black font-display lowercase tracking-tight text-slate-950 leading-none">
                   chuse<span className="text-[#FFE600] text-3xl font-black">.</span>
                 </span>
               </Link>
@@ -263,7 +259,7 @@ function MainPage({ user, setUser, isDarkMode, onToggleDarkMode }: MainPageProps
               {/* Province Dropdown Trigger */}
               <button
                 onClick={() => setIsProvinceModalOpen(true)}
-                className="flex items-center gap-1 text-xs font-mono font-bold text-slate-600 dark:text-slate-300 hover:text-black dark:hover:text-white px-2 py-1 rounded-[4px] border border-[#E2E0D8] dark:border-slate-700 bg-[#F7F6F0] dark:bg-slate-800 cursor-pointer"
+                className="flex items-center gap-1 text-xs font-bold text-slate-700 hover:text-black px-2.5 py-1 rounded-[4px] border border-[#E2E0D8] bg-[#F7F6F0] cursor-pointer"
                 title="Change shopping province"
               >
                 <MapPin className="w-3.5 h-3.5 text-rose-600" />
@@ -272,7 +268,7 @@ function MainPage({ user, setUser, isDarkMode, onToggleDarkMode }: MainPageProps
               </button>
             </div>
 
-            {/* Omnipresent Clean Search Input with Embedded Barcode Scan Icon */}
+            {/* Clean Omnipresent Search Input with Embedded Barcode Scan Icon */}
             <div className="flex-1 max-w-xl relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
               <input
@@ -288,13 +284,13 @@ function MainPage({ user, setUser, isDarkMode, onToggleDarkMode }: MainPageProps
                   }
                 }}
                 placeholder="Search groceries across Checkers, Pick n Pay, Woolies..."
-                className="w-full pl-9 pr-16 py-2 rounded-[4px] bg-[#F7F6F0] dark:bg-slate-800 border border-[#E2E0D8] dark:border-slate-700 text-xs sm:text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-slate-900 dark:focus:border-[#FFE600] transition-colors"
+                className="w-full pl-9 pr-16 py-2 rounded-[4px] bg-[#F7F6F0] border border-[#E2E0D8] text-xs sm:text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-slate-900 transition-colors"
               />
               <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
                 {globalSearchTerm && (
                   <button
                     onClick={() => setGlobalSearchTerm('')}
-                    className="p-1 text-slate-400 hover:text-black dark:hover:text-white cursor-pointer"
+                    className="p-1 text-slate-400 hover:text-black cursor-pointer"
                   >
                     <X className="w-3.5 h-3.5" />
                   </button>
@@ -302,7 +298,7 @@ function MainPage({ user, setUser, isDarkMode, onToggleDarkMode }: MainPageProps
                 {/* Embedded Barcode Scan Button */}
                 <button
                   onClick={() => setIsBarcodeModalOpen(true)}
-                  className="p-1 text-slate-500 hover:text-black dark:hover:text-[#FFE600] transition-colors cursor-pointer"
+                  className="p-1 text-slate-500 hover:text-black transition-colors cursor-pointer"
                   title="Scan barcode with camera"
                 >
                   <Scan className="w-4 h-4" />
@@ -310,32 +306,24 @@ function MainPage({ user, setUser, isDarkMode, onToggleDarkMode }: MainPageProps
               </div>
             </div>
 
-            {/* Right Utility Actions: Theme Toggle + User + Cart Drawer Button */}
+            {/* Right Utility Actions: User + Cart Drawer Button */}
             <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-              <button
-                onClick={() => onToggleDarkMode(!isDarkMode)}
-                className="p-1.5 rounded-[4px] border border-[#E2E0D8] dark:border-slate-700 text-slate-500 hover:text-black dark:hover:text-white cursor-pointer"
-                title={isDarkMode ? "Light mode" : "Dark mode"}
-              >
-                {isDarkMode ? <Sun className="w-3.5 h-3.5 text-amber-400" /> : <Moon className="w-3.5 h-3.5" />}
-              </button>
-
               {user ? (
                 <button
                   onClick={() => setActiveTab('settings')}
-                  className="flex items-center gap-2 text-xs font-bold text-slate-800 dark:text-slate-200 hover:underline cursor-pointer"
+                  className="flex items-center gap-2 text-xs font-bold text-slate-800 hover:underline cursor-pointer"
                 >
                   <img 
                     src={user.avatarUrl} 
                     alt="User" 
-                    className="w-6 h-6 rounded-full bg-slate-200 border border-slate-300 dark:border-slate-700 object-cover"
+                    className="w-6 h-6 rounded-full bg-slate-200 border border-slate-300 object-cover"
                   />
                   <span className="hidden md:inline">{user.displayName}</span>
                 </button>
               ) : (
                 <Link
                   to="/auth"
-                  className="text-xs font-mono font-bold text-slate-700 dark:text-slate-300 hover:text-black dark:hover:text-white underline decoration-slate-300 cursor-pointer px-1"
+                  className="text-xs font-bold text-slate-700 hover:text-black underline decoration-slate-300 cursor-pointer px-1"
                 >
                   Sign In
                 </Link>
@@ -345,10 +333,10 @@ function MainPage({ user, setUser, isDarkMode, onToggleDarkMode }: MainPageProps
               <button
                 id="header-cart-button"
                 onClick={() => setIsCartOpen(true)}
-                className="flex items-center gap-2 px-3 py-1.5 rounded-[4px] bg-[#FFE600] hover:bg-yellow-400 text-black font-extrabold text-xs font-mono cursor-pointer transition-colors border border-yellow-400 shadow-2xs"
+                className="flex items-center gap-2 px-3.5 py-1.5 rounded-[4px] bg-[#FFE600] hover:bg-yellow-400 text-black font-extrabold text-xs cursor-pointer transition-colors border border-yellow-400 shadow-2xs"
               >
                 <ShoppingBag className="w-4 h-4 stroke-[2.5]" />
-                <span>
+                <span className="font-mono">
                   {basketItemCount === 0 ? 'Cart' : `R${basketLowestTotal.toFixed(2)} (${basketItemCount})`}
                 </span>
               </button>
@@ -356,13 +344,13 @@ function MainPage({ user, setUser, isDarkMode, onToggleDarkMode }: MainPageProps
           </div>
 
           {/* 4 Clean Text-Only Navigation Links - NO ICONS */}
-          <nav className="flex items-center gap-8 border-t border-[#E2E0D8] dark:border-slate-800 mt-3 pt-2 text-xs sm:text-sm font-mono tracking-wide overflow-x-auto no-scrollbar">
+          <nav className="flex items-center gap-8 border-t border-[#E2E0D8] mt-3 pt-2 text-xs sm:text-sm font-semibold tracking-wide overflow-x-auto no-scrollbar">
             <button
               onClick={() => setActiveTab('catalog')}
-              className={`py-1.5 font-bold whitespace-nowrap transition-colors cursor-pointer ${
+              className={`py-1.5 whitespace-nowrap transition-colors cursor-pointer ${
                 activeTab === 'catalog'
-                  ? 'text-black dark:text-white border-b-2 border-black dark:border-[#FFE600]'
-                  : 'text-slate-500 hover:text-black dark:hover:text-white'
+                  ? 'text-black border-b-2 border-black font-bold'
+                  : 'text-slate-500 hover:text-black'
               }`}
             >
               Groceries
@@ -370,10 +358,10 @@ function MainPage({ user, setUser, isDarkMode, onToggleDarkMode }: MainPageProps
 
             <button
               onClick={() => setActiveTab('specials')}
-              className={`py-1.5 font-bold whitespace-nowrap transition-colors cursor-pointer ${
+              className={`py-1.5 whitespace-nowrap transition-colors cursor-pointer ${
                 activeTab === 'specials'
-                  ? 'text-black dark:text-white border-b-2 border-black dark:border-[#FFE600]'
-                  : 'text-slate-500 hover:text-black dark:hover:text-white'
+                  ? 'text-black border-b-2 border-black font-bold'
+                  : 'text-slate-500 hover:text-black'
               }`}
             >
               Specials
@@ -381,10 +369,10 @@ function MainPage({ user, setUser, isDarkMode, onToggleDarkMode }: MainPageProps
 
             <button
               onClick={() => setActiveTab('lists')}
-              className={`py-1.5 font-bold whitespace-nowrap transition-colors cursor-pointer ${
+              className={`py-1.5 whitespace-nowrap transition-colors cursor-pointer ${
                 activeTab === 'lists'
-                  ? 'text-black dark:text-white border-b-2 border-black dark:border-[#FFE600]'
-                  : 'text-slate-500 hover:text-black dark:hover:text-white'
+                  ? 'text-black border-b-2 border-black font-bold'
+                  : 'text-slate-500 hover:text-black'
               }`}
             >
               Shopping List
@@ -392,10 +380,10 @@ function MainPage({ user, setUser, isDarkMode, onToggleDarkMode }: MainPageProps
 
             <button
               onClick={() => setActiveTab('stats')}
-              className={`py-1.5 font-bold whitespace-nowrap transition-colors cursor-pointer ${
+              className={`py-1.5 whitespace-nowrap transition-colors cursor-pointer ${
                 activeTab === 'stats'
-                  ? 'text-black dark:text-white border-b-2 border-black dark:border-[#FFE600]'
-                  : 'text-slate-500 hover:text-black dark:hover:text-white'
+                  ? 'text-black border-b-2 border-black font-bold'
+                  : 'text-slate-500 hover:text-black'
               }`}
             >
               Inflation Index
@@ -492,19 +480,17 @@ function MainPage({ user, setUser, isDarkMode, onToggleDarkMode }: MainPageProps
                 onClearBasket={clearBasket} 
                 products={products} 
                 onUpdateProducts={saveProducts}
-                isDarkMode={isDarkMode}
-                onToggleDarkMode={onToggleDarkMode}
               />
             )}
           </motion.div>
         </AnimatePresence>
 
         {/* Tactile Newspaper / Retail Footer */}
-        <footer className="mt-16 py-8 border-t border-[#E2E0D8] dark:border-slate-800 flex flex-col md:flex-row justify-between items-center text-center md:text-left gap-3 text-[11px] font-mono text-slate-500 dark:text-slate-400">
+        <footer className="mt-16 py-8 border-t border-[#E2E0D8] flex flex-col md:flex-row justify-between items-center text-center md:text-left gap-3 text-xs text-slate-500">
           <div>
-            <span className="font-bold text-slate-900 dark:text-white">chuse.</span> — South African Supermarket Price Comparison
+            <span className="font-bold font-display text-slate-900 text-sm">chuse.</span> — South African Supermarket Price Comparison
           </div>
-          <div className="flex gap-4 flex-wrap justify-center">
+          <div className="flex gap-4 flex-wrap justify-center text-xs">
             <span>Checkers</span>
             <span>•</span>
             <span>Pick n Pay</span>
@@ -535,15 +521,15 @@ function MainPage({ user, setUser, isDarkMode, onToggleDarkMode }: MainPageProps
       {/* Embedded Barcode Scanner Modal */}
       {isBarcodeModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
-          <div className="bg-white dark:bg-slate-900 rounded-[6px] max-w-lg w-full p-5 shadow-2xl border border-[#E2E0D8] dark:border-slate-800 relative">
-            <div className="flex items-center justify-between pb-3 border-b border-[#E2E0D8] dark:border-slate-800 mb-4">
+          <div className="bg-white rounded-[6px] max-w-lg w-full p-5 shadow-2xl border border-[#E2E0D8] relative">
+            <div className="flex items-center justify-between pb-3 border-b border-[#E2E0D8] mb-4">
               <div className="flex items-center gap-2">
-                <Scan className="w-4 h-4 text-slate-900 dark:text-white" />
-                <h3 className="font-mono font-bold text-sm uppercase">Scan Grocery Barcode</h3>
+                <Scan className="w-4 h-4 text-slate-900" />
+                <h3 className="font-bold text-sm uppercase font-display">Scan Grocery Barcode</h3>
               </div>
               <button
                 onClick={() => setIsBarcodeModalOpen(false)}
-                className="w-7 h-7 rounded-[4px] bg-[#F7F6F0] dark:bg-slate-800 flex items-center justify-center text-slate-500 hover:text-black dark:hover:text-white"
+                className="w-7 h-7 rounded-[4px] bg-[#F7F6F0] flex items-center justify-center text-slate-500 hover:text-black"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -563,12 +549,12 @@ function MainPage({ user, setUser, isDarkMode, onToggleDarkMode }: MainPageProps
       {/* Embedded Price Discrepancy Reporter Modal */}
       {isReportModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
-          <div className="bg-white dark:bg-slate-900 rounded-[6px] max-w-lg w-full p-5 shadow-2xl border border-[#E2E0D8] dark:border-slate-800 relative max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between pb-3 border-b border-[#E2E0D8] dark:border-slate-800 mb-4">
-              <h3 className="font-mono font-bold text-sm uppercase">Report Price Discrepancy</h3>
+          <div className="bg-white rounded-[6px] max-w-lg w-full p-5 shadow-2xl border border-[#E2E0D8] relative max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between pb-3 border-b border-[#E2E0D8] mb-4">
+              <h3 className="font-bold text-sm uppercase font-display">Report Price Discrepancy</h3>
               <button
                 onClick={() => setIsReportModalOpen(false)}
-                className="w-7 h-7 rounded-[4px] bg-[#F7F6F0] dark:bg-slate-800 flex items-center justify-center text-slate-500 hover:text-black dark:hover:text-white"
+                className="w-7 h-7 rounded-[4px] bg-[#F7F6F0] flex items-center justify-center text-slate-500 hover:text-black"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -582,15 +568,15 @@ function MainPage({ user, setUser, isDarkMode, onToggleDarkMode }: MainPageProps
       {/* South African Province Selector Modal */}
       {isProvinceModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
-          <div className="bg-white dark:bg-slate-900 rounded-[6px] max-w-md w-full p-5 shadow-2xl border border-[#E2E0D8] dark:border-slate-800">
-            <div className="flex items-center justify-between pb-3 border-b border-[#E2E0D8] dark:border-slate-800">
+          <div className="bg-white rounded-[6px] max-w-md w-full p-5 shadow-2xl border border-[#E2E0D8]">
+            <div className="flex items-center justify-between pb-3 border-b border-[#E2E0D8]">
               <div className="flex items-center gap-2">
                 <MapPin className="w-4 h-4 text-rose-600" />
-                <h3 className="font-mono font-bold text-sm uppercase">Select Your Province</h3>
+                <h3 className="font-bold text-sm uppercase font-display">Select Your Province</h3>
               </div>
               <button
                 onClick={() => setIsProvinceModalOpen(false)}
-                className="w-7 h-7 rounded-[4px] bg-[#F7F6F0] dark:bg-slate-800 flex items-center justify-center text-slate-500 hover:text-black dark:hover:text-white"
+                className="w-7 h-7 rounded-[4px] bg-[#F7F6F0] flex items-center justify-center text-slate-500 hover:text-black"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -606,12 +592,12 @@ function MainPage({ user, setUser, isDarkMode, onToggleDarkMode }: MainPageProps
                     className={`flex items-center justify-between p-2.5 rounded-[4px] text-left transition-colors cursor-pointer border ${
                       isSelected
                         ? 'bg-[#FFE600] border-yellow-400 text-black font-extrabold'
-                        : 'bg-[#F7F6F0] dark:bg-slate-800/60 border-[#E2E0D8] dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-800'
+                        : 'bg-[#F7F6F0] border-[#E2E0D8] text-slate-700 hover:bg-slate-200'
                     }`}
                   >
                     <div>
                       <span className="block text-xs font-bold">{prov.name}</span>
-                      <span className="text-[10px] text-slate-500 font-mono">{prov.hub}</span>
+                      <span className="text-[10px] text-slate-500">{prov.hub}</span>
                     </div>
                     {isSelected && (
                       <Check className="w-4 h-4 text-black stroke-[3]" />
@@ -621,10 +607,10 @@ function MainPage({ user, setUser, isDarkMode, onToggleDarkMode }: MainPageProps
               })}
             </div>
 
-            <div className="mt-4 pt-3 border-t border-[#E2E0D8] dark:border-slate-800 flex justify-end">
+            <div className="mt-4 pt-3 border-t border-[#E2E0D8] flex justify-end">
               <button
                 onClick={() => setIsProvinceModalOpen(false)}
-                className="px-4 py-1.5 rounded-[4px] bg-slate-900 dark:bg-white text-white dark:text-black font-mono font-bold text-xs uppercase cursor-pointer"
+                className="px-4 py-1.5 rounded-[4px] bg-slate-900 text-white font-bold text-xs uppercase cursor-pointer"
               >
                 Done
               </button>
@@ -637,20 +623,11 @@ function MainPage({ user, setUser, isDarkMode, onToggleDarkMode }: MainPageProps
 }
 
 export default function App() {
-  const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
-    const saved = localStorage.getItem('theme');
-    if (saved) return saved === 'dark';
-    return false;
-  });
-
+  // Permanently clear dark mode class from html and localStorage
   useEffect(() => {
-    if (isDarkMode) {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
-    localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
-  }, [isDarkMode]);
+    document.documentElement.classList.remove('dark');
+    localStorage.removeItem('theme');
+  }, []);
 
   const [user, setUser] = useState<UserProfile | null | undefined>(undefined);
 
@@ -714,8 +691,8 @@ export default function App() {
   return (
     <Router>
       <Routes>
-        {/* Live catalog is open to everyone without an auth wall! */}
-        <Route path="/" element={<MainPage user={user} setUser={setUser} isDarkMode={isDarkMode} onToggleDarkMode={setIsDarkMode} />} />
+        {/* Open live catalog with professional typography and clean retail theme */}
+        <Route path="/" element={<MainPage user={user} setUser={setUser} />} />
         <Route path="/auth" element={<AuthenticationPage setUser={setUser} />} />
       </Routes>
     </Router>

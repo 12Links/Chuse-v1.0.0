@@ -13,9 +13,7 @@ import {
   Save, 
   Trash2, 
   Briefcase,
-  AlertTriangle,
-  Sun,
-  Moon
+  AlertTriangle
 } from 'lucide-react';
 import { UserProfile, Product } from '../types';
 import { updateUserProfile } from '../lib/api';
@@ -27,8 +25,6 @@ interface SettingsPageProps {
   onClearBasket: () => void;
   products: Product[];
   onUpdateProducts: (updatedProducts: Product[]) => void;
-  isDarkMode: boolean;
-  onToggleDarkMode: (isDark: boolean) => void;
 }
 
 export default function SettingsPage({ 
@@ -37,9 +33,7 @@ export default function SettingsPage({
   onLogout, 
   onClearBasket, 
   products, 
-  onUpdateProducts,
-  isDarkMode,
-  onToggleDarkMode
+  onUpdateProducts
 }: SettingsPageProps) {
   const [displayName, setDisplayName] = useState(user?.displayName || 'Guest User');
   const [email, setEmail] = useState(user?.email || 'guest@chuse.co.za');
@@ -226,43 +220,8 @@ export default function SettingsPage({
         {/* Main Settings Panel */}
         <div className="md:col-span-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-[28px] p-6 sm:p-8 shadow-xs space-y-6 text-left transition-colors duration-200">
           <form onSubmit={handleSave} className="space-y-8">
-            
-            {/* Theme Preference Toggle */}
-            <div className="space-y-4">
-              <h3 className="font-black text-slate-800 dark:text-white text-base flex items-center gap-2">
-                {isDarkMode ? <Moon className="w-5 h-5 text-indigo-400" /> : <Sun className="w-5 h-5 text-amber-500" />}
-                Theme Preference
-              </h3>
-              
-              <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-950 border border-slate-200/60 dark:border-slate-800 rounded-2xl">
-                <div>
-                  <span className="text-xs font-black text-slate-800 dark:text-white block uppercase tracking-wider">Low-Light Dark Mode</span>
-                  <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 block mt-0.5">High-contrast visual design optimized for low-light readability</span>
-                </div>
-                
-                <button
-                  type="button"
-                  id="settings-theme-toggle"
-                  onClick={() => onToggleDarkMode(!isDarkMode)}
-                  className={`relative inline-flex h-6.5 w-12 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-[#FFE600] focus:ring-offset-2 ${
-                    isDarkMode ? 'bg-[#FFE600]' : 'bg-slate-300 dark:bg-slate-850'
-                  }`}
-                  role="switch"
-                  aria-checked={isDarkMode}
-                >
-                  <span className="sr-only">Toggle Dark Mode</span>
-                  <span
-                    aria-hidden="true"
-                    className={`pointer-events-none inline-block h-5.5 w-5.5 transform rounded-full bg-white dark:bg-slate-950 shadow-sm ring-0 transition duration-200 ease-in-out ${
-                      isDarkMode ? 'translate-x-[22px]' : 'translate-x-0'
-                    }`}
-                  />
-                </button>
-              </div>
-            </div>
-
             {/* Profile Inputs */}
-            <div className="space-y-4 pt-2 border-t border-slate-100 dark:border-slate-800/80">
+            <div className="space-y-4">
               <h3 className="font-black text-slate-800 dark:text-white text-base flex items-center gap-2">
                 <User className="w-5 h-5 text-amber-600 dark:text-amber-500" />
                 Profile Information

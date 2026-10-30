@@ -8,9 +8,7 @@ import {
   Minus, 
   ShoppingBag, 
   Share2, 
-  ArrowRight,
-  TrendingDown,
-  RefreshCw
+  TrendingDown 
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -176,29 +174,29 @@ export default function CartDrawer({
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
             transition={{ type: 'spring', damping: 30, stiffness: 350 }}
-            className="fixed inset-y-0 right-0 w-full max-w-md bg-[#FFFFFF] dark:bg-slate-900 shadow-2xl z-55 flex flex-col border-l border-[#E2E0D8] dark:border-slate-800"
+            className="fixed inset-y-0 right-0 w-full max-w-md bg-[#FFFFFF] shadow-2xl z-55 flex flex-col border-l border-[#E2E0D8]"
           >
             {/* Header */}
-            <div className="p-4 border-b border-[#E2E0D8] dark:border-slate-800 flex items-center justify-between bg-[#F7F6F0] dark:bg-slate-900">
+            <div className="p-4 border-b border-[#E2E0D8] flex items-center justify-between bg-[#F7F6F0]">
               <div className="flex items-center gap-2.5">
                 <div className="w-8 h-8 rounded-[4px] bg-[#FFE600] flex items-center justify-center text-black font-black">
                   <ShoppingBag className="w-4 h-4" />
                 </div>
                 <div>
-                  <h3 className="text-sm font-bold text-slate-900 dark:text-white uppercase font-mono flex items-center gap-2">
+                  <h3 className="text-sm font-bold text-slate-900 uppercase font-display flex items-center gap-2">
                     My Basket
-                    <span className="text-[11px] bg-slate-200 dark:bg-slate-800 px-1.5 py-0.2 rounded font-mono">
+                    <span className="text-[11px] bg-slate-200 px-1.5 py-0.2 rounded font-mono">
                       {totalItemsCount} items
                     </span>
                   </h3>
-                  <span className="text-[10px] text-slate-500 font-mono">
+                  <span className="text-[10px] text-slate-500 font-sans">
                     Real-time multi-retailer optimizer
                   </span>
                 </div>
               </div>
               <button
                 onClick={onClose}
-                className="w-8 h-8 rounded-[4px] bg-white dark:bg-slate-800 border border-[#E2E0D8] dark:border-slate-700 flex items-center justify-center text-slate-500 hover:text-black dark:hover:text-white cursor-pointer"
+                className="w-8 h-8 rounded-[4px] bg-white border border-[#E2E0D8] flex items-center justify-center text-slate-500 hover:text-black cursor-pointer"
                 aria-label="Close Basket"
               >
                 <X className="w-4 h-4" />
@@ -207,10 +205,10 @@ export default function CartDrawer({
 
             {/* Split Savings Banner */}
             {basketDetails.length > 0 && totalPotentialSavings > 0 && (
-              <div className="bg-[#F0FDF4] dark:bg-emerald-950/40 border-b border-emerald-200 dark:border-emerald-800 p-3 px-4 flex items-center justify-between font-mono">
+              <div className="bg-[#F0FDF4] border-b border-emerald-200 p-3 px-4 flex items-center justify-between font-mono">
                 <div className="flex items-center gap-2">
-                  <TrendingDown className="w-4 h-4 text-emerald-700 dark:text-emerald-400" />
-                  <span className="text-xs font-bold text-emerald-800 dark:text-emerald-300">
+                  <TrendingDown className="w-4 h-4 text-emerald-700" />
+                  <span className="text-xs font-bold text-emerald-800">
                     Split basket saves R{totalPotentialSavings.toFixed(2)} vs highest
                   </span>
                 </div>
@@ -218,13 +216,13 @@ export default function CartDrawer({
             )}
 
             {/* Scrollable Items List */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-3">
+            <div className="flex-1 overflow-y-auto p-4 space-y-3 font-sans">
               {basketDetails.length === 0 ? (
                 <div className="py-20 text-center space-y-3">
-                  <div className="w-12 h-12 rounded-full bg-[#F7F6F0] dark:bg-slate-800 flex items-center justify-center text-slate-400 mx-auto">
+                  <div className="w-12 h-12 rounded-full bg-[#F7F6F0] flex items-center justify-center text-slate-400 mx-auto">
                     <ShoppingBag className="w-6 h-6" />
                   </div>
-                  <h4 className="text-sm font-bold text-slate-900 dark:text-white">
+                  <h4 className="text-sm font-bold text-slate-900 font-sans">
                     Your basket is empty
                   </h4>
                   <p className="text-xs text-slate-500 max-w-xs mx-auto">
@@ -246,20 +244,20 @@ export default function CartDrawer({
                       return (
                         <div
                           key={item.product.id}
-                          className="p-3 rounded-[4px] border border-[#E2E0D8] dark:border-slate-800 bg-[#FFFFFF] dark:bg-slate-900 flex items-center justify-between gap-3"
+                          className="p-3 rounded-[4px] border border-[#E2E0D8] bg-[#FFFFFF] flex items-center justify-between gap-3 shadow-2xs"
                         >
                           <img
                             src={item.product.imageUrl || 'https://placehold.co/80x80'}
                             alt={item.product.name}
-                            className="w-12 h-12 object-contain bg-[#F7F6F0] dark:bg-slate-800 p-1.5 rounded-[2px] border border-[#E2E0D8] dark:border-slate-800 shrink-0"
+                            className="w-12 h-12 object-contain bg-[#F7F6F0] p-1.5 rounded-[2px] border border-[#E2E0D8] shrink-0"
                           />
 
                           <div className="flex-1 min-w-0">
-                            <h5 className="text-xs font-bold text-slate-900 dark:text-white truncate">
+                            <h5 className="text-xs font-bold text-slate-900 truncate font-sans">
                               {item.product.name}
                             </h5>
                             <div className="flex items-center gap-2 mt-0.5 text-[11px] font-mono">
-                              <span className="font-extrabold text-slate-900 dark:text-white">
+                              <span className="font-extrabold text-slate-900">
                                 R{item.bestPrice.toFixed(2)}
                               </span>
                               <span className="text-[10px] text-slate-500 uppercase">
@@ -270,19 +268,19 @@ export default function CartDrawer({
 
                           {/* Stepper + Delete */}
                           <div className="flex items-center gap-1.5 shrink-0">
-                            <div className="flex items-center border border-[#E2E0D8] dark:border-slate-700 rounded-[3px] bg-[#F7F6F0] dark:bg-slate-800">
+                            <div className="flex items-center border border-[#E2E0D8] rounded-[3px] bg-[#F7F6F0]">
                               <button
                                 onClick={() => updateQuantity(item.product.id, -1)}
-                                className="w-6 h-6 flex items-center justify-center text-slate-600 dark:text-slate-300 hover:text-black cursor-pointer"
+                                className="w-6 h-6 flex items-center justify-center text-slate-600 hover:text-black cursor-pointer"
                               >
                                 <Minus className="w-3 h-3" />
                               </button>
-                              <span className="px-1.5 font-mono text-xs font-bold text-slate-900 dark:text-white">
+                              <span className="px-1.5 font-mono text-xs font-bold text-slate-900">
                                 {item.quantity}
                               </span>
                               <button
                                 onClick={() => updateQuantity(item.product.id, 1)}
-                                className="w-6 h-6 flex items-center justify-center text-slate-600 dark:text-slate-300 hover:text-black cursor-pointer"
+                                className="w-6 h-6 flex items-center justify-center text-slate-600 hover:text-black cursor-pointer"
                               >
                                 <Plus className="w-3 h-3" />
                               </button>
@@ -303,8 +301,8 @@ export default function CartDrawer({
 
                   {/* Embedded Smart Swaps - Practical Housebrand Alternatives */}
                   {availableSwaps.length > 0 && (
-                    <div className="mt-4 p-3.5 rounded-[4px] bg-[#F7F6F0] dark:bg-slate-800/60 border border-[#E2E0D8] dark:border-slate-700 space-y-2.5">
-                      <div className="flex items-center gap-1.5 text-xs font-mono font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                    <div className="mt-4 p-3.5 rounded-[4px] bg-[#F7F6F0] border border-[#E2E0D8] space-y-2.5">
+                      <div className="flex items-center gap-1.5 text-xs font-mono font-bold text-slate-900 uppercase tracking-wider">
                         <span>💡 Smart Staple Swaps</span>
                       </div>
                       <div className="space-y-2">
@@ -313,13 +311,13 @@ export default function CartDrawer({
                           return (
                             <div
                               key={swap.targetProduct.id}
-                              className="p-2.5 bg-white dark:bg-slate-900 rounded-[3px] border border-[#E2E0D8] dark:border-slate-700 flex items-center justify-between text-xs"
+                              className="p-2.5 bg-white rounded-[3px] border border-[#E2E0D8] flex items-center justify-between text-xs"
                             >
                               <div>
-                                <span className="font-bold text-slate-900 dark:text-white block">
+                                <span className="font-bold text-slate-900 block font-sans">
                                   {swap.targetProduct.name}
                                 </span>
-                                <span className="text-[10.5px] text-emerald-700 dark:text-emerald-400 font-mono">
+                                <span className="text-[10.5px] text-emerald-700 font-mono">
                                   Save ~R{swap.savings.toFixed(2)} total ({swap.reason})
                                 </span>
                               </div>
@@ -343,19 +341,19 @@ export default function CartDrawer({
                   )}
 
                   {/* Checkout Split Comparison Card */}
-                  <div className="p-3.5 rounded-[4px] border border-[#E2E0D8] dark:border-slate-800 bg-[#F7F6F0] dark:bg-slate-800/40 space-y-2 font-mono text-xs">
-                    <div className="flex items-center justify-between text-slate-600 dark:text-slate-400">
+                  <div className="p-3.5 rounded-[4px] border border-[#E2E0D8] bg-[#F7F6F0] space-y-2 font-mono text-xs">
+                    <div className="flex items-center justify-between text-slate-600">
                       <span>Cheapest Single Store:</span>
-                      <span className="font-bold text-slate-900 dark:text-white">
+                      <span className="font-bold text-slate-900">
                         {bestSingleStore ? `R${bestSingleStore[1].total.toFixed(2)} at ${bestSingleStore[1].name}` : 'Multi-Store Only'}
                       </span>
                     </div>
 
-                    <div className="flex items-center justify-between border-t border-[#E2E0D8] dark:border-slate-700 pt-2">
-                      <span className="font-extrabold text-slate-900 dark:text-white">
+                    <div className="flex items-center justify-between border-t border-[#E2E0D8] pt-2">
+                      <span className="font-extrabold text-slate-900 font-sans">
                         Optimized Split Basket:
                       </span>
-                      <span className="text-base font-black text-emerald-700 dark:text-emerald-400">
+                      <span className="text-base font-black text-emerald-700">
                         R{totalBestPrice.toFixed(2)}
                       </span>
                     </div>
@@ -366,7 +364,7 @@ export default function CartDrawer({
 
             {/* Drawer Footer Actions */}
             {basketDetails.length > 0 && (
-              <div className="p-4 border-t border-[#E2E0D8] dark:border-slate-800 bg-[#F7F6F0] dark:bg-slate-900 space-y-2">
+              <div className="p-4 border-t border-[#E2E0D8] bg-[#F7F6F0] space-y-2 font-sans">
                 <button
                   onClick={handleCopyWhatsAppList}
                   className="w-full py-2.5 rounded-[4px] bg-[#25D366] hover:bg-[#20ba59] text-white font-bold text-xs uppercase font-mono flex items-center justify-center gap-2 cursor-pointer shadow-xs"
@@ -384,7 +382,7 @@ export default function CartDrawer({
                   </button>
                   <button
                     onClick={onClose}
-                    className="text-slate-800 dark:text-slate-200 font-bold hover:underline cursor-pointer"
+                    className="text-slate-800 font-bold hover:underline cursor-pointer"
                   >
                     Continue shopping →
                   </button>
