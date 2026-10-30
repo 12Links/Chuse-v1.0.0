@@ -4,8 +4,8 @@
   "buildCommand": "vite build",
   "outputDirectory": "dist",
   "rewrites": [
-    { "source": "/api/py/(.*)", "destination": "/api/python.py" },
-    { "source": "/api/(.*)", "destination": "/api/index.ts" },
+    { "source": "/api/py/:path*", "destination": "/api/python.py" },
+    { "source": "/api/:path*", "destination": "/api/index.ts" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }
