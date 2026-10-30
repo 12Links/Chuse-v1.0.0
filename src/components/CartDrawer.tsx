@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Product, BasketItem, StoreId } from '../types';
 import { STORES } from '../data/catalog';
 import { 
@@ -7,12 +7,10 @@ import {
   Plus, 
   Minus, 
   ShoppingBag, 
-  ArrowRight, 
-  CheckCircle2, 
-  TrendingDown, 
   Share2, 
-  Sparkles,
-  Store
+  ArrowRight,
+  TrendingDown,
+  RefreshCw
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -24,9 +22,36 @@ interface CartDrawerProps {
   updateQuantity: (productId: string, delta: number) => void;
   removeFromBasket: (productId: string) => void;
   clearBasket: () => void;
-  onOpenOptimizer: () => void;
-  onOpenAiWizard?: () => void;
+  onSwapItem?: (oldProductId: string, newProductId: string) => void;
 }
+
+// Smart house-brand staple swap mapping
+const HOUSE_BRAND_SWAPS: Record<string, { targetId: string; reason: string }> = {
+  'prod-milk-clover-2l': {
+    targetId: 'prod-milk-parmalat-1l',
+    reason: 'Swap to EverFresh 1L (x2) or store brand for daily savings'
+  },
+  'prod-rice-tastic-2kg': {
+    targetId: 'prod-rice-spekko-2kg',
+    reason: 'Swap Tastic for Spekko 2kg to save ~R8.70'
+  },
+  'prod-oil-sunfoil-2l': {
+    targetId: 'prod-oil-dlite-2l',
+    reason: 'Swap Sunfoil to D\'lite Pure Oil to save ~R13.70'
+  },
+  'prod-bread-sasko-white': {
+    targetId: 'prod-bread-albany-brown',
+    reason: 'Albany special price is currently cheaper by ~R2.75'
+  },
+  'prod-sugar-huletts-25kg': {
+    targetId: 'prod-sugar-selati-25kg',
+    reason: 'Selati White Sugar 2.5kg is currently lower priced'
+  },
+  'prod-flour-snowflake-25kg': {
+    targetId: 'prod-flour-goldencloud-25kg',
+    reason: 'Golden Cloud Cake Wheat Flour saves ~R2.00 per pack'
+  }
+};
 
 export default function CartDrawer({
   isOpen,
@@ -36,9 +61,10 @@ export default function CartDrawer({
   updateQuantity,
   removeFromBasket,
   clearBasket,
-  onOpenOptimizer,
-  onOpenAiWizard
+  onSwapItem
 }: CartDrawerProps) {
+  const [copiedNotification, setCopiedNotification] = useState(false);
+
   // Map basket items to product data
   const basketDetails = basket.map(item => {
     const product = products.find(p => p.id === item.productId);
@@ -89,21 +115,46 @@ export default function CartDrawer({
     });
   });
 
-  // Find lowest single store that has most items
   const validSingleStores = Object.entries(storeTotals)
     .filter(([_, data]) => data.count >= basket.length && data.total > 0)
     .sort((a, b) => a[1].total - b[1].total);
 
   const bestSingleStore = validSingleStores[0];
 
-  // Copy grocery list to clipboard
-  const handleCopyList = () => {
+  // Discover smart house-brand swaps available for current items
+  const availableSwaps = basketDetails
+    .map(item => {
+      if (!item) return null;
+      const swapInfo = HOUSE_BRAND_SWAPS[item.product.id];
+      if (!swapInfo) return null;
+      const targetProd = products.find(p => p.id === swapInfo.targetId);
+      if (!targetProd) return null;
+
+      const targetCheapest = Math.min(
+        ...targetProd.prices.filter(p => p.inStock && p.price > 0).map(p => p.price)
+      );
+      if (targetCheapest >= item.bestPrice) return null;
+
+      const diff = (item.bestPrice - targetCheapest) * item.quantity;
+      return {
+        currentProduct: item.product,
+        targetProduct: targetProd,
+        quantity: item.quantity,
+        savings: diff,
+        reason: swapInfo.reason
+      };
+    })
+    .filter(Boolean);
+
+  // Copy grocery list to clipboard formatted for WhatsApp
+  const handleCopyWhatsAppList = () => {
     const text = basketDetails
-      .map(item => `${item?.quantity}x ${item?.product.name} (${item?.product.unit}) - Best: R${item?.bestPrice.toFixed(2)} at ${item?.bestStoreId}`)
+      .map(item => `• ${item?.quantity}x ${item?.product.name} - Best: R${item?.bestPrice.toFixed(2)} at ${item?.bestStoreId?.toUpperCase()}`)
       .join('\n');
-    const summary = `🛒 My Chuse Shopping Basket (${totalItemsCount} items):\n\n${text}\n\nTotal Best Price: R${totalBestPrice.toFixed(2)}\nSaved vs High: R${totalPotentialSavings.toFixed(2)}\n\nOptimized via chuse. (https://chuse-chi.vercel.app)`;
+    const summary = `🛒 Chuse Grocery List (${totalItemsCount} items):\n\n${text}\n\n💰 Optimized Total: R${totalBestPrice.toFixed(2)}\n🎉 Saved vs Highest Store: R${totalPotentialSavings.toFixed(2)}\n\nGenerated via chuse. (https://chuse-chi.vercel.app)`;
     navigator.clipboard.writeText(summary);
-    alert('✓ Shopping list copied to clipboard!');
+    setCopiedNotification(true);
+    setTimeout(() => setCopiedNotification(false), 3000);
   };
 
   return (
@@ -116,228 +167,228 @@ export default function CartDrawer({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 bg-black/60 backdrop-blur-xs z-50 transition-opacity"
+            className="fixed inset-0 bg-black/50 backdrop-blur-xs z-50 transition-opacity"
           />
 
-          {/* Drawer content */}
+          {/* Drawer Panel - Sharp 4px borders, tactile receipt feel */}
           <motion.div
             initial={{ x: '100%' }}
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
-            transition={{ type: 'spring', damping: 28, stiffness: 300 }}
-            className="fixed inset-y-0 right-0 w-full max-w-md bg-white dark:bg-slate-900 shadow-2xl z-55 flex flex-col border-l border-slate-200 dark:border-slate-800"
+            transition={{ type: 'spring', damping: 30, stiffness: 350 }}
+            className="fixed inset-y-0 right-0 w-full max-w-md bg-[#FFFFFF] dark:bg-slate-900 shadow-2xl z-55 flex flex-col border-l border-[#E2E0D8] dark:border-slate-800"
           >
             {/* Header */}
-            <div className="p-5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/80 dark:bg-slate-950/60 backdrop-blur-md">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-2xl bg-[#FFE600] flex items-center justify-center text-black font-black shadow-xs">
-                  <ShoppingBag className="w-5 h-5" />
+            <div className="p-4 border-b border-[#E2E0D8] dark:border-slate-800 flex items-center justify-between bg-[#F7F6F0] dark:bg-slate-900">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-[4px] bg-[#FFE600] flex items-center justify-center text-black font-black">
+                  <ShoppingBag className="w-4 h-4" />
                 </div>
                 <div>
-                  <h3 className="text-base font-black text-slate-900 dark:text-white flex items-center gap-2">
-                    Shopping Basket
-                    <span className="text-xs bg-slate-200 dark:bg-slate-800 px-2 py-0.5 rounded-full font-mono text-slate-700 dark:text-slate-300">
-                      {totalItemsCount}
+                  <h3 className="text-sm font-bold text-slate-900 dark:text-white uppercase font-mono flex items-center gap-2">
+                    My Basket
+                    <span className="text-[11px] bg-slate-200 dark:bg-slate-800 px-1.5 py-0.2 rounded font-mono">
+                      {totalItemsCount} items
                     </span>
                   </h3>
-                  <p className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold uppercase tracking-wider">
-                    Live Multi-Store Price Comparison
-                  </p>
+                  <span className="text-[10px] text-slate-500 font-mono">
+                    Real-time multi-retailer optimizer
+                  </span>
                 </div>
               </div>
               <button
                 onClick={onClose}
-                className="w-9 h-9 rounded-full bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 flex items-center justify-center text-slate-500 hover:text-slate-900 dark:hover:text-white transition-all cursor-pointer"
+                className="w-8 h-8 rounded-[4px] bg-white dark:bg-slate-800 border border-[#E2E0D8] dark:border-slate-700 flex items-center justify-center text-slate-500 hover:text-black dark:hover:text-white cursor-pointer"
                 aria-label="Close Basket"
               >
-                <X className="w-5 h-5" />
+                <X className="w-4 h-4" />
               </button>
             </div>
 
-            {/* Savings Strategy Banner */}
+            {/* Split Savings Banner */}
             {basketDetails.length > 0 && totalPotentialSavings > 0 && (
-              <div className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white p-3.5 px-5 flex items-center justify-between shadow-inner">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center shrink-0">
-                    <TrendingDown className="w-4 h-4 text-white" />
-                  </div>
-                  <div>
-                    <span className="text-[10px] uppercase tracking-widest font-extrabold opacity-90 block">
-                      Estimated Multi-Store Savings
-                    </span>
-                    <span className="text-sm font-black">
-                      Save R{totalPotentialSavings.toFixed(2)} on this basket!
-                    </span>
-                  </div>
+              <div className="bg-[#F0FDF4] dark:bg-emerald-950/40 border-b border-emerald-200 dark:border-emerald-800 p-3 px-4 flex items-center justify-between font-mono">
+                <div className="flex items-center gap-2">
+                  <TrendingDown className="w-4 h-4 text-emerald-700 dark:text-emerald-400" />
+                  <span className="text-xs font-bold text-emerald-800 dark:text-emerald-300">
+                    Split basket saves R{totalPotentialSavings.toFixed(2)} vs highest
+                  </span>
                 </div>
-                {onOpenAiWizard && (
-                  <button
-                    onClick={() => {
-                      onClose();
-                      onOpenAiWizard();
-                    }}
-                    className="px-2.5 py-1.5 rounded-full bg-white text-emerald-800 text-[10px] font-black hover:bg-yellow-300 hover:text-black transition-all cursor-pointer flex items-center gap-1 shrink-0 shadow-xs"
-                  >
-                    <Sparkles className="w-3 h-3 text-amber-500 fill-amber-500" />
-                    <span>AI Coach</span>
-                  </button>
-                )}
               </div>
             )}
 
-            {/* Items List */}
-            <div className="flex-1 overflow-y-auto p-5 space-y-3.5 divide-y divide-slate-100 dark:divide-slate-800/60">
+            {/* Scrollable Items List */}
+            <div className="flex-1 overflow-y-auto p-4 space-y-3">
               {basketDetails.length === 0 ? (
-                <div className="py-20 text-center space-y-4">
-                  <div className="w-16 h-16 rounded-full bg-amber-50 dark:bg-slate-800 flex items-center justify-center text-amber-500 mx-auto">
-                    <ShoppingBag className="w-8 h-8 opacity-60" />
+                <div className="py-20 text-center space-y-3">
+                  <div className="w-12 h-12 rounded-full bg-[#F7F6F0] dark:bg-slate-800 flex items-center justify-center text-slate-400 mx-auto">
+                    <ShoppingBag className="w-6 h-6" />
                   </div>
-                  <div className="space-y-1">
-                    <h4 className="font-black text-slate-800 dark:text-slate-200 text-base">Your Basket is Empty</h4>
-                    <p className="text-xs text-slate-400 max-w-xs mx-auto">
-                      Search staples like Clover Milk, Sasko Bread, or Tastic Rice to start comparing store prices.
-                    </p>
-                  </div>
+                  <h4 className="text-sm font-bold text-slate-900 dark:text-white">
+                    Your basket is empty
+                  </h4>
+                  <p className="text-xs text-slate-500 max-w-xs mx-auto">
+                    Add groceries from the catalog to compare store prices and see which supermarket is cheapest.
+                  </p>
                   <button
                     onClick={onClose}
-                    className="px-5 py-2.5 rounded-full bg-[#FFE600] text-black font-black text-xs hover:bg-yellow-400 transition-all cursor-pointer shadow-xs"
+                    className="mt-2 px-4 py-2 rounded-[4px] bg-[#FFE600] text-black font-bold text-xs uppercase font-mono cursor-pointer"
                   >
-                    Browse Supermarket Catalog
+                    Start Shopping
                   </button>
                 </div>
               ) : (
-                basketDetails.map(item => {
-                  if (!item) return null;
-                  const { product, quantity, bestPrice, bestStoreId, lineTotal } = item;
-                  const storeInfo = STORES.find(s => s.id === bestStoreId);
+                <>
+                  {/* Cart Items */}
+                  <div className="space-y-2">
+                    {basketDetails.map((item) => {
+                      if (!item) return null;
+                      return (
+                        <div
+                          key={item.product.id}
+                          className="p-3 rounded-[4px] border border-[#E2E0D8] dark:border-slate-800 bg-[#FFFFFF] dark:bg-slate-900 flex items-center justify-between gap-3"
+                        >
+                          <img
+                            src={item.product.imageUrl || 'https://placehold.co/80x80'}
+                            alt={item.product.name}
+                            className="w-12 h-12 object-contain bg-[#F7F6F0] dark:bg-slate-800 p-1.5 rounded-[2px] border border-[#E2E0D8] dark:border-slate-800 shrink-0"
+                          />
 
-                  return (
-                    <div key={product.id} className="pt-3.5 first:pt-0 flex items-center gap-3.5 group">
-                      {/* Product Image */}
-                      <div className="w-14 h-14 rounded-2xl bg-slate-50 dark:bg-slate-800 p-1 border border-slate-200/60 dark:border-slate-700 shrink-0 overflow-hidden flex items-center justify-center">
-                        <img
-                          src={product.imageUrl || 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=100'}
-                          alt={product.name}
-                          className="w-full h-full object-contain mix-blend-multiply dark:mix-blend-normal"
-                          onError={(e) => {
-                            (e.target as HTMLElement).style.display = 'none';
-                          }}
-                        />
-                      </div>
+                          <div className="flex-1 min-w-0">
+                            <h5 className="text-xs font-bold text-slate-900 dark:text-white truncate">
+                              {item.product.name}
+                            </h5>
+                            <div className="flex items-center gap-2 mt-0.5 text-[11px] font-mono">
+                              <span className="font-extrabold text-slate-900 dark:text-white">
+                                R{item.bestPrice.toFixed(2)}
+                              </span>
+                              <span className="text-[10px] text-slate-500 uppercase">
+                                at {item.bestStoreId}
+                              </span>
+                            </div>
+                          </div>
 
-                      {/* Product Details */}
-                      <div className="flex-1 min-w-0">
-                        <h5 className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate">
-                          {product.name}
-                        </h5>
-                        <p className="text-[10px] text-slate-400 font-medium">
-                          {product.unit} • {product.category}
-                        </p>
-                        <div className="flex items-center gap-2 mt-1">
-                          <span className="text-xs font-black text-slate-900 dark:text-white font-mono">
-                            R{lineTotal.toFixed(2)}
-                          </span>
-                          <span className="text-[9.5px] px-2 py-0.5 rounded-full bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 font-bold border border-amber-200/50 dark:border-amber-800/40">
-                            Best at {storeInfo?.name || bestStoreId}
-                          </span>
+                          {/* Stepper + Delete */}
+                          <div className="flex items-center gap-1.5 shrink-0">
+                            <div className="flex items-center border border-[#E2E0D8] dark:border-slate-700 rounded-[3px] bg-[#F7F6F0] dark:bg-slate-800">
+                              <button
+                                onClick={() => updateQuantity(item.product.id, -1)}
+                                className="w-6 h-6 flex items-center justify-center text-slate-600 dark:text-slate-300 hover:text-black cursor-pointer"
+                              >
+                                <Minus className="w-3 h-3" />
+                              </button>
+                              <span className="px-1.5 font-mono text-xs font-bold text-slate-900 dark:text-white">
+                                {item.quantity}
+                              </span>
+                              <button
+                                onClick={() => updateQuantity(item.product.id, 1)}
+                                className="w-6 h-6 flex items-center justify-center text-slate-600 dark:text-slate-300 hover:text-black cursor-pointer"
+                              >
+                                <Plus className="w-3 h-3" />
+                              </button>
+                            </div>
+
+                            <button
+                              onClick={() => removeFromBasket(item.product.id)}
+                              className="p-1.5 text-slate-400 hover:text-rose-600 transition-colors cursor-pointer"
+                              title="Remove item"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
                         </div>
-                      </div>
+                      );
+                    })}
+                  </div>
 
-                      {/* Quantity Controls */}
-                      <div className="flex items-center bg-slate-100 dark:bg-slate-800 rounded-full p-1 shrink-0 border border-slate-200/60 dark:border-slate-700">
-                        <button
-                          onClick={() => updateQuantity(product.id, -1)}
-                          className="w-6 h-6 rounded-full bg-white dark:bg-slate-700 hover:bg-slate-200 flex items-center justify-center text-slate-700 dark:text-slate-200 transition-all cursor-pointer shadow-2xs"
-                          aria-label="Decrease quantity"
-                        >
-                          <Minus className="w-3 h-3" />
-                        </button>
-                        <span className="w-6 text-center text-xs font-black font-mono text-slate-800 dark:text-slate-200">
-                          {quantity}
-                        </span>
-                        <button
-                          onClick={() => updateQuantity(product.id, 1)}
-                          className="w-6 h-6 rounded-full bg-white dark:bg-slate-700 hover:bg-slate-200 flex items-center justify-center text-slate-700 dark:text-slate-200 transition-all cursor-pointer shadow-2xs"
-                          aria-label="Increase quantity"
-                        >
-                          <Plus className="w-3 h-3" />
-                        </button>
+                  {/* Embedded Smart Swaps - Practical Housebrand Alternatives */}
+                  {availableSwaps.length > 0 && (
+                    <div className="mt-4 p-3.5 rounded-[4px] bg-[#F7F6F0] dark:bg-slate-800/60 border border-[#E2E0D8] dark:border-slate-700 space-y-2.5">
+                      <div className="flex items-center gap-1.5 text-xs font-mono font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                        <span>💡 Smart Staple Swaps</span>
                       </div>
-
-                      {/* Remove Button */}
-                      <button
-                        onClick={() => removeFromBasket(product.id)}
-                        className="text-slate-400 hover:text-rose-500 p-1.5 transition-colors cursor-pointer shrink-0"
-                        title="Remove item"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
+                      <div className="space-y-2">
+                        {availableSwaps.map(swap => {
+                          if (!swap) return null;
+                          return (
+                            <div
+                              key={swap.targetProduct.id}
+                              className="p-2.5 bg-white dark:bg-slate-900 rounded-[3px] border border-[#E2E0D8] dark:border-slate-700 flex items-center justify-between text-xs"
+                            >
+                              <div>
+                                <span className="font-bold text-slate-900 dark:text-white block">
+                                  {swap.targetProduct.name}
+                                </span>
+                                <span className="text-[10.5px] text-emerald-700 dark:text-emerald-400 font-mono">
+                                  Save ~R{swap.savings.toFixed(2)} total ({swap.reason})
+                                </span>
+                              </div>
+                              <button
+                                onClick={() => {
+                                  removeFromBasket(swap.currentProduct.id);
+                                  for (let i = 0; i < swap.quantity; i++) {
+                                    updateQuantity(swap.targetProduct.id, 1);
+                                  }
+                                  onSwapItem?.(swap.currentProduct.id, swap.targetProduct.id);
+                                }}
+                                className="px-2 py-1 rounded-[3px] bg-[#FFE600] hover:bg-yellow-400 text-black font-bold text-[10px] uppercase font-mono cursor-pointer shrink-0 ml-2"
+                              >
+                                Swap
+                              </button>
+                            </div>
+                          );
+                        })}
+                      </div>
                     </div>
-                  );
-                })
-              )}
-            </div>
+                  )}
 
-            {/* Footer Summary & Checkout */}
-            {basketDetails.length > 0 && (
-              <div className="p-5 border-t border-slate-200 dark:border-slate-800 bg-slate-50/90 dark:bg-slate-950/90 backdrop-blur-md space-y-4">
-                {/* Store Split Optimization Insight */}
-                {bestSingleStore && (
-                  <div className="p-3 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/70 dark:border-slate-800 text-[11px] space-y-1 shadow-xs">
-                    <div className="flex justify-between items-center text-slate-600 dark:text-slate-400">
+                  {/* Checkout Split Comparison Card */}
+                  <div className="p-3.5 rounded-[4px] border border-[#E2E0D8] dark:border-slate-800 bg-[#F7F6F0] dark:bg-slate-800/40 space-y-2 font-mono text-xs">
+                    <div className="flex items-center justify-between text-slate-600 dark:text-slate-400">
                       <span>Cheapest Single Store:</span>
-                      <span className="font-bold text-slate-800 dark:text-slate-200">
-                        {bestSingleStore[1].name} (R{bestSingleStore[1].total.toFixed(2)})
+                      <span className="font-bold text-slate-900 dark:text-white">
+                        {bestSingleStore ? `R${bestSingleStore[1].total.toFixed(2)} at ${bestSingleStore[1].name}` : 'Multi-Store Only'}
                       </span>
                     </div>
-                    <div className="flex justify-between items-center text-emerald-600 dark:text-emerald-400 font-bold">
-                      <span>Optimized Multi-Store Split:</span>
-                      <span className="font-black text-xs font-mono">
+
+                    <div className="flex items-center justify-between border-t border-[#E2E0D8] dark:border-slate-700 pt-2">
+                      <span className="font-extrabold text-slate-900 dark:text-white">
+                        Optimized Split Basket:
+                      </span>
+                      <span className="text-base font-black text-emerald-700 dark:text-emerald-400">
                         R{totalBestPrice.toFixed(2)}
                       </span>
                     </div>
                   </div>
-                )}
+                </>
+              )}
+            </div>
 
-                {/* Subtotal */}
-                <div className="flex items-center justify-between">
-                  <div>
-                    <span className="text-xs text-slate-500 dark:text-slate-400 font-semibold block">
-                      Optimized Basket Total
-                    </span>
-                    <span className="text-2xl font-black text-slate-900 dark:text-white font-mono tracking-tight">
-                      R{totalBestPrice.toFixed(2)}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={handleCopyList}
-                      className="p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-100 text-slate-700 dark:text-slate-200 transition-all cursor-pointer shadow-2xs"
-                      title="Copy List for WhatsApp"
-                    >
-                      <Share2 className="w-4 h-4" />
-                    </button>
-                    <button
-                      onClick={clearBasket}
-                      className="p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-rose-50 text-slate-500 hover:text-rose-600 transition-all cursor-pointer shadow-2xs"
-                      title="Clear Basket"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
-                </div>
-
-                {/* Primary Action Button */}
+            {/* Drawer Footer Actions */}
+            {basketDetails.length > 0 && (
+              <div className="p-4 border-t border-[#E2E0D8] dark:border-slate-800 bg-[#F7F6F0] dark:bg-slate-900 space-y-2">
                 <button
-                  onClick={() => {
-                    onClose();
-                    onOpenOptimizer();
-                  }}
-                  className="w-full py-3.5 px-6 rounded-2xl bg-[#FFE600] hover:bg-yellow-400 active:scale-98 text-black font-black text-sm transition-all cursor-pointer shadow-md flex items-center justify-center gap-2"
+                  onClick={handleCopyWhatsAppList}
+                  className="w-full py-2.5 rounded-[4px] bg-[#25D366] hover:bg-[#20ba59] text-white font-bold text-xs uppercase font-mono flex items-center justify-center gap-2 cursor-pointer shadow-xs"
                 >
-                  <span>View Full Store Optimization Plan</span>
-                  <ArrowRight className="w-4 h-4" />
+                  <Share2 className="w-3.5 h-3.5" />
+                  <span>{copiedNotification ? '✓ Copied to Clipboard!' : 'Share Grocery List via WhatsApp'}</span>
                 </button>
+
+                <div className="flex items-center justify-between pt-1 text-[11px] font-mono">
+                  <button
+                    onClick={clearBasket}
+                    className="text-slate-500 hover:text-rose-600 underline cursor-pointer"
+                  >
+                    Clear basket
+                  </button>
+                  <button
+                    onClick={onClose}
+                    className="text-slate-800 dark:text-slate-200 font-bold hover:underline cursor-pointer"
+                  >
+                    Continue shopping →
+                  </button>
+                </div>
               </div>
             )}
           </motion.div>

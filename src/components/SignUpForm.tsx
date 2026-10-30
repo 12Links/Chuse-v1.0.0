@@ -288,7 +288,7 @@ export function SignUpForm({ onToggleForm }: SignUpFormProps) {
                   <Input
                     id="email"
                     type="email"
-                    placeholder="you@example.com"
+                    placeholder="thabo@gmail.com"
                     value={formData.email}
                     onChange={(e) => updateFormData('email', e.target.value)}
                     className="pl-9 h-11 bg-input-background border-transparent focus:border-primary focus:ring-primary/20 text-sm"

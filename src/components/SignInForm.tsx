@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { motion } from 'motion/react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
@@ -92,119 +91,104 @@ export function SignInForm({ onToggleForm, setUser }: SignInFormProps) {
   };
 
   return (
-    <div className="w-full max-w-md" style={{ fontFamily: "'Inter', sans-serif" }}>
-      <div className="mb-8">
-        <h2
-          className="text-3xl font-bold text-foreground mb-1 uppercase leading-tight"
-          style={{ fontFamily: "'Barlow Condensed', sans-serif" }}
-        >
+    <div className="w-full max-w-sm px-6 py-8 font-sans">
+      <div className="mb-6">
+        <h2 className="text-2xl font-black text-slate-900 dark:text-white uppercase font-mono tracking-tight">
           Sign In
         </h2>
-        <p className="text-sm text-muted-foreground">
-          Welcome back! Access your account.
+        <p className="text-xs text-slate-500 mt-1 leading-relaxed">
+          Sign in to sync your saved baskets and price alerts across devices.
         </p>
       </div>
 
-      <form onSubmit={handleSignIn} className="space-y-5">
-        <div className="space-y-2.5">
-          <Button
-            type="button"
-            variant="outline"
-            className="w-full h-11 text-sm font-medium border-black/10 bg-white text-black hover:bg-[#FFE600] hover:text-black"
-            onClick={handleGoogleSignIn}
-          >
-            <span className="w-4 h-4 mr-2.5 shrink-0 rounded-full bg-black text-[#FFE600] flex items-center justify-center text-[10px] font-black leading-none">
-              G
-            </span>
-            Continue with Google
-          </Button>
-        </div>
+      <form onSubmit={handleSignIn} className="space-y-4">
+        <Button
+          type="button"
+          variant="outline"
+          className="w-full h-10 text-xs font-bold border-[#E2E0D8] dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white hover:bg-[#FFE600] hover:text-black rounded-[4px]"
+          onClick={handleGoogleSignIn}
+        >
+          <span className="w-4 h-4 mr-2 shrink-0 rounded-full bg-black text-[#FFE600] flex items-center justify-center text-[9px] font-black leading-none">
+            G
+          </span>
+          Continue with Google
+        </Button>
+
         <div className="relative py-1">
           <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-border" />
+            <div className="w-full border-t border-[#E2E0D8] dark:border-slate-800" />
           </div>
-          <div className="relative flex justify-center text-xs">
-            <span className="px-3 bg-background text-muted-foreground uppercase tracking-wider" style={{ fontFamily: "'Barlow Condensed', sans-serif" }}>
+          <div className="relative flex justify-center text-[10px]">
+            <span className="px-2 bg-white dark:bg-slate-900 text-slate-400 font-mono uppercase tracking-wider">
               or with email
             </span>
           </div>
         </div>
-        {error && <p className="text-red-500 text-sm">{error}</p>}
-        <div className="space-y-1.5">
-          <Label htmlFor="email" className="text-xs uppercase tracking-wider text-muted-foreground" style={{ fontFamily: "'Barlow Condensed', sans-serif" }}>
+
+        {error && <p className="text-rose-600 text-xs font-mono">{error}</p>}
+
+        <div className="space-y-1">
+          <Label htmlFor="email" className="text-[10px] font-mono uppercase tracking-wider text-slate-500">
             Email address
           </Label>
           <div className="relative">
-            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
             <Input
               id="email"
               type="email"
-              placeholder="you@example.com"
+              placeholder="thabo@gmail.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="pl-9 h-11 bg-input-background border-transparent focus:border-primary focus:ring-primary/20 text-sm"
+              className="pl-9 h-10 bg-[#F7F6F0] dark:bg-slate-800 border-transparent text-xs rounded-[4px]"
               required
             />
           </div>
         </div>
 
-        <div className="space-y-1.5">
-          <Label htmlFor="password" className="text-xs uppercase tracking-wider text-muted-foreground" style={{ fontFamily: "'Barlow Condensed', sans-serif" }}>
+        <div className="space-y-1">
+          <Label htmlFor="password" className="text-[10px] font-mono uppercase tracking-wider text-slate-500">
             Password
           </Label>
           <div className="relative">
-            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
             <Input
               id="password"
               type="password"
-              placeholder="Your password"
+              placeholder="••••••••"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="pl-9 h-11 bg-input-background border-transparent focus:border-primary focus:ring-primary/20 text-sm"
+              className="pl-9 h-10 bg-[#F7F6F0] dark:bg-slate-800 border-transparent text-xs rounded-[4px]"
               required
             />
           </div>
         </div>
+
         <Button
           type="submit"
-          className="w-full flex-1 h-11 bg-primary hover:bg-primary/90 text-primary-foreground text-sm font-semibold"
+          className="w-full h-10 bg-slate-950 dark:bg-white text-white dark:text-black hover:bg-[#FFE600] hover:text-black text-xs font-black uppercase font-mono rounded-[4px]"
           disabled={isLoading}
         >
           {isLoading ? 'Signing In...' : 'Sign In'}
-          <ArrowRight className="w-4 h-4 ml-2" />
+          <ArrowRight className="w-3.5 h-3.5 ml-1.5" />
         </Button>
       </form>
-      <div className="mt-5 text-center space-y-4">
-        <p className="text-sm text-muted-foreground">
+
+      <div className="mt-6 text-center space-y-4 pt-4 border-t border-[#E2E0D8] dark:border-slate-800">
+        <p className="text-xs text-slate-500">
           Don't have an account?{' '}
-          <button onClick={onToggleForm} className="text-primary hover:underline font-medium">
+          <button onClick={onToggleForm} className="text-slate-900 dark:text-white font-bold underline cursor-pointer">
             Sign up
           </button>
         </p>
 
-        <div className="pt-4 border-t border-slate-100 flex flex-col items-center">
-          <Button
-            type="button"
-            variant="outline"
-            className="w-full h-11 text-xs font-black tracking-wider uppercase border border-dashed border-[#FFE600] hover:border-solid bg-[#FFE600]/5 hover:bg-[#FFE600] text-slate-800 hover:text-black transition-all shadow-2xs"
-            onClick={() => {
-              const guestProfile: UserProfile = {
-                displayName: 'Guest Explorer',
-                email: 'guest@chuse.co.za',
-                avatarUrl: `https://api.dicebear.com/7.x/pixel-art/svg?seed=guest`,
-                loyaltyCards: { checkers: false, pnp: false, woolworths: false, shoprite: false, spar: false },
-                preferredStoreLocation: 'Gauteng',
-                isGuest: true
-              };
-              localStorage.setItem('sa_user_profile', JSON.stringify(guestProfile));
-              if (setUser) {
-                setUser(guestProfile);
-              }
-              navigate('/');
-            }}
+        {/* Clean text link for guest exploration */}
+        <div>
+          <button
+            onClick={() => navigate('/')}
+            className="text-xs font-bold text-slate-600 dark:text-slate-400 hover:text-black dark:hover:text-white underline decoration-[#FFE600] decoration-2 underline-offset-4 cursor-pointer font-mono"
           >
-            Explore as Guest (No Sign Up Required)
-          </Button>
+            Just browsing? Continue to catalog →
+          </button>
         </div>
       </div>
     </div>
