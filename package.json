@@ -15,7 +15,8 @@
     "supabase:setup": "tsx scripts/setup_supabase.js",
     "backend": "python backend/main_fastapi.py",
     "scraper": "python scraper.py --mock",
-    "scraper:live": "python scraper.py --live"
+    "scraper:live": "python scraper.py --live",
+    "receipt:demo": "node scripts/receipt_cli.js"
   },
   "dependencies": {
     "@capacitor/android": "^8.4.1",
@@ -59,6 +60,7 @@
     "embla-carousel-react": "^8.6.0",
     "express": "^4.21.2",
     "input-otp": "^1.4.2",
+    "jspdf": "^4.2.1",
     "lucide-react": "^0.546.0",
     "motion": "^12.23.24",
     "next-themes": "^0.4.6",

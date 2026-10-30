@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Product, BasketItem, StoreId } from '../types';
+import { Product, BasketItem, StoreId, ChuseReceipt } from '../types';
 import { STORES } from '../data/catalog';
 import { 
   X, 
@@ -8,19 +8,24 @@ import {
   Minus, 
   ShoppingBag, 
   Share2, 
-  TrendingDown 
+  TrendingDown,
+  FileText
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+import { generateReceiptFromBasket } from '../lib/receiptStorage';
+import { shareReceiptViaWhatsApp } from '../lib/receiptWhatsApp';
 
 interface CartDrawerProps {
   isOpen: boolean;
   onClose: () => void;
   basket: BasketItem[];
   products: Product[];
+  province?: string;
   updateQuantity: (productId: string, delta: number) => void;
   removeFromBasket: (productId: string) => void;
   clearBasket: () => void;
   onSwapItem?: (oldProductId: string, newProductId: string) => void;
+  onOpenReceiptModal?: (receipt: ChuseReceipt) => void;
 }
 
 // Smart house-brand staple swap mapping
@@ -56,13 +61,13 @@ export default function CartDrawer({
   onClose,
   basket,
   products,
+  province = 'Gauteng',
   updateQuantity,
   removeFromBasket,
   clearBasket,
-  onSwapItem
+  onSwapItem,
+  onOpenReceiptModal
 }: CartDrawerProps) {
-  const [copiedNotification, setCopiedNotification] = useState(false);
-
   // Map basket items to product data
   const basketDetails = basket.map(item => {
     const product = products.find(p => p.id === item.productId);
@@ -144,15 +149,20 @@ export default function CartDrawer({
     })
     .filter(Boolean);
 
-  // Copy grocery list to clipboard formatted for WhatsApp
-  const handleCopyWhatsAppList = () => {
-    const text = basketDetails
-      .map(item => `• ${item?.quantity}x ${item?.product.name} - Best: R${item?.bestPrice.toFixed(2)} at ${item?.bestStoreId?.toUpperCase()}`)
-      .join('\n');
-    const summary = `🛒 Chuse Grocery List (${totalItemsCount} items):\n\n${text}\n\n💰 Optimized Total: R${totalBestPrice.toFixed(2)}\n🎉 Saved vs Highest Store: R${totalPotentialSavings.toFixed(2)}\n\nGenerated via chuse. (https://chuse-chi.vercel.app)`;
-    navigator.clipboard.writeText(summary);
-    setCopiedNotification(true);
-    setTimeout(() => setCopiedNotification(false), 3000);
+  // Generate receipt and trigger the receipt modal
+  const handleGenerateAndOpenReceipt = () => {
+    if (basket.length === 0) return;
+    const receipt = generateReceiptFromBasket(basket, products, province);
+    if (onOpenReceiptModal) {
+      onOpenReceiptModal(receipt);
+    }
+  };
+
+  // Direct WhatsApp share
+  const handleQuickWhatsAppShare = () => {
+    if (basket.length === 0) return;
+    const receipt = generateReceiptFromBasket(basket, products, province);
+    shareReceiptViaWhatsApp(receipt);
   };
 
   return (
@@ -190,7 +200,7 @@ export default function CartDrawer({
                     </span>
                   </h3>
                   <span className="text-[10px] text-slate-500 font-sans">
-                    Real-time multi-retailer optimizer
+                    Real-time multi-retailer optimizer • {province}
                   </span>
                 </div>
               </div>
@@ -299,7 +309,7 @@ export default function CartDrawer({
                     })}
                   </div>
 
-                  {/* Embedded Smart Swaps - Practical Housebrand Alternatives */}
+                  {/* Embedded Smart Swaps */}
                   {availableSwaps.length > 0 && (
                     <div className="mt-4 p-3.5 rounded-[4px] bg-[#F7F6F0] border border-[#E2E0D8] space-y-2.5">
                       <div className="flex items-center gap-1.5 text-xs font-mono font-bold text-slate-900 uppercase tracking-wider">
@@ -365,12 +375,23 @@ export default function CartDrawer({
             {/* Drawer Footer Actions */}
             {basketDetails.length > 0 && (
               <div className="p-4 border-t border-[#E2E0D8] bg-[#F7F6F0] space-y-2 font-sans">
+                
+                {/* Primary Action: View & Download Till Slip Receipt */}
                 <button
-                  onClick={handleCopyWhatsAppList}
-                  className="w-full py-2.5 rounded-[4px] bg-[#25D366] hover:bg-[#20ba59] text-white font-bold text-xs uppercase font-mono flex items-center justify-center gap-2 cursor-pointer shadow-xs"
+                  onClick={handleGenerateAndOpenReceipt}
+                  className="w-full py-2.5 rounded-[4px] bg-[#FFE600] hover:bg-yellow-400 text-black font-bold text-xs uppercase font-mono flex items-center justify-center gap-2 cursor-pointer shadow-xs transition-colors border border-yellow-400"
+                >
+                  <FileText className="w-4 h-4" />
+                  <span>Generate Till Slip & PDF</span>
+                </button>
+
+                {/* Secondary Action: Direct WhatsApp Share */}
+                <button
+                  onClick={handleQuickWhatsAppShare}
+                  className="w-full py-2.5 rounded-[4px] bg-[#25D366] hover:bg-[#20ba59] text-white font-bold text-xs uppercase font-mono flex items-center justify-center gap-2 cursor-pointer shadow-xs transition-colors"
                 >
                   <Share2 className="w-3.5 h-3.5" />
-                  <span>{copiedNotification ? '✓ Copied to Clipboard!' : 'Share Grocery List via WhatsApp'}</span>
+                  <span>Share to WhatsApp</span>
                 </button>
 
                 <div className="flex items-center justify-between pt-1 text-[11px] font-mono">

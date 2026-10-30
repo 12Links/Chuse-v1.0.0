@@ -11,6 +11,9 @@ import ShoppingListsManager from './components/ShoppingListsManager';
 import PriceDiscrepancyReporter from './components/PriceDiscrepancyReporter';
 import CartDrawer from './components/CartDrawer';
 import HeroPromos from './components/HeroPromos';
+import { ReceiptModal } from './components/ReceiptModal';
+import { getCurrentReceipt } from './lib/receiptStorage';
+import { ChuseReceipt } from './types';
 import { supabase } from './lib/supabase';
 import { getCurrentUserProfile, loginUser, syncBasket } from './lib/api';
 import { 
@@ -57,6 +60,8 @@ function MainPage({ user, setUser }: MainPageProps) {
   const [isBarcodeModalOpen, setIsBarcodeModalOpen] = useState(false);
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
   const [selectedReportProduct, setSelectedReportProduct] = useState<Product | null>(null);
+  const [activeReceipt, setActiveReceipt] = useState<ChuseReceipt | null>(() => getCurrentReceipt());
+  const [isReceiptModalOpen, setIsReceiptModalOpen] = useState(false);
 
   // Province selector
   const [selectedProvince, setSelectedProvince] = useState<string>(() => {
@@ -512,10 +517,22 @@ function MainPage({ user, setUser }: MainPageProps) {
         onClose={() => setIsCartOpen(false)}
         basket={basket}
         products={products}
+        province={selectedProvince}
         updateQuantity={updateQuantity}
         removeFromBasket={removeFromBasket}
         clearBasket={clearBasket}
         onSwapItem={handleSwapItem}
+        onOpenReceiptModal={(receipt) => {
+          setActiveReceipt(receipt);
+          setIsReceiptModalOpen(true);
+        }}
+      />
+
+      {/* Till Slip Receipt & PDF / WhatsApp Modal */}
+      <ReceiptModal
+        receipt={activeReceipt}
+        isOpen={isReceiptModalOpen}
+        onClose={() => setIsReceiptModalOpen(false)}
       />
 
       {/* Embedded Barcode Scanner Modal */}

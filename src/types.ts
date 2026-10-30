@@ -58,3 +58,37 @@ export interface UserProfile {
   };
   isGuest?: boolean;
 }
+
+export interface ReceiptItem {
+  productId: string;
+  productName: string;
+  unit: string;
+  quantity: number;
+  bestPrice: number;
+  bestStoreId: StoreId;
+  bestStoreName: string;
+  highestPrice: number;
+  lineTotal: number;
+  savingsTotal: number;
+}
+
+export interface ReceiptStoreGroup {
+  storeId: StoreId;
+  storeName: string;
+  items: ReceiptItem[];
+  subtotal: number;
+}
+
+export interface ChuseReceipt {
+  id: string;
+  invoiceNumber: string;
+  createdAt: string;
+  province: string;
+  items: ReceiptItem[];
+  storeGroups: ReceiptStoreGroup[];
+  totalItemCount: number;
+  optimizedTotal: number;
+  singleStoreBaselineTotal: number;
+  totalSavings: number;
+  savingsPercentage: number;
+}

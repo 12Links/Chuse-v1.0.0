@@ -37,3 +37,4 @@ firebase-applet-config.json
 
 backend/Data/
 .vercel/
+*.pdf
