@@ -54,6 +54,70 @@ const STORE_BADGE_STYLES: Record<string, { bg: string; text: string; label: stri
   foodlovers: { bg: 'bg-[#557A18] text-white', text: 'text-[#557A18]', label: "Food Lover's" },
 };
 
+// Canonical South African Supermarket Aisles
+export interface Aisle {
+  id: string;
+  name: string;
+  emoji: string;
+  thumbnail: string;
+}
+
+export const SUPERMARKET_AISLES: Aisle[] = [
+  { id: 'All', name: 'All Aisles', emoji: '🛒', thumbnail: 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=120' },
+  { id: 'Milk, Dairy & Eggs', name: 'Milk, Dairy & Eggs', emoji: '🥛', thumbnail: 'https://images.unsplash.com/photo-1550583724-b2692b85b150?w=120' },
+  { id: 'Bakery & Bread', name: 'Bakery & Bread', emoji: '🍞', thumbnail: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=120' },
+  { id: 'Pantry Staples', name: 'Pantry Staples', emoji: '🌾', thumbnail: 'https://images.unsplash.com/photo-1586201375761-83865001e31c?w=120' },
+  { id: 'Breakfast & Cereals', name: 'Breakfast & Cereals', emoji: '🥣', thumbnail: 'https://images.unsplash.com/photo-1521483451569-e33803c0330c?w=120' },
+  { id: 'Fresh Produce', name: 'Fresh Produce', emoji: '🍎', thumbnail: 'https://images.unsplash.com/photo-1610832958506-aa56368176cf?w=120' },
+  { id: 'Meat & Poultry', name: 'Meat & Poultry', emoji: '🥩', thumbnail: 'https://images.unsplash.com/photo-1607623814075-e51df1bdc82f?w=120' },
+  { id: 'Beverages', name: 'Beverages', emoji: '🧃', thumbnail: 'https://images.unsplash.com/photo-1544787219-7f47ccb76574?w=120' },
+  { id: 'Snacks & Treats', name: 'Snacks & Treats', emoji: '🍫', thumbnail: 'https://images.unsplash.com/photo-1582293041079-7814c2f12063?w=120' },
+  { id: 'Household & Cleaning', name: 'Household & Cleaning', emoji: '🧼', thumbnail: 'https://images.unsplash.com/photo-1585421514738-01798e348b17?w=120' },
+  { id: 'Personal Care', name: 'Personal Care', emoji: '🧴', thumbnail: 'https://images.unsplash.com/photo-1556228720-195a672e8a03?w=120' },
+  { id: 'Baby Care', name: 'Baby Care', emoji: '👶', thumbnail: 'https://images.unsplash.com/photo-1515488042361-ee00e0ddd4e4?w=120' },
+];
+
+/**
+ * Deduplicates and normalizes catalog category strings into standard SA supermarket aisles
+ */
+export function normalizeCategory(cat: string): string {
+  const c = (cat || '').trim().toLowerCase();
+  if (c.includes('dairy') || c.includes('milk') || c.includes('egg')) {
+    return 'Milk, Dairy & Eggs';
+  }
+  if (c.includes('breakfast') || c.includes('cereal') || c.includes('oats')) {
+    return 'Breakfast & Cereals';
+  }
+  if (c.includes('pantry') || c.includes('staple') || c.includes('cupboard') || c.includes('oil') || c.includes('flour') || c.includes('rice') || c.includes('sugar') || c.includes('maize')) {
+    return 'Pantry Staples';
+  }
+  if (c.includes('bakery') || c.includes('bread')) {
+    return 'Bakery & Bread';
+  }
+  if (c.includes('meat') || c.includes('poultry') || c.includes('chicken') || c.includes('beef')) {
+    return 'Meat & Poultry';
+  }
+  if (c.includes('produce') || c.includes('fruit') || c.includes('veg')) {
+    return 'Fresh Produce';
+  }
+  if (c.includes('beverage') || c.includes('drink') || c.includes('tea') || c.includes('coffee') || c.includes('juice')) {
+    return 'Beverages';
+  }
+  if (c.includes('snack') || c.includes('sweet') || c.includes('treat') || c.includes('biscuit') || c.includes('chocolate') || c.includes('chip')) {
+    return 'Snacks & Treats';
+  }
+  if (c.includes('household') || c.includes('cleaning') || c.includes('detergent') || c.includes('paper')) {
+    return 'Household & Cleaning';
+  }
+  if (c.includes('baby')) {
+    return 'Baby Care';
+  }
+  if (c.includes('personal') || c.includes('toilet') || c.includes('beauty') || c.includes('hygiene')) {
+    return 'Personal Care';
+  }
+  return cat || 'General Groceries';
+}
+
 export default function ProductCatalog({
   products,
   basket,
@@ -121,9 +185,27 @@ export default function ProductCatalog({
     return count;
   }, [timingAnalyses]);
 
-  const dynamicCategories = useMemo(() => {
-    const cats = Array.from(new Set(products.map(p => p.category).filter(Boolean)));
-    return ['All', ...cats.sort()];
+  // Deduplicated active aisles list
+  const activeAisles = useMemo(() => {
+    const productCategories = new Set(products.map(p => normalizeCategory(p.category)));
+    return SUPERMARKET_AISLES.filter(aisle => {
+      if (aisle.id === 'All') return true;
+      return productCategories.has(aisle.id);
+    });
+  }, [products]);
+
+  // Dynamic visual thumbnails linking directly to live product packshots
+  const aisleThumbnails = useMemo(() => {
+    const map: Record<string, string> = {};
+    SUPERMARKET_AISLES.forEach(aisle => {
+      if (aisle.id === 'All') {
+        map['All'] = 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=120';
+        return;
+      }
+      const sample = products.find(p => normalizeCategory(p.category) === aisle.id && p.imageUrl);
+      map[aisle.id] = sample?.imageUrl || aisle.thumbnail;
+    });
+    return map;
   }, [products]);
 
   const getBasketQty = (productId: string) => {
@@ -144,9 +226,12 @@ export default function ProductCatalog({
           if (!matches) return false;
         }
 
-        // Category matching
-        if (selectedCategoryFilter !== 'All' && p.category !== selectedCategoryFilter) {
-          return false;
+        // Category matching with deduplication
+        if (selectedCategoryFilter !== 'All') {
+          const norm = normalizeCategory(p.category);
+          if (norm !== selectedCategoryFilter && p.category !== selectedCategoryFilter) {
+            return false;
+          }
         }
 
         // Store matching
@@ -205,139 +290,111 @@ export default function ProductCatalog({
 
   return (
     <div id="product-catalog-view" className="space-y-4">
-      {/* Category Scrolling Bar & Sort Controls */}
-      <div className="bg-[#FFFFFF] rounded-[6px] p-3.5 sm:p-4 border border-[#E2E0D8] shadow-2xs space-y-3">
-        {/* Timing Quick Filters */}
-        <div className="flex items-center justify-between pb-2.5 border-b border-[#E2E0D8] text-xs">
-          <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5">
-            <button
-              onClick={() => setTimingFilter('all')}
-              className={`px-2.5 py-1 rounded-[4px] text-xs font-mono font-bold transition-all cursor-pointer whitespace-nowrap ${
-                timingFilter === 'all'
-                  ? 'bg-slate-950 text-white'
-                  : 'bg-[#F7F6F0] text-slate-700 hover:bg-slate-200'
-              }`}
-            >
-              All Items ({products.length})
-            </button>
-            <button
-              onClick={() => setTimingFilter('buy_now')}
-              className={`px-2.5 py-1 rounded-[4px] text-xs font-mono font-bold transition-all cursor-pointer flex items-center gap-1.5 whitespace-nowrap ${
-                timingFilter === 'buy_now'
-                  ? 'bg-emerald-700 text-white shadow-xs'
-                  : 'bg-emerald-50 text-emerald-800 border border-emerald-200 hover:bg-emerald-100'
-              }`}
-            >
-              <span className={`w-1.5 h-1.5 rounded-full ${timingFilter === 'buy_now' ? 'bg-white' : 'bg-emerald-600'}`} />
-              <span>Buy Now / Stock Up ({buyNowCount})</span>
-            </button>
-            <button
-              onClick={() => setTimingFilter('tracked')}
-              className={`px-2.5 py-1 rounded-[4px] text-xs font-mono font-bold transition-all cursor-pointer flex items-center gap-1.5 whitespace-nowrap ${
-                timingFilter === 'tracked'
-                  ? 'bg-slate-950 text-[#FFE600] shadow-xs'
-                  : 'bg-[#F7F6F0] text-slate-700 hover:bg-slate-200 border border-[#E2E0D8]'
-              }`}
-            >
-              <Bookmark className={`w-3.5 h-3.5 ${timingFilter === 'tracked' ? 'text-[#FFE600] fill-[#FFE600]' : 'text-slate-500'}`} />
-              <span>Tracked Staples ({trackedIds.length})</span>
-            </button>
-          </div>
-
-          <span className="hidden md:inline text-[10px] font-mono font-bold text-slate-400 uppercase tracking-wider">
-            Staple Predictor Active
-          </span>
+      {/* 1. Visual "Shop by Aisle" Strip (Checkers & Pick n Pay Style) */}
+      <div className="relative py-1">
+        {/* Left Arrow with Soft Gradient Fade */}
+        <div className="hidden md:flex absolute left-0 top-0 bottom-0 w-12 bg-gradient-to-r from-[#F7F6F0] via-[#F7F6F0]/90 to-transparent z-10 items-center justify-start pointer-events-none">
+          <button
+            type="button"
+            onClick={() => scrollCategories('left')}
+            className="pointer-events-auto w-7 h-7 rounded-full bg-white border border-[#E2E0D8] shadow-md flex items-center justify-center text-slate-700 hover:text-black hover:bg-slate-50 transition-all cursor-pointer"
+            title="Scroll aisles left"
+            aria-label="Scroll aisles left"
+          >
+            <ChevronLeft className="w-4 h-4" />
+          </button>
         </div>
 
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
-          {/* Category scrolling tabs with desktop scroll buttons & generous px-8 padding */}
-          <div className="relative flex-1 min-w-0">
-            {/* Left Scroll Arrow */}
-            <button
-              type="button"
-              onClick={() => scrollCategories('left')}
-              className="hidden md:flex absolute left-0 top-1/2 -translate-y-1/2 z-10 w-7 h-7 rounded-[3px] bg-white/95 border border-[#E2E0D8] shadow-xs items-center justify-center text-slate-700 hover:text-black hover:bg-[#F7F6F0] transition-colors cursor-pointer"
-              title="Scroll categories left"
-              aria-label="Scroll categories left"
-            >
-              <ChevronLeft className="w-4 h-4" />
-            </button>
+        {/* Scroll Container with hidden scrollbar */}
+        <div
+          ref={categoryScrollRef}
+          className="flex items-center gap-3 overflow-x-auto no-scrollbar py-1 px-1 sm:px-2 md:px-8 scroll-smooth select-none"
+          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+        >
+          {activeAisles.map((aisle) => {
+            const isSelected = selectedCategoryFilter === aisle.id;
+            const thumbUrl = aisleThumbnails[aisle.id] || aisle.thumbnail;
 
-            {/* Inner scroll container with md:px-8 so arrows never overlap pills */}
-            <div 
-              ref={categoryScrollRef}
-              className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5 md:px-8 scroll-smooth"
-            >
-              {dynamicCategories.map((cat) => {
-                const isSelected = selectedCategoryFilter === cat;
-                return (
-                  <button
-                    key={cat}
-                    onClick={() => onSelectCategoryFilter?.(cat)}
-                    className={`px-3 py-1.5 rounded-[4px] text-xs font-bold whitespace-nowrap transition-all cursor-pointer font-sans shrink-0 ${
-                      isSelected
-                        ? 'bg-slate-950 text-white font-black'
-                        : 'bg-[#F7F6F0] text-slate-700 hover:bg-slate-200'
-                    }`}
-                  >
-                    {cat}
-                  </button>
-                );
-              })}
-            </div>
+            return (
+              <button
+                key={aisle.id}
+                onClick={() => onSelectCategoryFilter?.(aisle.id)}
+                className="flex flex-col items-center gap-1.5 shrink-0 group cursor-pointer focus:outline-none"
+              >
+                {/* 56x56 / 64x64 Tile Box */}
+                <div
+                  className={`w-14 h-14 sm:w-16 sm:h-16 rounded-[8px] flex items-center justify-center p-2 transition-all relative ${
+                    isSelected
+                      ? 'bg-slate-950 border-2 border-slate-950 shadow-sm ring-2 ring-slate-950/15'
+                      : 'bg-white border border-[#E2E0D8] shadow-2xs group-hover:border-slate-400 group-hover:bg-[#FDFCF7]'
+                  }`}
+                >
+                  {thumbUrl ? (
+                    <img
+                      src={thumbUrl}
+                      alt={aisle.name}
+                      className={`w-full h-full object-contain transition-transform duration-200 group-hover:scale-105 ${
+                        isSelected ? 'brightness-110 drop-shadow-sm' : 'mix-blend-multiply'
+                      }`}
+                      loading="lazy"
+                      onError={(e) => {
+                        (e.target as HTMLElement).style.display = 'none';
+                      }}
+                    />
+                  ) : (
+                    <span className="text-xl">{aisle.emoji}</span>
+                  )}
+                </div>
 
-            {/* Right Scroll Arrow */}
-            <button
-              type="button"
-              onClick={() => scrollCategories('right')}
-              className="hidden md:flex absolute right-0 top-1/2 -translate-y-1/2 z-10 w-7 h-7 rounded-[3px] bg-white/95 border border-[#E2E0D8] shadow-xs items-center justify-center text-slate-700 hover:text-black hover:bg-[#F7F6F0] transition-colors cursor-pointer"
-              title="Scroll categories right"
-              aria-label="Scroll categories right"
-            >
-              <ChevronRight className="w-4 h-4" />
-            </button>
-          </div>
+                {/* Aisle Name Underneath */}
+                <span
+                  className={`text-[11px] sm:text-xs text-center leading-tight line-clamp-1 max-w-[76px] transition-colors font-sans ${
+                    isSelected
+                      ? 'font-black text-slate-950'
+                      : 'font-semibold text-slate-700 group-hover:text-black'
+                  }`}
+                >
+                  {aisle.name}
+                </span>
+              </button>
+            );
+          })}
+        </div>
 
-          {/* Sort selector */}
-          <div className="flex items-center gap-2 shrink-0 self-end md:self-auto font-sans">
-            <span className="text-[10px] uppercase font-bold tracking-wider text-slate-400 hidden sm:inline flex items-center gap-1 font-mono">
-              <ArrowUpDown className="w-3 h-3" /> Sort:
+        {/* Right Arrow with Soft Gradient Fade */}
+        <div className="hidden md:flex absolute right-0 top-0 bottom-0 w-12 bg-gradient-to-l from-[#F7F6F0] via-[#F7F6F0]/90 to-transparent z-10 items-center justify-end pointer-events-none">
+          <button
+            type="button"
+            onClick={() => scrollCategories('right')}
+            className="pointer-events-auto w-7 h-7 rounded-full bg-white border border-[#E2E0D8] shadow-md flex items-center justify-center text-slate-700 hover:text-black hover:bg-slate-50 transition-all cursor-pointer"
+            title="Scroll aisles right"
+            aria-label="Scroll aisles right"
+          >
+            <ChevronRight className="w-4 h-4" />
+          </button>
+        </div>
+      </div>
+
+      {/* 2. Flattened Single-Row Utility Toolbar (Checkers & Pick n Pay style) */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2 pb-1.5 border-b border-[#E2E0D8] font-sans">
+        
+        {/* Left: Bold Aisle Title & Count */}
+        <div className="flex items-center gap-2 flex-wrap">
+          <h3 className="text-base sm:text-lg font-black text-slate-950 font-display uppercase tracking-tight">
+            {selectedCategoryFilter === 'All' ? 'All Groceries' : selectedCategoryFilter}
+            <span className="ml-2 text-xs font-mono font-bold text-slate-500 normal-case">
+              ({processedProducts.length} {processedProducts.length === 1 ? 'product' : 'products'})
             </span>
-            <select
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value as any)}
-              className="px-3 py-1.5 rounded-[4px] bg-[#F7F6F0] border border-[#E2E0D8] text-xs font-bold text-slate-800 focus:outline-none cursor-pointer"
-            >
-              <option value="popular">Most Popular</option>
-              <option value="bestTimeToBuy">Best Time to Buy (Stock Up First)</option>
-              <option value="lowestPrice">Price: Low to High</option>
-              <option value="biggestSavings">Highest Store Savings</option>
-              <option value="name">Name (A-Z)</option>
-            </select>
-          </div>
-        </div>
+          </h3>
 
-        {/* Filter status strip */}
-        <div className="flex items-center justify-between text-xs text-slate-500 pt-2 border-t border-[#E2E0D8] font-sans">
-          <div className="flex items-center gap-2">
-            <span className="font-semibold text-slate-700">{processedProducts.length} items in view</span>
-            {activeSearch && (
-              <span className="bg-[#FFE600] text-black px-2 py-0.5 rounded-[2px] text-[10px] font-black uppercase font-mono">
-                "{activeSearch}"
-              </span>
-            )}
-            {selectedCategoryFilter !== 'All' && (
-              <span className="text-slate-600 text-[11px] font-medium">
-                • {selectedCategoryFilter}
-              </span>
-            )}
-            {timingFilter !== 'all' && (
-              <span className="bg-slate-100 text-slate-800 px-1.5 py-0.5 rounded-[2px] text-[10px] font-mono font-bold">
-                {timingFilter === 'buy_now' ? 'Buy Now Deals' : 'Tracked Staples'}
-              </span>
-            )}
-          </div>
+          {/* Active search chip */}
+          {activeSearch && (
+            <span className="bg-[#FFE600] text-black px-2 py-0.5 rounded-[2px] text-[10px] font-black uppercase font-mono">
+              "{activeSearch}"
+            </span>
+          )}
 
+          {/* Reset button if any filter is active */}
           {(activeSearch || selectedCategoryFilter !== 'All' || selectedStoreFilter !== 'all' || timingFilter !== 'all') && (
             <button
               onClick={() => {
@@ -347,12 +404,68 @@ export default function ProductCatalog({
                 onSelectStoreFilter?.('all');
                 setTimingFilter('all');
               }}
-              className="text-[11px] text-slate-600 hover:text-black underline cursor-pointer font-medium"
+              className="text-[11px] text-slate-500 hover:text-black underline font-mono cursor-pointer ml-1"
             >
               Reset filters
             </button>
           )}
         </div>
+
+        {/* Right: Quick Filter Pills + Sort Dropdown on the exact same horizontal line */}
+        <div className="flex items-center gap-2 sm:gap-3 flex-wrap sm:flex-nowrap">
+          {/* Quick Filter Pills */}
+          <div className="flex items-center gap-1 bg-white p-0.5 rounded-[4px] border border-[#E2E0D8] shadow-2xs">
+            <button
+              onClick={() => setTimingFilter('all')}
+              className={`px-2.5 py-1 rounded-[3px] text-xs font-bold transition-all cursor-pointer font-sans ${
+                timingFilter === 'all'
+                  ? 'bg-slate-950 text-white shadow-2xs'
+                  : 'text-slate-600 hover:text-black hover:bg-slate-100'
+              }`}
+            >
+              All Items
+            </button>
+            <button
+              onClick={() => setTimingFilter('buy_now')}
+              className={`px-2.5 py-1 rounded-[3px] text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 font-sans ${
+                timingFilter === 'buy_now'
+                  ? 'bg-emerald-700 text-white shadow-2xs font-extrabold'
+                  : 'text-emerald-800 hover:bg-emerald-50'
+              }`}
+            >
+              <span className={`w-1.5 h-1.5 rounded-full ${timingFilter === 'buy_now' ? 'bg-white' : 'bg-emerald-600'}`} />
+              <span>Best Drops ({buyNowCount})</span>
+            </button>
+            <button
+              onClick={() => setTimingFilter('tracked')}
+              className={`px-2.5 py-1 rounded-[3px] text-xs font-bold transition-all cursor-pointer flex items-center gap-1 font-sans ${
+                timingFilter === 'tracked'
+                  ? 'bg-slate-950 text-[#FFE600] shadow-2xs'
+                  : 'text-slate-600 hover:text-black hover:bg-slate-100'
+              }`}
+            >
+              <Bookmark className={`w-3.5 h-3.5 ${timingFilter === 'tracked' ? 'text-[#FFE600] fill-[#FFE600]' : 'text-slate-400'}`} />
+              <span>Saved ({trackedIds.length})</span>
+            </button>
+          </div>
+
+          {/* Sort Selector Dropdown */}
+          <div className="flex items-center gap-1.5 shrink-0">
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value as any)}
+              className="px-2.5 py-1.5 rounded-[4px] bg-[#FFFFFF] border border-[#E2E0D8] text-xs font-bold text-slate-800 focus:outline-none focus:border-slate-950 cursor-pointer shadow-2xs font-sans"
+              aria-label="Sort products"
+            >
+              <option value="popular">Sort: Most Popular</option>
+              <option value="bestTimeToBuy">Sort: Best Drops (Stock Up First)</option>
+              <option value="lowestPrice">Sort: Price (Low to High)</option>
+              <option value="biggestSavings">Sort: Highest Store Savings</option>
+              <option value="name">Sort: Name (A-Z)</option>
+            </select>
+          </div>
+        </div>
+
       </div>
 
       {/* Tactile Supermarket Product Grid - Crisp 6px corners & clean typography */}

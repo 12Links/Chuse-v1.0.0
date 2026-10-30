@@ -400,9 +400,9 @@ function MainPage({ user, setUser }: MainPageProps) {
       {/* Main Container */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 pb-32">
         
-        {/* Newspaper Weekly Flyer Strip on Catalog & Specials */}
+        {/* Slim Single-Line Retailer Strip */}
         {(activeTab === 'catalog' || activeTab === 'specials') && (
-          <div className="mb-4">
+          <div className="mb-3">
             <HeroPromos 
               selectedStore={selectedStoreFilter}
               onSelectStore={(st) => {
