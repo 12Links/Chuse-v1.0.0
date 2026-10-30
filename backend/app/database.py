@@ -3,34 +3,32 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy import create_engine
 import os
 from dotenv import load_dotenv
-import sys
 
 # Load environment
 load_dotenv()
 
-# Database URL setup
-DB_USER = os.getenv("DB_USER")
-DB_PASS = os.getenv("DB_PASS")
-DB_NAME = os.getenv("DB_NAME", "dataconnect")
-INSTANCE_CONNECTION_NAME = os.getenv("INSTANCE_CONNECTION_NAME", "choose-edec8:us-east4:frontend-fdc")
+# Database URL setup (Supports direct Supabase PostgreSQL connection string or individual env vars)
+DATABASE_URL = os.getenv("DATABASE_URL")
 
-if not DB_USER or not DB_PASS:
-    raise RuntimeError("DB_USER and DB_PASS must be set in backend/.env file")
+if not DATABASE_URL:
+    DB_USER = os.getenv("DB_USER", "postgres")
+    DB_PASS = os.getenv("DB_PASS", "")
+    DB_HOST = os.getenv("DB_HOST", "localhost")
+    DB_PORT = os.getenv("DB_PORT", "5432")
+    DB_NAME = os.getenv("DB_NAME", "postgres")
+    if DB_PASS:
+        DATABASE_URL = f"postgresql://{DB_USER}:{DB_PASS}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+    else:
+        # SQLite fallback for local development if PostgreSQL is not configured
+        DATABASE_URL = "sqlite:///./chuse_local.db"
 
-if os.getenv("K_SERVICE"):
-    # Production (Cloud Run)
-    host_arg = f"?host=/cloudsql/{INSTANCE_CONNECTION_NAME}"
-    DATABASE_URL = f"postgresql://{DB_USER}:{DB_PASS}@/{DB_NAME}{host_arg}"
-else:
-    # Local dev
-    DATABASE_URL = f"postgresql://{DB_USER}:{DB_PASS}@127.0.0.1:5432/{DB_NAME}"
-
-# Create engine with connection pooling
+# Create engine with appropriate pooling
+connect_args = {"check_same_thread": False} if DATABASE_URL.startswith("sqlite") else {}
 engine = create_engine(
     DATABASE_URL, 
     echo=False,
-    pool_size=5,
-    max_overflow=10,
+    connect_args=connect_args,
+    **({"pool_size": 5, "max_overflow": 10} if not DATABASE_URL.startswith("sqlite") else {})
 )
 
 # Create session factory

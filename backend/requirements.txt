@@ -1,7 +1,8 @@
 fastapi
 uvicorn
 schedule
-firebase-admin
+supabase
+pyjwt
 python-dotenv
 httpx
 apscheduler

@@ -16,8 +16,6 @@ interface ProductCatalogProps {
   searchError: string | null;
 }
 
-const CATEGORIES = ['All', 'Groceries', 'Pantry', 'Fresh Produce', 'Household', 'Electronics'] as const;
-
 export default function ProductCatalog({
   products,
   basket,
@@ -28,8 +26,13 @@ export default function ProductCatalog({
   isSearchingRealTime,
   searchError
 }: ProductCatalogProps) {
+  const dynamicCategories = React.useMemo(() => {
+    const cats = Array.from(new Set(products.map(p => p.category).filter(Boolean)));
+    return ['All', ...cats.sort()];
+  }, [products]);
+
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState<typeof CATEGORIES[number]>('All');
+  const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const [selectedStoreFilter, setSelectedStoreFilter] = useState<StoreId | 'all'>('all');
   const [favorites, setFavorites] = useState<string[]>([]);
 
@@ -132,7 +135,7 @@ export default function ProductCatalog({
 
         {/* Categories Chips styled as chips */}
         <div className="flex items-center gap-2.5 overflow-x-auto pb-1 mt-2 no-scrollbar">
-          {CATEGORIES.map(category => (
+          {dynamicCategories.map(category => (
             <button
               id={`cat-chip-${category.toLowerCase()}`}
               key={category}

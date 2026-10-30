@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import { Product, BasketItem } from '../types';
 import { STORES } from '../data/catalog';
+import { supabase } from '../lib/supabase';
 
 interface SavedList {
   id: string;
@@ -58,28 +59,55 @@ export default function ShoppingListsManager({ products, onAddToBasket, currentB
       } catch (e) {
         console.error('Failed to parse saved lists:', e);
       }
-    } else {
-      // Create some default list for cold start
-      const defaultList: SavedList = {
-        id: 'list-default',
-        name: 'Weekly Pantry Refill',
-        budget: 650,
-        createdAt: new Date().toISOString().split('T')[0],
-        items: [
-          { productId: 'prod-milk-clover', quantity: 2 },
-          { productId: 'prod-bread-sasko', quantity: 3 },
-          { productId: 'prod-coffee-jacobs', quantity: 1 }
-        ]
-      };
-      setLists([defaultList]);
-      setSelectedListId('list-default');
-      localStorage.setItem('sa_saved_shopping_lists', JSON.stringify([defaultList]));
     }
+
+    // Try fetching synced lists from Supabase
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user?.id) {
+        supabase
+          .from('shopping_lists')
+          .select('*')
+          .eq('user_id', session.user.id)
+          .then(({ data, error }) => {
+            if (!error && data && data.length > 0) {
+              const remoteLists: SavedList[] = data.map((d: any) => ({
+                id: d.id,
+                name: d.name,
+                budget: d.budget || 500,
+                items: d.items || [],
+                createdAt: d.created_at ? d.created_at.split('T')[0] : new Date().toISOString().split('T')[0]
+              }));
+              setLists(remoteLists);
+              setSelectedListId(remoteLists[0].id);
+              localStorage.setItem('sa_saved_shopping_lists', JSON.stringify(remoteLists));
+            }
+          });
+      }
+    });
   }, []);
 
   const saveListsToStorage = (updatedLists: SavedList[]) => {
     setLists(updatedLists);
     localStorage.setItem('sa_saved_shopping_lists', JSON.stringify(updatedLists));
+
+    // Async sync to Supabase if logged in
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user?.id) {
+        updatedLists.forEach(async (list) => {
+          try {
+            await supabase.from('shopping_lists').upsert({
+              id: list.id.startsWith('list-') ? undefined : list.id,
+              user_id: session.user.id,
+              name: list.name,
+              items: list.items,
+              updated_at: new Date().toISOString(),
+            });
+          } catch (e) {
+            console.warn('Could not sync shopping list to Supabase:', e);
+          }
+        });
+      }
+    });
   };
 
   const handleCreateList = (e: React.FormEvent) => {

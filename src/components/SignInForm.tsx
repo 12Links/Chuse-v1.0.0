@@ -5,7 +5,7 @@ import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { ArrowRight, Mail, Lock } from 'lucide-react';
 import { UserProfile } from '../types';
-import { auth, googleProvider, signInWithPopup, signInWithRedirect, signInWithEmailAndPassword } from '../lib/firebase';
+import { supabase } from '../lib/supabase';
 import { useNavigate } from 'react-router-dom';
 
 interface SignInFormProps {
@@ -32,27 +32,38 @@ export function SignInForm({ onToggleForm, setUser }: SignInFormProps) {
     }
 
     try {
-      const credential = await signInWithEmailAndPassword(auth, email, password);
-      const userCred = credential.user;
-      const idToken = await userCred.getIdToken();
+      const { data, error: signInError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (signInError) {
+        throw signInError;
+      }
+
+      const user = data.user;
+      const session = data.session;
+      const token = session?.access_token || '';
+      const meta = user?.user_metadata || {};
 
       const fallbackProfile: UserProfile = {
-        displayName: userCred.displayName || userCred.email?.split('@')[0] || 'Member',
-        email: userCred.email || '',
-        avatarUrl: userCred.photoURL || `https://api.dicebear.com/7.x/pixel-art/svg?seed=${encodeURIComponent(userCred.email || '')}`,
-        loyaltyCards: { checkers: false, pnp: false, woolworths: false, shoprite: false, spar: false },
-        preferredStoreLocation: 'Gauteng'
+        displayName: meta.displayName || meta.full_name || user?.email?.split('@')[0] || 'Member',
+        email: user?.email || '',
+        avatarUrl: meta.avatar_url || `https://api.dicebear.com/7.x/pixel-art/svg?seed=${encodeURIComponent(user?.email || '')}`,
+        loyaltyCards: meta.loyaltyCards || { checkers: false, pnp: false, woolworths: false, shoprite: false, spar: false },
+        preferredStoreLocation: meta.province || 'Gauteng'
       };
 
       localStorage.setItem('sa_user_profile', JSON.stringify(fallbackProfile));
-      localStorage.setItem('firebase_token', idToken);
+      if (token) localStorage.setItem('supabase_token', token);
+      if (setUser) setUser(fallbackProfile);
       navigate('/');
 
     } catch (err: any) {
-      if (err.code === 'auth/wrong-password' || err.code === 'auth/user-not-found' || err.code === 'auth/invalid-credential') {
+      if (err.message?.includes('Invalid login credentials') || err.status === 400) {
         setError('Invalid email or password.');
       } else {
-        setError('An error occurred during sign-in.');
+        setError(err.message || 'An error occurred during sign-in.');
       }
       console.error(err);
     } finally {
@@ -65,34 +76,15 @@ export function SignInForm({ onToggleForm, setUser }: SignInFormProps) {
     setError('');
     
     try {
-      const result = await signInWithPopup(auth, googleProvider);
-      const userCred = result.user;
-      const idToken = await userCred.getIdToken();
-      
-      const fallbackProfile: UserProfile = {
-        displayName: userCred.displayName || userCred.email?.split('@')[0] || 'Member',
-        email: userCred.email || '',
-        avatarUrl: userCred.photoURL || `https://api.dicebear.com/7.x/pixel-art/svg?seed=${encodeURIComponent(userCred.email || '')}`,
-        loyaltyCards: { checkers: false, pnp: false, woolworths: false, shoprite: false, spar: false },
-        preferredStoreLocation: 'Gauteng'
-      };
-
-      localStorage.setItem('sa_user_profile', JSON.stringify(fallbackProfile));
-      localStorage.setItem('firebase_token', idToken);
-      navigate('/');
+      const { error: oauthError } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/`,
+        },
+      });
+      if (oauthError) throw oauthError;
     } catch (err: any) {
       console.error(err);
-      const code = err?.code || '';
-      if (code === 'auth/popup-blocked' || code === 'auth/popup-closed-by-user' || code === 'auth/unauthorized-domain') {
-        try {
-          await signInWithRedirect(auth, googleProvider);
-          return;
-        } catch (redirectError: any) {
-          console.error(redirectError);
-          setError(redirectError.message || 'Google Authentication failed.');
-          return;
-        }
-      }
       setError(err.message || 'Google Authentication failed.');
     } finally {
       setIsLoading(false);

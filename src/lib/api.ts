@@ -1,24 +1,21 @@
-import { auth } from './firebase';
+import { supabase } from './supabase';
 
 const API_BASE_URL = '';
 
 /**
- * Make an authenticated request to the backend API with Firebase ID token
+ * Make an authenticated request to the backend API with Supabase access token
  */
 export async function apiRequest(
   endpoint: string,
   options: RequestInit = {}
 ): Promise<any> {
   try {
-    const token = await auth.currentUser?.getIdToken();
-    
-    if (!token) {
-      throw new Error('No authentication token available');
-    }
+    const { data: { session } } = await supabase.auth.getSession();
+    const token = session?.access_token || localStorage.getItem('supabase_token') || localStorage.getItem('sa_access_token');
 
     const headers: HeadersInit = {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`,
+      ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
       ...options.headers,
     };
 
@@ -29,7 +26,7 @@ export async function apiRequest(
 
     if (!response.ok) {
       const error = await response.json().catch(() => ({}));
-      throw new Error(error.detail || `API error: ${response.status}`);
+      throw new Error(error.detail || error.error || `API error: ${response.status}`);
     }
 
     return await response.json();
@@ -40,7 +37,7 @@ export async function apiRequest(
 }
 
 /**
- * Sync user profile with backend after Firebase authentication
+ * Sync user profile with backend after Supabase authentication
  */
 export async function syncUserProfile(uid: string, userProfile: any): Promise<any> {
   return apiRequest('/api/v1/auth/sync-profile', {
@@ -82,7 +79,7 @@ export async function registerUser(
 export async function getCurrentUserProfile(): Promise<any | null> {
   try {
     return await apiRequest('/api/v1/users/me', {
-    method: 'GET',
+      method: 'GET',
     });
   } catch (error: any) {
     if (error?.message?.includes('404')) {
@@ -118,10 +115,10 @@ export async function syncBasket(items: Array<{ productId: string; quantity: num
 }
 
 /**
- * Perform login - sync profile with backend after Firebase login
+ * Perform login - sync profile with backend after Supabase login
  */
 export async function loginUser(uid: string, email: string): Promise<any> {
-  return apiRequest('/api/v1/auth/login', {
+  return apiRequest('/api/v1/auth/sync-profile', {
     method: 'POST',
     body: JSON.stringify({ uid, email }),
   });

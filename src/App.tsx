@@ -13,8 +13,7 @@ import SettingsPage from './components/SettingsPage';
 import AISavingsWizard from './components/AISavingsWizard';
 import ShoppingListsManager from './components/ShoppingListsManager';
 import PriceDiscrepancyReporter from './components/PriceDiscrepancyReporter';
-import { auth } from './lib/firebase';
-import { onAuthStateChanged } from 'firebase/auth';
+import { supabase } from './lib/supabase';
 import { getCurrentUserProfile, loginUser, syncBasket } from './lib/api';
 import { 
   Sparkles, 
@@ -463,12 +462,13 @@ function MainPage({ user, setUser, isDarkMode, onToggleDarkMode }: MainPageProps
                 onUpdateUser={(updated) => setUser(updated)} 
                 onLogout={async () => { 
                   try { 
-                    await auth.signOut(); 
+                    await supabase.auth.signOut(); 
                   } catch (e) { 
-                    console.error("Firebase signOut failed", e); 
+                    console.error("Supabase signOut failed", e); 
                   } 
                   setUser(null); 
                   localStorage.removeItem('sa_user_profile'); 
+                  localStorage.removeItem('supabase_token');
                   setActiveTab('specials'); 
                 }} 
                 onClearBasket={clearBasket} 
@@ -514,19 +514,24 @@ export default function App() {
   const [user, setUser] = useState<UserProfile | null | undefined>(undefined);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      const currentUser = session?.user;
       if (currentUser) {
         try {
-          await loginUser(currentUser.uid, currentUser.email || '');
+          if (session?.access_token) {
+            localStorage.setItem('supabase_token', session.access_token);
+          }
+          await loginUser(currentUser.id, currentUser.email || '');
           const backendProfile = await getCurrentUserProfile();
           const cachedProfile = localStorage.getItem('sa_user_profile');
           const cachedData = cachedProfile ? JSON.parse(cachedProfile) : null;
+          const meta = currentUser.user_metadata || {};
           const userProfile: UserProfile = {
-            displayName: backendProfile?.displayName || cachedData?.displayName || currentUser.displayName || currentUser.email?.split('@')[0] || 'Member',
+            displayName: backendProfile?.displayName || cachedData?.displayName || meta.displayName || meta.full_name || currentUser.email?.split('@')[0] || 'Member',
             email: backendProfile?.email || cachedData?.email || currentUser.email || '',
-            avatarUrl: backendProfile?.avatarUrl || cachedData?.avatarUrl || currentUser.photoURL || `https://api.dicebear.com/7.x/pixel-art/svg?seed=${encodeURIComponent(currentUser.email || '')}`,
+            avatarUrl: backendProfile?.avatarUrl || cachedData?.avatarUrl || meta.avatar_url || `https://api.dicebear.com/7.x/pixel-art/svg?seed=${encodeURIComponent(currentUser.email || '')}`,
             loyaltyCards: backendProfile?.loyaltyCards || cachedData?.loyaltyCards || { checkers: false, pnp: false, woolworths: false, shoprite: false, spar: false },
-            preferredStoreLocation: backendProfile?.preferredStoreLocation || cachedData?.preferredStoreLocation || 'Gauteng'
+            preferredStoreLocation: backendProfile?.preferredStoreLocation || cachedData?.preferredStoreLocation || meta.province || 'Gauteng'
           };
           setUser(userProfile);
           localStorage.setItem('sa_user_profile', JSON.stringify(userProfile));
@@ -559,9 +564,10 @@ export default function App() {
         }
         setUser(null);
         localStorage.removeItem('sa_user_profile');
+        localStorage.removeItem('supabase_token');
       }
     });
-    return () => unsubscribe();
+    return () => subscription.unsubscribe();
   }, []);
 
   return (

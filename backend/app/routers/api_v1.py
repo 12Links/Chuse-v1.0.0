@@ -264,6 +264,9 @@ def login(token_info: dict = Depends(get_current_user), db: Session = Depends(ge
             "preferredStoreLocation": user.preferredStoreLocation
         }
     }
+
+
+@router.get("/search")
 def search_products(
     q: str = Query(default=""),
     dietary: str = Query(default="None"),

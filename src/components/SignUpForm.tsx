@@ -6,7 +6,7 @@ import { Label } from './ui/label';
 import { Checkbox } from './ui/checkbox';
 import { ArrowRight, ArrowLeft, Mail, Lock, User, MapPin, CheckCircle2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { auth, googleProvider, createUserWithEmailAndPassword, signInWithPopup } from '../lib/firebase';
+import { supabase } from '../lib/supabase';
 import { getCurrentUserProfile, registerUser, loginUser } from '../lib/api';
 import { UserProfile } from '../types';
 
@@ -92,39 +92,58 @@ export function SignUpForm({ onToggleForm }: SignUpFormProps) {
     setIsLoading(true);
 
     try {
-      const credential = await createUserWithEmailAndPassword(auth, formData.email, formData.password);
-      const userCred = credential.user;
-      const idToken = await userCred.getIdToken();
+      const { data, error: signUpError } = await supabase.auth.signUp({
+        email: formData.email,
+        password: formData.password,
+        options: {
+          data: {
+            first_name: formData.firstName,
+            last_name: formData.lastName,
+            displayName: `${formData.firstName} ${formData.lastName}`,
+            province: formData.province,
+          },
+        },
+      });
+
+      if (signUpError) {
+        throw signUpError;
+      }
+
+      const userCred = data.user;
+      const session = data.session;
+      const idToken = session?.access_token || '';
 
       let userProfile: UserProfile = {
         displayName: `${formData.firstName} ${formData.lastName}`,
-        email: userCred.email || formData.email,
+        email: userCred?.email || formData.email,
         avatarUrl: `https://api.dicebear.com/7.x/pixel-art/svg?seed=${encodeURIComponent(formData.email)}`,
         loyaltyCards: { checkers: false, pnp: false, woolworths: false, shoprite: false, spar: false },
         preferredStoreLocation: formData.province,
       };
 
-      try {
-        await registerUser(
-          userCred.uid,
-          userProfile.email,
-          userProfile.displayName,
-          formData.province
-        );
-        userProfile = await getCurrentUserProfile();
-      } catch (apiError) {
-        console.warn('Backend registration failed, continuing with local auth:', apiError);
+      if (userCred?.id) {
+        try {
+          await registerUser(
+            userCred.id,
+            userProfile.email,
+            userProfile.displayName,
+            formData.province
+          );
+          userProfile = await getCurrentUserProfile();
+        } catch (apiError) {
+          console.warn('Backend registration failed, continuing with local auth:', apiError);
+        }
       }
       
       localStorage.setItem('sa_user_profile', JSON.stringify(userProfile));
-      localStorage.setItem('firebase_token', idToken);
+      if (idToken) localStorage.setItem('supabase_token', idToken);
       navigate('/');
 
     } catch (err: any) {
-      if (err.code === 'auth/email-already-in-use') {
+      if (err.message?.includes('already registered') || err.message?.includes('already in use')) {
         setError('This email is already registered.');
       } else {
-        setError('An error occurred during sign-up.');
+        setError(err.message || 'An error occurred during sign-up.');
       }
       console.error(err);
     } finally {
@@ -137,30 +156,13 @@ export function SignUpForm({ onToggleForm }: SignUpFormProps) {
     setError('');
     
     try {
-      const result = await signInWithPopup(auth, googleProvider);
-      const userCred = result.user;
-      const idToken = await userCred.getIdToken();
-      
-      const fallbackProfile: UserProfile = {
-        displayName: userCred.displayName || userCred.email?.split('@')[0] || 'Member',
-        email: userCred.email || '',
-        avatarUrl: userCred.photoURL || `https://api.dicebear.com/7.x/pixel-art/svg?seed=${encodeURIComponent(userCred.email || '')}`,
-        loyaltyCards: { checkers: false, pnp: false, woolworths: false, shoprite: false, spar: false },
-        preferredStoreLocation: formData.province
-      };
-
-      let userProfile = fallbackProfile;
-
-      try {
-        await loginUser(userCred.uid, userCred.email || '');
-        userProfile = await getCurrentUserProfile();
-      } catch (apiError) {
-        console.warn('Backend sync failed, continuing with local auth:', apiError);
-      }
-
-      localStorage.setItem('sa_user_profile', JSON.stringify(userProfile));
-      localStorage.setItem('firebase_token', idToken);
-      navigate('/');
+      const { error: oauthError } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/`,
+        },
+      });
+      if (oauthError) throw oauthError;
     } catch (err: any) {
       console.error(err);
       setError(err.message || 'Google Authentication failed.');

@@ -6,7 +6,7 @@ from datetime import datetime
 class User(Base):
     __tablename__ = "users"
 
-    uid = Column(String, primary_key=True, index=True)  # Firebase UID
+    uid = Column(String, primary_key=True, index=True)  # Supabase Auth User ID (UUID)
     email = Column(String, unique=True, index=True)
     displayName = Column(String)
     avatarUrl = Column(String, nullable=True)

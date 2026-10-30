@@ -22,51 +22,36 @@ import requests
 import psycopg2
 import psycopg2.extras
 
-# SCHEMA / COLUMN MAPPING (edit here if your live schema differs) 
+# SCHEMA / COLUMN MAPPING (Aligned with Supabase public schema)
 TABLES = {
-    "product": "product",
-    "store": "store",
-    "price": "price",
-    "availability": "availability",
+    "product": "products",
+    "store": "stores",
+    "price": "prices",
 }
 
 COLUMNS = {
     "product": {
-        "pk": "product_code",
-        "description": "description",
-        "barcode": "barcode",
+        "pk": "id",
         "name": "name",
         "category": "category",
-        "subcategory": "subcategory",
-        "retailer": "store",      
         "image_url": "image_url",
     },
     "store": {
-        "pk": "store_code",
+        "pk": "id",
         "name": "name",
-        "city": "city",
-        "province": "province",
-        "postal_code": "postal_code",
-        "street_address": "street_address",
     },
     "price": {
-        "product_fk": "product_product_code",
-        "store_fk": "store_store_code",
+        "product_fk": "product_id",
+        "store_fk": "store_id",
         "price": "price",
-        "original_price": "original_price",
-        "savings": "savings",
         "on_special": "on_special",
-        "promotion_description": "promotion_description",
-        "date_recorded": "date_recorded",
-    },
-    "availability": {
-        "product_fk": "product_product_code",
-        "store_fk": "store_store_code",
+        "special_detail": "special_detail",
+        "last_updated": "last_updated",
     },
 }
 
-RETAILER = "PNP"  
-STORE_CODE = "WC21"
+RETAILER = "Pick n Pay"  
+STORE_CODE = "pnp"
 
 # PnP CATEGORY / REQUEST CONFIG
 GROCERY_CATEGORIES = {
@@ -104,61 +89,55 @@ SLEEP_BETWEEN_PAGES = 0.5
 MAX_RETRIES = 3
 RETRY_BACKOFF_BASE = 2
 
-# DB CONNECTION (Cloud SQL Auth Proxy, host passed from start script)
+# DB CONNECTION (Supports direct Supabase PostgreSQL connection or host/port config)
 DB_CONFIG = {
     "host": os.environ.get("DB_HOST", "127.0.0.1"),
-    "port": 5432,
-    "dbname": "choose-edec8-database",
-    "user": "scraper_user",
-    "password": os.environ.get("CHUSE_DB_PASSWORD"),
+    "port": int(os.environ.get("DB_PORT", 5432)),
+    "dbname": os.environ.get("DB_NAME", "postgres"),
+    "user": os.environ.get("DB_USER", "postgres"),
+    "password": os.environ.get("CHUSE_DB_PASSWORD") or os.environ.get("DB_PASS"),
 }
 
 
 def get_db():
+    database_url = os.environ.get("DATABASE_URL")
+    if database_url:
+        return psycopg2.connect(database_url)
     if not DB_CONFIG["password"]:
         raise RuntimeError(
-            "CHUSE_DB_PASSWORD env var is not set. In PowerShell:\n"
-            '  $env:CHUSE_DB_PASSWORD = PASSOWORD'
+            "DATABASE_URL or CHUSE_DB_PASSWORD env var is not set."
         )
     return psycopg2.connect(**DB_CONFIG)
 
 
 # ENSURE STORE ROW EXISTS 
 def ensure_store(cursor):
-    c = COLUMNS["store"]
     cursor.execute(
-        f"""
-        INSERT INTO {TABLES['store']} ({c['pk']}, {c['name']}, {c['city']},
-            {c['province']}, {c['postal_code']}, {c['street_address']})
-        VALUES (%s, %s, %s, %s, %s, %s)
-        ON CONFLICT ({c['pk']}) DO NOTHING
-        """,
-        (STORE_CODE, f"PnP {STORE_CODE}", "Unknown", "Unknown", "0000", "Unknown"),
+        """
+        INSERT INTO stores (id, name, premium_multiplier, loyalty_program)
+        VALUES ('pnp', 'Pick n Pay', 1.02, 'Smart Shopper')
+        ON CONFLICT (id) DO NOTHING
+        """
     )
 
 
 # SAVE PRODUCTS TO DB 
 def save_products(products, category_name, conn):
     cursor = conn.cursor()
-    from datetime import datetime, UTC
-    now = datetime.now(UTC)
+    from datetime import datetime, timezone
+    now = datetime.now(timezone.utc).isoformat()
     saved, skipped = 0, 0
 
-    pc = COLUMNS["product"]
-    prc = COLUMNS["price"]
-    avc = COLUMNS["availability"]
-
     for p in products:
-        code = p.get("code")
+        code = str(p.get("code") or "")
         name = p.get("name")
         category_names = p.get("categoryNames", [])
         category = category_names[1] if len(category_names) > 1 else category_name
-        subcategory = category_names[2] if len(category_names) > 2 else None
         price_data = p.get("price", {}) or {}
         price = price_data.get("value")
-        original_price = price_data.get("oldPrice")
         savings = price_data.get("savings", 0)
         on_special = bool(savings and savings > 0)
+        special_detail = f"Save R{savings:.2f}" if on_special else ""
         image_url = None
         images = p.get("images") or []
         if images:
@@ -168,59 +147,35 @@ def save_products(products, category_name, conn):
             skipped += 1
             continue
 
+        prod_id = f"pnp-{code}"
+
         try:
             # Upsert product
             cursor.execute(
-                f"""
-                INSERT INTO {TABLES['product']}
-                    ({pc['pk']}, {pc['name']}, {pc['category']}, {pc['subcategory']},
-                     {pc['retailer']}, {pc['image_url']})
+                """
+                INSERT INTO products (id, name, category, image_url)
+                VALUES (%s, %s, %s, %s)
+                ON CONFLICT (id) DO UPDATE SET
+                    name = EXCLUDED.name,
+                    category = EXCLUDED.category,
+                    image_url = EXCLUDED.image_url
+                """,
+                (prod_id, name, category, image_url),
+            )
+
+            # Upsert price
+            cursor.execute(
+                """
+                INSERT INTO prices (product_id, store_id, price, on_special, special_detail, last_updated)
                 VALUES (%s, %s, %s, %s, %s, %s)
-                ON CONFLICT ({pc['pk']}) DO UPDATE SET
-                    {pc['name']} = EXCLUDED.{pc['name']},
-                    {pc['category']} = EXCLUDED.{pc['category']},
-                    {pc['subcategory']} = EXCLUDED.{pc['subcategory']},
-                    {pc['image_url']} = EXCLUDED.{pc['image_url']}
+                ON CONFLICT (product_id, store_id) DO UPDATE SET
+                    price = EXCLUDED.price,
+                    on_special = EXCLUDED.on_special,
+                    special_detail = EXCLUDED.special_detail,
+                    last_updated = EXCLUDED.last_updated
                 """,
-                (code, name, category, subcategory, RETAILER, image_url),
+                (prod_id, "pnp", price, on_special, special_detail, now),
             )
-
-            # Upsert current price (one row per product, per your schema's key)
-            cursor.execute(
-                f"""
-                INSERT INTO {TABLES['price']}
-                    ({prc['product_fk']}, {prc['store_fk']}, {prc['price']},
-                     {prc['original_price']}, {prc['savings']}, {prc['on_special']},
-                     {prc['date_recorded']})
-                VALUES (%s, %s, %s, %s, %s, %s, %s)
-                ON CONFLICT ({prc['product_fk']}) DO UPDATE SET
-                    {prc['store_fk']} = EXCLUDED.{prc['store_fk']},
-                    {prc['price']} = EXCLUDED.{prc['price']},
-                    {prc['original_price']} = EXCLUDED.{prc['original_price']},
-                    {prc['savings']} = EXCLUDED.{prc['savings']},
-                    {prc['on_special']} = EXCLUDED.{prc['on_special']},
-                    {prc['date_recorded']} = EXCLUDED.{prc['date_recorded']}
-                """,
-                (code, STORE_CODE, price, original_price, savings, on_special, now),
-            )
-
-            # Record availability at this store (skip if pair already exists)
-            cursor.execute(
-                f"""
-                SELECT 1 FROM {TABLES['availability']}
-                WHERE {avc['product_fk']} = %s AND {avc['store_fk']} = %s
-                LIMIT 1
-                """,
-                (code, STORE_CODE),
-            )
-            if cursor.fetchone() is None:
-                cursor.execute(
-                    f"""
-                    INSERT INTO {TABLES['availability']} ({avc['product_fk']}, {avc['store_fk']})
-                    VALUES (%s, %s)
-                    """,
-                    (code, STORE_CODE),
-                )
 
             saved += 1
 

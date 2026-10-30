@@ -4,8 +4,24 @@ import fs from "fs";
 import { createServer as createViteServer } from "vite";
 import dotenv from "dotenv";
 import { GoogleGenAI } from "@google/genai";
+import { createClient } from "@supabase/supabase-js";
 
 dotenv.config();
+
+// Optional Supabase Server / Admin client
+const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
+const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY;
+let supabase: any = null;
+if (supabaseUrl && supabaseKey && !supabaseUrl.includes("placeholder-project")) {
+  try {
+    supabase = createClient(supabaseUrl, supabaseKey);
+    console.log("[Supabase] Backend client connected successfully.");
+  } catch (err: any) {
+    console.warn("[Supabase] Backend initialization skipped:", err.message);
+  }
+} else {
+  console.log("[Supabase] Running with local JSON database fallback.");
+}
 
 // Initialize Gemini API Client
 let ai: GoogleGenAI | null = null;
@@ -71,7 +87,7 @@ try {
   console.error("[Database] Error reading synced_products.json:", err.message);
 }
 
-// Token helper to extract UID from Firebase JWT
+// Token helper to extract UID from Supabase / JWT token
 function getUserIdFromRequest(req: express.Request): string {
   const authHeader = req.headers.authorization;
   if (authHeader && authHeader.startsWith("Bearer ")) {
@@ -80,7 +96,7 @@ function getUserIdFromRequest(req: express.Request): string {
       const parts = token.split(".");
       if (parts.length === 3) {
         const payload = JSON.parse(Buffer.from(parts[1], "base64").toString("utf-8"));
-        return payload.user_id || payload.uid || payload.sub || "mock-user-123";
+        return payload.sub || payload.id || payload.user_id || payload.uid || "mock-user-123";
       }
     } catch (e) {
       console.warn("[Auth] Token parsing failed, using fallback mock ID.");
@@ -89,16 +105,39 @@ function getUserIdFromRequest(req: express.Request): string {
   return "mock-user-123";
 }
 
-async function startServer() {
-  const app = express();
-  const PORT = 3000;
+export const app = express();
+app.use(express.json());
 
-  app.use(express.json());
-
-  // --- API Endpoints ---
+// --- API Endpoints ---
 
   // GET /api/products
-  app.get("/api/products", (req, res) => {
+  app.get("/api/products", async (req, res) => {
+    if (supabase) {
+      try {
+        const { data, error } = await supabase.from("products").select("*, prices(*)");
+        if (!error && data && data.length > 0) {
+          const formatted = data.map((d: any) => ({
+            id: d.id,
+            name: d.name,
+            category: d.category || "Groceries",
+            unit: d.unit || "1 Unit",
+            isPopular: Boolean(d.is_popular),
+            barcode: d.barcode || "",
+            imageUrl: d.image_url || "https://images.unsplash.com/photo-1542838132-92c53300491e?w=400&auto=format&fit=crop&q=80",
+            prices: (d.prices || []).map((pr: any) => ({
+              storeId: pr.store_id,
+              price: Number(pr.price),
+              onSpecial: Boolean(pr.on_special),
+              specialDetail: pr.special_detail || "",
+              inStock: true
+            }))
+          }));
+          return res.json(formatted);
+        }
+      } catch (err: any) {
+        console.warn("[Supabase] Products query error, fallback to local cache:", err.message);
+      }
+    }
     res.json(productsList);
   });
 
@@ -266,15 +305,18 @@ async function startServer() {
       syncLogs: [
         "System bootstrap: Express-based daily pricing engine active.",
         "Successfully initialized memory cache for SA retail indexes.",
+        supabase ? "Supabase database client connected." : "Running with local JSON database fallback.",
       ],
       schedule: "0 2 * * * (Every day at 2am)",
       status: "Listening",
       version: "4.0.0-node",
+      backend: supabase ? "Supabase (PostgreSQL)" : "Local JSON Cache Engine",
+      supabaseConnected: Boolean(supabase),
     });
   });
 
   // POST /api/v1/auth/register
-  app.post("/api/v1/auth/register", (req, res) => {
+  app.post("/api/v1/auth/register", async (req, res) => {
     const { uid, email, displayName, loyaltyCards, preferredStoreLocation } = req.body;
     if (!uid || !email) {
       return res.status(400).json({ error: "uid and email are required" });
@@ -291,31 +333,99 @@ async function startServer() {
     usersDb[uid] = profile;
     writeJsonFile(USERS_FILE, usersDb);
 
+    if (supabase) {
+      try {
+        await supabase.from("profiles").upsert({
+          id: uid,
+          email,
+          display_name: profile.displayName,
+          loyalty_cards: profile.loyaltyCards,
+          preferred_store_location: profile.preferredStoreLocation,
+          updated_at: new Date().toISOString(),
+        });
+      } catch (err: any) {
+        console.warn("[Supabase] Failed to persist profile to database:", err.message);
+      }
+    }
+
     res.json({ status: "ok", user: profile });
   });
 
   // POST /api/v1/auth/sync-profile
-  app.post("/api/v1/auth/sync-profile", (req, res) => {
+  app.post("/api/v1/auth/sync-profile", async (req, res) => {
     const uid = getUserIdFromRequest(req);
     let profile = usersDb[uid];
+
+    if (supabase && (!profile || req.body?.email)) {
+      try {
+        const { data } = await supabase.from("profiles").select("*").eq("id", uid).single();
+        if (data) {
+          profile = {
+            uid: data.id,
+            email: data.email,
+            displayName: data.display_name,
+            avatarUrl: data.avatar_url,
+            loyaltyCards: data.loyalty_cards || { checkers: false, pnp: false, woolworths: false, shoprite: false, spar: false },
+            preferredStoreLocation: data.preferred_store_location || "Gauteng",
+          };
+          usersDb[uid] = profile;
+          writeJsonFile(USERS_FILE, usersDb);
+        }
+      } catch (e) {
+        // fallback
+      }
+    }
+
     if (!profile) {
       profile = {
         uid,
-        email: `${uid}@example.com`,
-        displayName: `User-${uid.slice(0, 5)}`,
+        email: req.body?.email || `${uid}@example.com`,
+        displayName: req.body?.displayName || `User-${uid.slice(0, 5)}`,
         loyaltyCards: { checkers: false, pnp: false, woolworths: false, shoprite: false, spar: false },
         preferredStoreLocation: "Gauteng",
       };
       usersDb[uid] = profile;
       writeJsonFile(USERS_FILE, usersDb);
+
+      if (supabase) {
+        try {
+          await supabase.from("profiles").upsert({
+            id: uid,
+            email: profile.email,
+            display_name: profile.displayName,
+            loyalty_cards: profile.loyaltyCards,
+            preferred_store_location: profile.preferredStoreLocation,
+            updated_at: new Date().toISOString(),
+          });
+        } catch (e) {}
+      }
     }
     res.json(profile);
   });
 
   // GET /api/v1/users/me
-  app.get("/api/v1/users/me", (req, res) => {
+  app.get("/api/v1/users/me", async (req, res) => {
     const uid = getUserIdFromRequest(req);
-    const profile = usersDb[uid];
+    let profile = usersDb[uid];
+
+    if (supabase && !profile) {
+      try {
+        const { data } = await supabase.from("profiles").select("*").eq("id", uid).single();
+        if (data) {
+          profile = {
+            uid: data.id,
+            email: data.email,
+            displayName: data.display_name,
+            avatarUrl: data.avatar_url,
+            loyaltyCards: data.loyalty_cards,
+            preferredStoreLocation: data.preferred_store_location,
+          };
+          usersDb[uid] = profile;
+          writeJsonFile(USERS_FILE, usersDb);
+        }
+      } catch (e) {}
+    }
+
     if (!profile) {
       return res.status(404).json({ error: "UserProfile not found" });
     }
@@ -323,7 +433,7 @@ async function startServer() {
   });
 
   // PUT /api/v1/users/me
-  app.put("/api/v1/users/me", (req, res) => {
+  app.put("/api/v1/users/me", async (req, res) => {
     const uid = getUserIdFromRequest(req);
     let profile = usersDb[uid] || {
       uid,
@@ -342,15 +452,44 @@ async function startServer() {
     usersDb[uid] = profile;
     writeJsonFile(USERS_FILE, usersDb);
 
+    if (supabase) {
+      try {
+        await supabase.from("profiles").upsert({
+          id: uid,
+          email: profile.email,
+          display_name: profile.displayName,
+          avatar_url: profile.avatarUrl,
+          loyalty_cards: profile.loyaltyCards,
+          preferred_store_location: profile.preferredStoreLocation,
+          updated_at: new Date().toISOString(),
+        });
+      } catch (err: any) {
+        console.warn("[Supabase] Profile update sync failed:", err.message);
+      }
+    }
+
     res.json(profile);
   });
 
   // POST /api/v1/basket/sync
-  app.post("/api/v1/basket/sync", (req, res) => {
+  app.post("/api/v1/basket/sync", async (req, res) => {
     const uid = getUserIdFromRequest(req);
     const items = req.body.items || [];
     basketsDb[uid] = items;
     writeJsonFile(BASKETS_FILE, basketsDb);
+
+    if (supabase) {
+      try {
+        await supabase.from("baskets").upsert({
+          user_id: uid,
+          items,
+          updated_at: new Date().toISOString(),
+        });
+      } catch (err: any) {
+        console.warn("[Supabase] Basket sync failed:", err.message);
+      }
+    }
+
     res.json({ status: "ok", items });
   });
 
@@ -417,24 +556,29 @@ ${JSON.stringify(basket || [], null, 2)}
     }
   });
 
-  // Vite middleware for assets and SPA handling
-  if (process.env.NODE_ENV !== "production") {
-    const vite = await createViteServer({
-      server: { middlewareMode: true },
-      appType: "spa",
-    });
-    app.use(vite.middlewares);
-  } else {
-    const distPath = path.join(process.cwd(), "dist");
-    app.use(express.static(distPath));
-    app.get("*", (req, res) => {
-      res.sendFile(path.join(distPath, "index.html"));
-    });
+  // Vite middleware for assets and SPA handling in standalone mode
+  export async function setupApp(isDev = process.env.NODE_ENV !== "production") {
+    if (isDev && !process.env.VERCEL) {
+      const vite = await createViteServer({
+        server: { middlewareMode: true },
+        appType: "spa",
+      });
+      app.use(vite.middlewares);
+    } else if (!process.env.VERCEL) {
+      const distPath = path.join(process.cwd(), "dist");
+      app.use(express.static(distPath));
+      app.get("*", (req, res) => {
+        res.sendFile(path.join(distPath, "index.html"));
+      });
+    }
+    return app;
   }
 
-  app.listen(PORT, "0.0.0.0", () => {
-    console.log(`Server running on port ${PORT}`);
-  });
-}
-
-startServer();
+  if (!process.env.VERCEL && !process.env.AWS_LAMBDA_FUNCTION_NAME) {
+    const PORT = parseInt(process.env.PORT || "3000", 10);
+    setupApp().then(() => {
+      app.listen(PORT, "0.0.0.0", () => {
+        console.log(`Server running on port ${PORT}`);
+      });
+    });
+  }

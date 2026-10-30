@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { Product } from '../types';
 import { STORES } from '../data/catalog';
+import { supabase } from '../lib/supabase';
 
 interface DiscrepancyReport {
   id: string;
@@ -108,6 +109,35 @@ export default function PriceDiscrepancyReporter({ products }: PriceDiscrepancyR
       setReports(initial);
       localStorage.setItem('sa_price_discrepancy_reports', JSON.stringify(initial));
     }
+
+    // Query remote reports from Supabase
+    supabase
+      .from('price_discrepancies')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .limit(20)
+      .then(({ data, error }) => {
+        if (!error && data && data.length > 0) {
+          const remoteReports: DiscrepancyReport[] = data.map((d: any) => ({
+            id: d.id,
+            productId: d.product_id || '',
+            productName: d.product_name,
+            storeId: d.store_id,
+            storeName: STORES.find(s => s.id === d.store_id)?.name || d.store_id,
+            province: 'Gauteng',
+            catalogPrice: Number(d.reported_price) * 1.05,
+            shelfPrice: Number(d.reported_price),
+            reportedBy: 'SA Shopper',
+            date: d.created_at,
+            status: d.status || 'pending',
+            votes: 1
+          }));
+          setReports(prev => {
+            const ids = new Set(remoteReports.map(r => r.id));
+            return [...remoteReports, ...prev.filter(p => !ids.has(p.id))];
+          });
+        }
+      });
   }, []);
 
   const saveReports = (updatedReports: DiscrepancyReport[]) => {
@@ -178,6 +208,23 @@ export default function PriceDiscrepancyReporter({ products }: PriceDiscrepancyR
 
     const updated = [newReport, ...reports];
     saveReports(updated);
+
+    // Sync to Supabase price_discrepancies table
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      supabase.from('price_discrepancies').insert({
+        user_id: session?.user?.id || null,
+        product_id: selectedProductId,
+        product_name: selectedProduct?.name || 'Custom Product',
+        store_id: selectedStoreId,
+        reported_price: Number(shelfPrice),
+        shelf_photo_url: uploadedFileName || null,
+        status: 'pending'
+      }).then(({ error }) => {
+        if (error) {
+          console.warn('Could not sync discrepancy report to Supabase:', error.message);
+        }
+      });
+    });
 
     // Reset Form
     setSelectedProductId('');

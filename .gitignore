@@ -25,7 +25,10 @@ __pycache__/
 # VS Code
 .vscode/
 
-# Firebase service account
+# Database local files
+*.db
+*.sqlite
+*.sqlite3
 service_account.py
 service_account.json
 *service-account*.json
@@ -33,3 +36,4 @@ service_account.json
 firebase-applet-config.json
 
 backend/Data/
+.vercel/

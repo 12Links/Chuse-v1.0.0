@@ -806,49 +806,49 @@
     "prices": [
       {
         "storeId": "woolworths",
-        "price": 142.8,
-        "onSpecial": true,
-        "specialDetail": "Special Promo Price",
+        "price": 175.3,
+        "onSpecial": false,
+        "specialDetail": "",
         "inStock": true
       },
       {
         "storeId": "checkers",
-        "price": 138.71,
-        "onSpecial": true,
-        "specialDetail": "Save R15.50 with Xtra Savings",
+        "price": 151.14,
+        "onSpecial": false,
+        "specialDetail": "",
         "inStock": true
       },
       {
         "storeId": "pnp",
-        "price": 153.25,
+        "price": 153.5,
         "onSpecial": false,
         "specialDetail": "",
         "inStock": true
       },
       {
         "storeId": "shoprite",
-        "price": 115.74,
-        "onSpecial": true,
-        "specialDetail": "Special Promo Price",
+        "price": 140.89,
+        "onSpecial": false,
+        "specialDetail": "",
         "inStock": true
       },
       {
         "storeId": "spar",
-        "price": 151.76,
+        "price": 155.25,
         "onSpecial": false,
         "specialDetail": "",
         "inStock": true
       },
       {
         "storeId": "foodlovers",
-        "price": 138.95,
+        "price": 141.05,
         "onSpecial": false,
         "specialDetail": "",
-        "inStock": false
+        "inStock": true
       },
       {
         "storeId": "boxer",
-        "price": 138.58,
+        "price": 140.26,
         "onSpecial": false,
         "specialDetail": "",
         "inStock": true
@@ -861,54 +861,54 @@
     "category": "Dairy",
     "unit": "2L",
     "isPopular": true,
-    "barcode": "6001234567890",
+    "barcode": "6001234000025",
     "imageUrl": "https://images.unsplash.com/photo-1550583724-b2692b85b150?w=400&auto=format&fit=crop&q=80",
     "prices": [
       {
         "storeId": "woolworths",
-        "price": 45.33,
+        "price": 44.62,
         "onSpecial": false,
         "specialDetail": "",
         "inStock": true
       },
       {
         "storeId": "checkers",
-        "price": 37.67,
+        "price": 40.0,
         "onSpecial": false,
         "specialDetail": "",
         "inStock": true
       },
       {
         "storeId": "pnp",
-        "price": 38.4,
+        "price": 40.86,
         "onSpecial": false,
         "specialDetail": "",
-        "inStock": true
+        "inStock": false
       },
       {
         "storeId": "shoprite",
-        "price": 36.43,
+        "price": 36.97,
         "onSpecial": false,
         "specialDetail": "",
         "inStock": true
       },
       {
         "storeId": "spar",
-        "price": 37.94,
+        "price": 39.01,
         "onSpecial": false,
         "specialDetail": "",
         "inStock": true
       },
       {
         "storeId": "foodlovers",
-        "price": 38.61,
+        "price": 38.58,
         "onSpecial": false,
         "specialDetail": "",
         "inStock": true
       },
       {
         "storeId": "boxer",
-        "price": 34.97,
+        "price": 37.04,
         "onSpecial": false,
         "specialDetail": "",
         "inStock": true
@@ -921,54 +921,54 @@
     "category": "Bakery",
     "unit": "700g",
     "isPopular": true,
-    "barcode": "6009876543210",
+    "barcode": "6001234000018",
     "imageUrl": "https://images.unsplash.com/photo-1509440159596-0249088772ff?w=400&auto=format&fit=crop&q=80",
     "prices": [
       {
         "storeId": "woolworths",
-        "price": 20.47,
+        "price": 21.58,
         "onSpecial": false,
         "specialDetail": "",
         "inStock": true
       },
       {
         "storeId": "checkers",
-        "price": 16.59,
-        "onSpecial": true,
-        "specialDetail": "Buy 2 for R33.20",
+        "price": 18.61,
+        "onSpecial": false,
+        "specialDetail": "",
         "inStock": true
       },
       {
         "storeId": "pnp",
-        "price": 18.6,
+        "price": 18.24,
         "onSpecial": false,
         "specialDetail": "",
         "inStock": true
       },
       {
         "storeId": "shoprite",
-        "price": 17.75,
+        "price": 16.96,
         "onSpecial": false,
         "specialDetail": "",
         "inStock": true
       },
       {
         "storeId": "spar",
-        "price": 16.55,
-        "onSpecial": true,
-        "specialDetail": "Special Promo Price",
+        "price": 18.75,
+        "onSpecial": false,
+        "specialDetail": "",
         "inStock": true
       },
       {
         "storeId": "foodlovers",
-        "price": 17.99,
+        "price": 17.07,
         "onSpecial": false,
         "specialDetail": "",
         "inStock": true
       },
       {
         "storeId": "boxer",
-        "price": 17.5,
+        "price": 17.69,
         "onSpecial": false,
         "specialDetail": "",
         "inStock": true
@@ -986,51 +986,51 @@
     "prices": [
       {
         "storeId": "woolworths",
-        "price": 63.32,
+        "price": 63.53,
         "onSpecial": true,
-        "specialDetail": "Special Promo Price",
+        "specialDetail": "Buy 2 for R127.10",
         "inStock": true
       },
       {
         "storeId": "checkers",
-        "price": 65.35,
+        "price": 64.83,
         "onSpecial": false,
         "specialDetail": "",
         "inStock": true
       },
       {
         "storeId": "pnp",
-        "price": 64.34,
+        "price": 65.88,
         "onSpecial": false,
         "specialDetail": "",
         "inStock": true
       },
       {
         "storeId": "shoprite",
-        "price": 60.21,
+        "price": 58.1,
         "onSpecial": false,
         "specialDetail": "",
         "inStock": true
       },
       {
         "storeId": "spar",
-        "price": 53.9,
-        "onSpecial": true,
-        "specialDetail": "Buy 2 for R107.80",
-        "inStock": true
-      },
-      {
-        "storeId": "foodlovers",
-        "price": 60.35,
+        "price": 64.07,
         "onSpecial": false,
         "specialDetail": "",
         "inStock": true
       },
       {
-        "storeId": "boxer",
-        "price": 47.37,
+        "storeId": "foodlovers",
+        "price": 49.96,
         "onSpecial": true,
         "specialDetail": "Weekly Special Price",
+        "inStock": true
+      },
+      {
+        "storeId": "boxer",
+        "price": 56.44,
+        "onSpecial": false,
+        "specialDetail": "",
         "inStock": true
       }
     ]
@@ -1046,49 +1046,49 @@
     "prices": [
       {
         "storeId": "woolworths",
-        "price": 77.27,
+        "price": 74.53,
         "onSpecial": true,
-        "specialDetail": "Special Promo Price",
+        "specialDetail": "Save R15.40 with W-Rewards",
         "inStock": true
       },
       {
         "storeId": "checkers",
-        "price": 80.33,
+        "price": 81.03,
         "onSpecial": false,
         "specialDetail": "",
         "inStock": true
       },
       {
         "storeId": "pnp",
-        "price": 84.25,
+        "price": 79.56,
         "onSpecial": false,
         "specialDetail": "",
         "inStock": true
       },
       {
         "storeId": "shoprite",
-        "price": 74.99,
-        "onSpecial": false,
-        "specialDetail": "",
+        "price": 67.76,
+        "onSpecial": true,
+        "specialDetail": "Save R8.00 with Xtra Savings",
         "inStock": true
       },
       {
         "storeId": "spar",
-        "price": 77.92,
+        "price": 80.75,
         "onSpecial": false,
         "specialDetail": "",
         "inStock": true
       },
       {
         "storeId": "foodlovers",
-        "price": 74.51,
-        "onSpecial": false,
-        "specialDetail": "",
+        "price": 64.94,
+        "onSpecial": true,
+        "specialDetail": "Weekly Special Price",
         "inStock": true
       },
       {
         "storeId": "boxer",
-        "price": 76.44,
+        "price": 74.3,
         "onSpecial": false,
         "specialDetail": "",
         "inStock": true
@@ -1106,49 +1106,49 @@
     "prices": [
       {
         "storeId": "woolworths",
-        "price": 146.73,
+        "price": 153.47,
         "onSpecial": false,
         "specialDetail": "",
-        "inStock": true
+        "inStock": false
       },
       {
         "storeId": "checkers",
-        "price": 129.18,
+        "price": 125.44,
         "onSpecial": false,
         "specialDetail": "",
         "inStock": true
       },
       {
         "storeId": "pnp",
-        "price": 134.93,
+        "price": 135.39,
         "onSpecial": false,
         "specialDetail": "",
         "inStock": true
       },
       {
         "storeId": "shoprite",
-        "price": 125.94,
+        "price": 126.58,
         "onSpecial": false,
         "specialDetail": "",
         "inStock": true
       },
       {
         "storeId": "spar",
-        "price": 132.61,
+        "price": 136.05,
         "onSpecial": false,
         "specialDetail": "",
         "inStock": true
       },
       {
         "storeId": "foodlovers",
-        "price": 126.95,
-        "onSpecial": false,
-        "specialDetail": "",
+        "price": 112.12,
+        "onSpecial": true,
+        "specialDetail": "Weekly Special Price",
         "inStock": true
       },
       {
         "storeId": "boxer",
-        "price": 115.47,
+        "price": 121.38,
         "onSpecial": false,
         "specialDetail": "",
         "inStock": true
@@ -1166,49 +1166,49 @@
     "prices": [
       {
         "storeId": "woolworths",
-        "price": 50.84,
+        "price": 51.36,
         "onSpecial": false,
         "specialDetail": "",
         "inStock": true
       },
       {
         "storeId": "checkers",
-        "price": 45.23,
+        "price": 45.29,
         "onSpecial": false,
         "specialDetail": "",
         "inStock": true
       },
       {
         "storeId": "pnp",
-        "price": 46.84,
+        "price": 45.9,
         "onSpecial": false,
         "specialDetail": "",
         "inStock": true
       },
       {
         "storeId": "shoprite",
-        "price": 42.43,
+        "price": 42.82,
         "onSpecial": false,
         "specialDetail": "",
         "inStock": true
       },
       {
         "storeId": "spar",
-        "price": 43.67,
+        "price": 47.24,
         "onSpecial": false,
         "specialDetail": "",
         "inStock": true
       },
       {
         "storeId": "foodlovers",
-        "price": 44.11,
+        "price": 43.1,
         "onSpecial": false,
         "specialDetail": "",
         "inStock": true
       },
       {
         "storeId": "boxer",
-        "price": 41.67,
+        "price": 42.08,
         "onSpecial": false,
         "specialDetail": "",
         "inStock": true
@@ -1509,6 +1509,486 @@
       {
         "storeId": "boxer",
         "price": 46.19,
+        "onSpecial": false,
+        "specialDetail": "",
+        "inStock": true
+      }
+    ]
+  },
+  {
+    "id": "prod-eggs-nulaid",
+    "name": "Nulaid Large Eggs 18pk",
+    "category": "Dairy",
+    "unit": "18 pack",
+    "isPopular": true,
+    "barcode": "6001234000056",
+    "imageUrl": "https://images.unsplash.com/photo-1582722872445-44dc5f7e3c8f?w=400&auto=format&fit=crop&q=80",
+    "prices": [
+      {
+        "storeId": "woolworths",
+        "price": 61.66,
+        "onSpecial": false,
+        "specialDetail": "",
+        "inStock": true
+      },
+      {
+        "storeId": "checkers",
+        "price": 44.05,
+        "onSpecial": true,
+        "specialDetail": "Buy 2 for R88.10",
+        "inStock": true
+      },
+      {
+        "storeId": "pnp",
+        "price": 57.08,
+        "onSpecial": false,
+        "specialDetail": "",
+        "inStock": true
+      },
+      {
+        "storeId": "shoprite",
+        "price": 51.42,
+        "onSpecial": false,
+        "specialDetail": "",
+        "inStock": true
+      },
+      {
+        "storeId": "spar",
+        "price": 49.83,
+        "onSpecial": true,
+        "specialDetail": "Buy 2 for R99.70",
+        "inStock": true
+      },
+      {
+        "storeId": "foodlovers",
+        "price": 53.16,
+        "onSpecial": false,
+        "specialDetail": "",
+        "inStock": true
+      },
+      {
+        "storeId": "boxer",
+        "price": 51.09,
+        "onSpecial": false,
+        "specialDetail": "",
+        "inStock": true
+      }
+    ]
+  },
+  {
+    "id": "prod-cereal-weetbix",
+    "name": "Bokomo Weet-Bix Wholegrain Wheat Biscuits",
+    "category": "Breakfast",
+    "unit": "450g",
+    "isPopular": true,
+    "barcode": "6001007001234",
+    "imageUrl": "https://images.unsplash.com/photo-1521483451569-e33803c0330c?w=400&auto=format&fit=crop&q=80",
+    "prices": [
+      {
+        "storeId": "woolworths",
+        "price": 37.04,
+        "onSpecial": false,
+        "specialDetail": "",
+        "inStock": true
+      },
+      {
+        "storeId": "checkers",
+        "price": 31.84,
+        "onSpecial": false,
+        "specialDetail": "",
+        "inStock": true
+      },
+      {
+        "storeId": "pnp",
+        "price": 33.94,
+        "onSpecial": false,
+        "specialDetail": "",
+        "inStock": true
+      },
+      {
+        "storeId": "shoprite",
+        "price": 31.48,
+        "onSpecial": false,
+        "specialDetail": "",
+        "inStock": true
+      },
+      {
+        "storeId": "spar",
+        "price": 34.35,
+        "onSpecial": false,
+        "specialDetail": "",
+        "inStock": true
+      },
+      {
+        "storeId": "foodlovers",
+        "price": 31.99,
+        "onSpecial": false,
+        "specialDetail": "",
+        "inStock": false
+      },
+      {
+        "storeId": "boxer",
+        "price": 30.86,
+        "onSpecial": false,
+        "specialDetail": "",
+        "inStock": true
+      }
+    ]
+  },
+  {
+    "id": "prod-cereal-cornflakes",
+    "name": "Kellogg's Toasted Corn Flakes",
+    "category": "Breakfast",
+    "unit": "1kg",
+    "isPopular": true,
+    "barcode": "6001007005678",
+    "imageUrl": "https://images.unsplash.com/photo-1509440159596-0249088772ff?w=400&auto=format&fit=crop&q=80",
+    "prices": [
+      {
+        "storeId": "woolworths",
+        "price": 75.62,
+        "onSpecial": false,
+        "specialDetail": "",
+        "inStock": true
+      },
+      {
+        "storeId": "checkers",
+        "price": 63.87,
+        "onSpecial": false,
+        "specialDetail": "",
+        "inStock": true
+      },
+      {
+        "storeId": "pnp",
+        "price": 67.54,
+        "onSpecial": false,
+        "specialDetail": "",
+        "inStock": true
+      },
+      {
+        "storeId": "shoprite",
+        "price": 63.28,
+        "onSpecial": false,
+        "specialDetail": "",
+        "inStock": true
+      },
+      {
+        "storeId": "spar",
+        "price": 65.57,
+        "onSpecial": false,
+        "specialDetail": "",
+        "inStock": true
+      },
+      {
+        "storeId": "foodlovers",
+        "price": 62.84,
+        "onSpecial": false,
+        "specialDetail": "",
+        "inStock": true
+      },
+      {
+        "storeId": "boxer",
+        "price": 61.85,
+        "onSpecial": false,
+        "specialDetail": "",
+        "inStock": true
+      }
+    ]
+  },
+  {
+    "id": "prod-canned-beans",
+    "name": "Koo Baked Beans in Tomato Sauce",
+    "category": "Canned Goods",
+    "unit": "410g",
+    "isPopular": true,
+    "barcode": "6001007009876",
+    "imageUrl": "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400&auto=format&fit=crop&q=80",
+    "prices": [
+      {
+        "storeId": "woolworths",
+        "price": 17.76,
+        "onSpecial": true,
+        "specialDetail": "Special Promo Price",
+        "inStock": true
+      },
+      {
+        "storeId": "checkers",
+        "price": 17.43,
+        "onSpecial": false,
+        "specialDetail": "",
+        "inStock": true
+      },
+      {
+        "storeId": "pnp",
+        "price": 17.85,
+        "onSpecial": false,
+        "specialDetail": "",
+        "inStock": true
+      },
+      {
+        "storeId": "shoprite",
+        "price": 16.36,
+        "onSpecial": false,
+        "specialDetail": "",
+        "inStock": true
+      },
+      {
+        "storeId": "spar",
+        "price": 16.69,
+        "onSpecial": false,
+        "specialDetail": "",
+        "inStock": true
+      },
+      {
+        "storeId": "foodlovers",
+        "price": 14.33,
+        "onSpecial": true,
+        "specialDetail": "Weekly Special Price",
+        "inStock": true
+      },
+      {
+        "storeId": "boxer",
+        "price": 13.49,
+        "onSpecial": true,
+        "specialDetail": "Weekly Special Price",
+        "inStock": true
+      }
+    ]
+  },
+  {
+    "id": "prod-sauce-allgold",
+    "name": "All Gold Tomato Sauce",
+    "category": "Condiments",
+    "unit": "700ml",
+    "isPopular": true,
+    "barcode": "6001007004321",
+    "imageUrl": "https://images.unsplash.com/photo-1589301760014-d929f3979dbc?w=400&auto=format&fit=crop&q=80",
+    "prices": [
+      {
+        "storeId": "woolworths",
+        "price": 45.11,
+        "onSpecial": false,
+        "specialDetail": "",
+        "inStock": true
+      },
+      {
+        "storeId": "checkers",
+        "price": 39.84,
+        "onSpecial": false,
+        "specialDetail": "",
+        "inStock": true
+      },
+      {
+        "storeId": "pnp",
+        "price": 41.23,
+        "onSpecial": false,
+        "specialDetail": "",
+        "inStock": true
+      },
+      {
+        "storeId": "shoprite",
+        "price": 32.77,
+        "onSpecial": true,
+        "specialDetail": "Save R6.10 with Xtra Savings",
+        "inStock": true
+      },
+      {
+        "storeId": "spar",
+        "price": 33.25,
+        "onSpecial": true,
+        "specialDetail": "Save R7.30 with SPAR Rewards",
+        "inStock": true
+      },
+      {
+        "storeId": "foodlovers",
+        "price": 38.29,
+        "onSpecial": false,
+        "specialDetail": "",
+        "inStock": true
+      },
+      {
+        "storeId": "boxer",
+        "price": 36.16,
+        "onSpecial": false,
+        "specialDetail": "",
+        "inStock": true
+      }
+    ]
+  },
+  {
+    "id": "prod-tea-fiveroses",
+    "name": "Five Roses Ceylon Blend Tea Bags",
+    "category": "Beverages",
+    "unit": "100s",
+    "isPopular": true,
+    "barcode": "6001007008765",
+    "imageUrl": "https://images.unsplash.com/photo-1576092768241-dec231879fc3?w=400&auto=format&fit=crop&q=80",
+    "prices": [
+      {
+        "storeId": "woolworths",
+        "price": 59.87,
+        "onSpecial": false,
+        "specialDetail": "",
+        "inStock": true
+      },
+      {
+        "storeId": "checkers",
+        "price": 51.01,
+        "onSpecial": false,
+        "specialDetail": "",
+        "inStock": true
+      },
+      {
+        "storeId": "pnp",
+        "price": 52.73,
+        "onSpecial": false,
+        "specialDetail": "",
+        "inStock": true
+      },
+      {
+        "storeId": "shoprite",
+        "price": 48.92,
+        "onSpecial": false,
+        "specialDetail": "",
+        "inStock": true
+      },
+      {
+        "storeId": "spar",
+        "price": 48.35,
+        "onSpecial": true,
+        "specialDetail": "Save R6.40 with SPAR Rewards",
+        "inStock": true
+      },
+      {
+        "storeId": "foodlovers",
+        "price": 50.16,
+        "onSpecial": false,
+        "specialDetail": "",
+        "inStock": true
+      },
+      {
+        "storeId": "boxer",
+        "price": 47.46,
+        "onSpecial": false,
+        "specialDetail": "",
+        "inStock": true
+      }
+    ]
+  },
+  {
+    "id": "prod-detergent-omo",
+    "name": "Omo Auto Washing Powder",
+    "category": "Household",
+    "unit": "2kg",
+    "isPopular": true,
+    "barcode": "6001007002468",
+    "imageUrl": "https://images.unsplash.com/photo-1583947215259-38e31be8751f?w=400&auto=format&fit=crop&q=80",
+    "prices": [
+      {
+        "storeId": "woolworths",
+        "price": 100.86,
+        "onSpecial": false,
+        "specialDetail": "",
+        "inStock": true
+      },
+      {
+        "storeId": "checkers",
+        "price": 90.58,
+        "onSpecial": false,
+        "specialDetail": "",
+        "inStock": true
+      },
+      {
+        "storeId": "pnp",
+        "price": 92.35,
+        "onSpecial": false,
+        "specialDetail": "",
+        "inStock": true
+      },
+      {
+        "storeId": "shoprite",
+        "price": 87.01,
+        "onSpecial": false,
+        "specialDetail": "",
+        "inStock": true
+      },
+      {
+        "storeId": "spar",
+        "price": 87.58,
+        "onSpecial": false,
+        "specialDetail": "",
+        "inStock": true
+      },
+      {
+        "storeId": "foodlovers",
+        "price": 84.83,
+        "onSpecial": false,
+        "specialDetail": "",
+        "inStock": true
+      },
+      {
+        "storeId": "boxer",
+        "price": 85.84,
+        "onSpecial": false,
+        "specialDetail": "",
+        "inStock": false
+      }
+    ]
+  },
+  {
+    "id": "prod-dishwash-sunlight",
+    "name": "Sunlight Regular Dishwashing Liquid",
+    "category": "Household",
+    "unit": "750ml",
+    "isPopular": true,
+    "barcode": "6001007001357",
+    "imageUrl": "https://images.unsplash.com/photo-1585421514738-01798e348b17?w=400&auto=format&fit=crop&q=80",
+    "prices": [
+      {
+        "storeId": "woolworths",
+        "price": 37.31,
+        "onSpecial": false,
+        "specialDetail": "",
+        "inStock": true
+      },
+      {
+        "storeId": "checkers",
+        "price": 28.18,
+        "onSpecial": true,
+        "specialDetail": "Save R4.80 with Xtra Savings",
+        "inStock": true
+      },
+      {
+        "storeId": "pnp",
+        "price": 31.91,
+        "onSpecial": false,
+        "specialDetail": "",
+        "inStock": true
+      },
+      {
+        "storeId": "shoprite",
+        "price": 30.27,
+        "onSpecial": false,
+        "specialDetail": "",
+        "inStock": true
+      },
+      {
+        "storeId": "spar",
+        "price": 31.42,
+        "onSpecial": false,
+        "specialDetail": "",
+        "inStock": true
+      },
+      {
+        "storeId": "foodlovers",
+        "price": 30.04,
+        "onSpecial": false,
+        "specialDetail": "",
+        "inStock": true
+      },
+      {
+        "storeId": "boxer",
+        "price": 29.99,
         "onSpecial": false,
         "specialDetail": "",
         "inStock": true
