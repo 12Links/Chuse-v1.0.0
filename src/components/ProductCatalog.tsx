@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Product, StoreId, BasketItem } from '../types';
 import { STORES } from '../data/catalog';
 import { 
@@ -8,10 +8,19 @@ import {
   Minus, 
   ArrowUpDown, 
   X,
-  AlertCircle
+  AlertCircle,
+  Bookmark,
+  BookmarkCheck,
+  Clock
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { PriceHistoryChart } from './PriceHistoryChart';
+import { 
+  analyzePriceTiming, 
+  getTrackedStapleIds, 
+  toggleTrackStaple 
+} from '../lib/priceTiming';
+import { StapleTimingSection } from './StapleTimingSection';
 
 interface ProductCatalogProps {
   products: Product[];
@@ -61,11 +70,44 @@ export default function ProductCatalog({
   onReportDiscrepancy
 }: ProductCatalogProps) {
   const [internalSearch, setInternalSearch] = useState('');
-  const [sortBy, setSortBy] = useState<'lowestPrice' | 'biggestSavings' | 'name' | 'popular'>('popular');
+  const [sortBy, setSortBy] = useState<'lowestPrice' | 'biggestSavings' | 'name' | 'popular' | 'bestTimeToBuy'>('popular');
+  const [timingFilter, setTimingFilter] = useState<'all' | 'buy_now' | 'tracked'>('all');
+  const [trackedIds, setTrackedIds] = useState<string[]>(() => getTrackedStapleIds());
   const [inspectProduct, setInspectProduct] = useState<Product | null>(null);
+
+  // Sync tracked staples across tabs and storage events
+  useEffect(() => {
+    const handleTrackedUpdated = () => {
+      setTrackedIds(getTrackedStapleIds());
+    };
+    window.addEventListener('chuse_tracked_staples_updated', handleTrackedUpdated);
+    window.addEventListener('storage', handleTrackedUpdated);
+    return () => {
+      window.removeEventListener('chuse_tracked_staples_updated', handleTrackedUpdated);
+      window.removeEventListener('storage', handleTrackedUpdated);
+    };
+  }, []);
 
   // Use external search term if provided, otherwise internal
   const activeSearch = externalSearchTerm || internalSearch;
+
+  // Memoized 30-day Price Timing Analysis for all catalog items
+  const timingAnalyses = useMemo(() => {
+    const map = new Map<string, ReturnType<typeof analyzePriceTiming>>();
+    products.forEach(p => {
+      map.set(p.id, analyzePriceTiming(p));
+    });
+    return map;
+  }, [products]);
+
+  // Aggregate badge counts
+  const buyNowCount = useMemo(() => {
+    let count = 0;
+    timingAnalyses.forEach(analysis => {
+      if (analysis.status === 'buy') count++;
+    });
+    return count;
+  }, [timingAnalyses]);
 
   const dynamicCategories = useMemo(() => {
     const cats = Array.from(new Set(products.map(p => p.category).filter(Boolean)));
@@ -101,9 +143,28 @@ export default function ProductCatalog({
           if (!hasInStore) return false;
         }
 
+        // Timing Filter (All | Buy Now Deals | Tracked Staples)
+        if (timingFilter === 'buy_now') {
+          const analysis = timingAnalyses.get(p.id);
+          if (analysis?.status !== 'buy') return false;
+        } else if (timingFilter === 'tracked') {
+          if (!trackedIds.includes(p.id)) return false;
+        }
+
         return true;
       })
       .sort((a, b) => {
+        if (sortBy === 'bestTimeToBuy') {
+          const tA = timingAnalyses.get(a.id);
+          const tB = timingAnalyses.get(b.id);
+          const statusPriority: Record<string, number> = { buy: 3, fair: 2, wait: 1 };
+          const pA = statusPriority[tA?.status || 'fair'] || 0;
+          const pB = statusPriority[tB?.status || 'fair'] || 0;
+          if (pA !== pB) return pB - pA;
+          // When both are "buy", sort by largest discount below 30d avg
+          return (tA?.diffFromAvgPercent || 0) - (tB?.diffFromAvgPercent || 0);
+        }
+
         const getMinPrice = (p: Product) => {
           const prices = p.prices.filter(pr => pr.inStock && pr.price > 0).map(pr => pr.price);
           return prices.length > 0 ? Math.min(...prices) : 999999;
@@ -128,12 +189,54 @@ export default function ProductCatalog({
           return 0;
         }
       });
-  }, [products, activeSearch, selectedCategoryFilter, selectedStoreFilter, sortBy]);
+  }, [products, activeSearch, selectedCategoryFilter, selectedStoreFilter, sortBy, timingFilter, timingAnalyses, trackedIds]);
 
   return (
     <div id="product-catalog-view" className="space-y-4">
       {/* Category Scrolling Bar & Sort Controls */}
       <div className="bg-[#FFFFFF] rounded-[6px] p-3.5 sm:p-4 border border-[#E2E0D8] shadow-2xs space-y-3">
+        {/* Timing Quick Filters */}
+        <div className="flex items-center justify-between pb-2.5 border-b border-[#E2E0D8] text-xs">
+          <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5">
+            <button
+              onClick={() => setTimingFilter('all')}
+              className={`px-2.5 py-1 rounded-[4px] text-xs font-mono font-bold transition-all cursor-pointer whitespace-nowrap ${
+                timingFilter === 'all'
+                  ? 'bg-slate-950 text-white'
+                  : 'bg-[#F7F6F0] text-slate-700 hover:bg-slate-200'
+              }`}
+            >
+              All Items ({products.length})
+            </button>
+            <button
+              onClick={() => setTimingFilter('buy_now')}
+              className={`px-2.5 py-1 rounded-[4px] text-xs font-mono font-bold transition-all cursor-pointer flex items-center gap-1.5 whitespace-nowrap ${
+                timingFilter === 'buy_now'
+                  ? 'bg-emerald-700 text-white shadow-xs'
+                  : 'bg-emerald-50 text-emerald-800 border border-emerald-200 hover:bg-emerald-100'
+              }`}
+            >
+              <span className={`w-1.5 h-1.5 rounded-full ${timingFilter === 'buy_now' ? 'bg-white' : 'bg-emerald-600'}`} />
+              <span>Buy Now / Stock Up ({buyNowCount})</span>
+            </button>
+            <button
+              onClick={() => setTimingFilter('tracked')}
+              className={`px-2.5 py-1 rounded-[4px] text-xs font-mono font-bold transition-all cursor-pointer flex items-center gap-1.5 whitespace-nowrap ${
+                timingFilter === 'tracked'
+                  ? 'bg-slate-950 text-[#FFE600] shadow-xs'
+                  : 'bg-[#F7F6F0] text-slate-700 hover:bg-slate-200 border border-[#E2E0D8]'
+              }`}
+            >
+              <Bookmark className={`w-3.5 h-3.5 ${timingFilter === 'tracked' ? 'text-[#FFE600] fill-[#FFE600]' : 'text-slate-500'}`} />
+              <span>Tracked Staples ({trackedIds.length})</span>
+            </button>
+          </div>
+
+          <span className="hidden md:inline text-[10px] font-mono font-bold text-slate-400 uppercase tracking-wider">
+            Staple Predictor Active
+          </span>
+        </div>
+
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
           {/* Category scrolling tabs */}
           <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5 flex-1">
@@ -166,6 +269,7 @@ export default function ProductCatalog({
               className="px-3 py-1.5 rounded-[4px] bg-[#F7F6F0] border border-[#E2E0D8] text-xs font-bold text-slate-800 focus:outline-none cursor-pointer"
             >
               <option value="popular">Most Popular</option>
+              <option value="bestTimeToBuy">Best Time to Buy (Stock Up First)</option>
               <option value="lowestPrice">Price: Low to High</option>
               <option value="biggestSavings">Highest Store Savings</option>
               <option value="name">Name (A-Z)</option>
@@ -187,15 +291,21 @@ export default function ProductCatalog({
                 • {selectedCategoryFilter}
               </span>
             )}
+            {timingFilter !== 'all' && (
+              <span className="bg-slate-100 text-slate-800 px-1.5 py-0.5 rounded-[2px] text-[10px] font-mono font-bold">
+                {timingFilter === 'buy_now' ? 'Buy Now Deals' : 'Tracked Staples'}
+              </span>
+            )}
           </div>
 
-          {(activeSearch || selectedCategoryFilter !== 'All' || selectedStoreFilter !== 'all') && (
+          {(activeSearch || selectedCategoryFilter !== 'All' || selectedStoreFilter !== 'all' || timingFilter !== 'all') && (
             <button
               onClick={() => {
                 onClearSearch?.();
                 setInternalSearch('');
                 onSelectCategoryFilter?.('All');
                 onSelectStoreFilter?.('all');
+                setTimingFilter('all');
               }}
               className="text-[11px] text-slate-600 hover:text-black underline cursor-pointer font-medium"
             >
@@ -242,6 +352,29 @@ export default function ProductCatalog({
                   onClick={() => setInspectProduct(product)}
                   className="relative aspect-square w-full rounded-[4px] bg-[#F7F6F0] p-3 mb-2.5 flex items-center justify-center cursor-pointer group"
                 >
+                  {/* Staple Watchlist / LocalStorage Toggle */}
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      toggleTrackStaple(product.id);
+                      setTrackedIds(getTrackedStapleIds());
+                    }}
+                    className={`absolute top-2 right-2 p-1.5 rounded-[3px] border transition-all z-10 cursor-pointer ${
+                      trackedIds.includes(product.id)
+                        ? 'bg-slate-950 text-[#FFE600] border-black shadow-xs'
+                        : 'bg-white/90 hover:bg-white text-slate-400 hover:text-black border-[#E2E0D8]'
+                    }`}
+                    title={trackedIds.includes(product.id) ? "Tracking this staple (Saved in Local Storage)" : "Track staple price timing"}
+                    aria-label="Track staple"
+                  >
+                    {trackedIds.includes(product.id) ? (
+                      <BookmarkCheck className="w-3.5 h-3.5 text-[#FFE600]" />
+                    ) : (
+                      <Bookmark className="w-3.5 h-3.5" />
+                    )}
+                  </button>
+
                   <img
                     src={product.imageUrl || 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=300'}
                     alt={product.name}
@@ -271,7 +404,7 @@ export default function ProductCatalog({
                   </h4>
                 </div>
 
-                {/* Lead with ONE Winning Price */}
+                {/* Lead with ONE Winning Price & Staple Timing */}
                 <div className="pt-2 border-t border-[#E2E0D8] mb-3">
                   <div className="flex items-baseline justify-between gap-1 mb-1">
                     <span className="text-lg font-black text-slate-950 font-mono tracking-tight tabular-nums">
@@ -283,6 +416,48 @@ export default function ProductCatalog({
                       </span>
                     )}
                   </div>
+
+                  {/* Best Time to Buy Pill */}
+                  {(() => {
+                    const timing = timingAnalyses.get(product.id);
+                    if (!timing) return null;
+                    return (
+                      <div className="flex items-center gap-1.5 mb-1.5">
+                        <span
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setInspectProduct(product);
+                          }}
+                          className={`cursor-pointer inline-flex items-center gap-1 text-[9px] font-mono font-black uppercase px-1.5 py-0.5 rounded-[2px] border ${
+                            timing.status === 'buy'
+                              ? 'bg-emerald-50 text-emerald-800 border-emerald-300'
+                              : timing.status === 'fair'
+                              ? 'bg-amber-50 text-amber-800 border-amber-200'
+                              : 'bg-rose-50 text-rose-700 border-rose-200'
+                          }`}
+                          title="Click to view staple timing predictor breakdown"
+                        >
+                          <span
+                            className={`w-1.5 h-1.5 rounded-full ${
+                              timing.status === 'buy'
+                                ? 'bg-emerald-600'
+                                : timing.status === 'fair'
+                                ? 'bg-amber-500'
+                                : 'bg-rose-500'
+                            }`}
+                          />
+                          {timing.badgeLabel}
+                        </span>
+                        {timing.diffFromAvgPercent !== 0 && (
+                          <span className="text-[9.5px] font-mono text-slate-400">
+                            {timing.diffFromAvgPercent < 0
+                              ? `${timing.diffFromAvgPercent}% vs 30d`
+                              : `+${timing.diffFromAvgPercent}% vs 30d`}
+                          </span>
+                        )}
+                      </div>
+                    );
+                  })()}
 
                   {/* Muted Competitor Line */}
                   {comparisonSummary ? (
@@ -402,6 +577,23 @@ export default function ProductCatalog({
                   <X className="w-4 h-4" />
                 </button>
               </div>
+
+              {/* Best Time to Buy Predictor Breakdown */}
+              {(() => {
+                const analysis = timingAnalyses.get(inspectProduct.id) || analyzePriceTiming(inspectProduct);
+                const isTracked = trackedIds.includes(inspectProduct.id);
+                return (
+                  <StapleTimingSection
+                    product={inspectProduct}
+                    analysis={analysis}
+                    isTracked={isTracked}
+                    onToggleTrack={(prodId) => {
+                      toggleTrackStaple(prodId);
+                      setTrackedIds(getTrackedStapleIds());
+                    }}
+                  />
+                );
+              })()}
 
               {/* 7-Store Comparison Table */}
               <div className="space-y-2">

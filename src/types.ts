@@ -92,3 +92,27 @@ export interface ChuseReceipt {
   totalSavings: number;
   savingsPercentage: number;
 }
+
+export type PriceTimingStatus = 'buy' | 'fair' | 'wait';
+
+export interface StapleTimingAnalysis {
+  productId: string;
+  status: PriceTimingStatus;
+  badgeLabel: string;
+  headline: string;
+  explanation: string;
+  currentBestPrice: number;
+  bestStoreId: StoreId;
+  bestStoreName: string;
+  thirtyDayMin: number;
+  thirtyDayAvg: number;
+  thirtyDayMax: number;
+  diffFromAvgPercent: number; // e.g. -12.5% or +8.2%
+  savingsOpportunity: number; // potential savings vs 30-day high or average
+  isSpecial: boolean;
+  specialDetail?: string;
+  isStaple: boolean;
+  recommendedAction: string;
+  flyerCycleNote: string;
+}
+
