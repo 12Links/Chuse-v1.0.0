@@ -3,7 +3,6 @@ from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from sqlalchemy import select
 from typing import Optional
-import asyncpg
 from ..auth import get_current_user
 from ..models import User
 from ..database import get_db
