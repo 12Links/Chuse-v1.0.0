@@ -291,7 +291,7 @@ export default function ProductCatalog({
   return (
     <div id="product-catalog-view" className="space-y-4">
       {/* 1. Visual "Shop by Aisle" Strip (Checkers & Pick n Pay Style) */}
-      <div className="relative py-1">
+      <div className="relative py-1 w-full max-w-full overflow-hidden">
         {/* Left Arrow with Soft Gradient Fade */}
         <div className="hidden md:flex absolute left-0 top-0 bottom-0 w-12 bg-gradient-to-r from-[#F7F6F0] via-[#F7F6F0]/90 to-transparent z-10 items-center justify-start pointer-events-none">
           <button
@@ -308,7 +308,7 @@ export default function ProductCatalog({
         {/* Scroll Container with hidden scrollbar */}
         <div
           ref={categoryScrollRef}
-          className="flex items-center gap-3 overflow-x-auto no-scrollbar py-1 px-1 sm:px-2 md:px-8 scroll-smooth select-none"
+          className="flex items-center gap-3 overflow-x-auto no-scrollbar py-1 px-1 sm:px-2 md:px-8 scroll-smooth select-none w-full"
           style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
         >
           {activeAisles.map((aisle) => {
@@ -376,7 +376,7 @@ export default function ProductCatalog({
       </div>
 
       {/* 2. Flattened Single-Row Utility Toolbar (Checkers & Pick n Pay style) */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2 pb-1.5 border-b border-[#E2E0D8] font-sans">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-3 pt-2 pb-1.5 border-b border-[#E2E0D8] font-sans w-full max-w-full">
         
         {/* Left: Bold Aisle Title & Count */}
         <div className="flex items-center gap-2 flex-wrap">
@@ -412,12 +412,12 @@ export default function ProductCatalog({
         </div>
 
         {/* Right: Quick Filter Pills + Sort Dropdown on the exact same horizontal line */}
-        <div className="flex items-center gap-2 sm:gap-3 flex-wrap sm:flex-nowrap">
+        <div className="flex items-center gap-2 sm:gap-3 flex-wrap sm:flex-nowrap w-full sm:w-auto">
           {/* Quick Filter Pills */}
-          <div className="flex items-center gap-1 bg-white p-0.5 rounded-[4px] border border-[#E2E0D8] shadow-2xs">
+          <div className="flex items-center gap-1 bg-white p-0.5 rounded-[4px] border border-[#E2E0D8] shadow-2xs overflow-x-auto no-scrollbar max-w-full">
             <button
               onClick={() => setTimingFilter('all')}
-              className={`px-2.5 py-1 rounded-[3px] text-xs font-bold transition-all cursor-pointer font-sans ${
+              className={`px-2.5 py-1 rounded-[3px] text-xs font-bold transition-all cursor-pointer font-sans whitespace-nowrap ${
                 timingFilter === 'all'
                   ? 'bg-slate-950 text-white shadow-2xs'
                   : 'text-slate-600 hover:text-black hover:bg-slate-100'
@@ -427,7 +427,7 @@ export default function ProductCatalog({
             </button>
             <button
               onClick={() => setTimingFilter('buy_now')}
-              className={`px-2.5 py-1 rounded-[3px] text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 font-sans ${
+              className={`px-2.5 py-1 rounded-[3px] text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 font-sans whitespace-nowrap ${
                 timingFilter === 'buy_now'
                   ? 'bg-emerald-700 text-white shadow-2xs font-extrabold'
                   : 'text-emerald-800 hover:bg-emerald-50'
@@ -438,7 +438,7 @@ export default function ProductCatalog({
             </button>
             <button
               onClick={() => setTimingFilter('tracked')}
-              className={`px-2.5 py-1 rounded-[3px] text-xs font-bold transition-all cursor-pointer flex items-center gap-1 font-sans ${
+              className={`px-2.5 py-1 rounded-[3px] text-xs font-bold transition-all cursor-pointer flex items-center gap-1 font-sans whitespace-nowrap ${
                 timingFilter === 'tracked'
                   ? 'bg-slate-950 text-[#FFE600] shadow-2xs'
                   : 'text-slate-600 hover:text-black hover:bg-slate-100'
@@ -450,11 +450,11 @@ export default function ProductCatalog({
           </div>
 
           {/* Sort Selector Dropdown */}
-          <div className="flex items-center gap-1.5 shrink-0">
+          <div className="flex items-center gap-1.5 shrink-0 w-full sm:w-auto">
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value as any)}
-              className="px-2.5 py-1.5 rounded-[4px] bg-[#FFFFFF] border border-[#E2E0D8] text-xs font-bold text-slate-800 focus:outline-none focus:border-slate-950 cursor-pointer shadow-2xs font-sans"
+              className="w-full sm:w-auto px-2.5 py-1.5 rounded-[4px] bg-[#FFFFFF] border border-[#E2E0D8] text-xs font-bold text-slate-800 focus:outline-none focus:border-slate-950 cursor-pointer shadow-2xs font-sans"
               aria-label="Sort products"
             >
               <option value="popular">Sort: Most Popular</option>

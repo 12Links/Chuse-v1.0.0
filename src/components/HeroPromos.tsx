@@ -31,13 +31,13 @@ export default function HeroPromos({
   onOpenSpecials
 }: HeroPromosProps) {
   return (
-    <div className="bg-[#FFFFFF] border border-[#E2E0D8] rounded-[6px] px-3.5 py-2 sm:py-2.5 shadow-2xs">
-      <div className="flex items-center justify-between gap-3">
+    <div className="bg-[#FFFFFF] border border-[#E2E0D8] rounded-[6px] px-3 sm:px-3.5 py-2 sm:py-2.5 shadow-2xs w-full max-w-full overflow-hidden">
+      <div className="flex items-center justify-between gap-2.5 sm:gap-3 w-full min-w-0">
         {/* Left: Compare Stores label + Branded Retailer Chips */}
-        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-0.5 flex-1 min-w-0">
-          <span className="text-[10.5px] font-bold uppercase tracking-wider text-slate-500 shrink-0 font-mono flex items-center gap-1.5 mr-1 select-none">
+        <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto no-scrollbar py-0.5 flex-1 min-w-0">
+          <span className="text-[10px] sm:text-[10.5px] font-bold uppercase tracking-wider text-slate-500 shrink-0 font-mono flex items-center gap-1 sm:gap-1.5 mr-0.5 sm:mr-1 select-none">
             <span className="w-1.5 h-1.5 rounded-full bg-slate-400" />
-            Compare Stores:
+            Compare:
           </span>
 
           <div className="flex items-center gap-1.5 shrink-0">

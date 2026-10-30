@@ -184,7 +184,7 @@ export default function CartDrawer({
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
             transition={{ type: 'spring', damping: 30, stiffness: 350 }}
-            className="fixed inset-y-0 right-0 w-full max-w-md sm:max-w-lg bg-[#FFFFFF] shadow-2xl z-55 flex flex-col border-l border-[#E2E0D8]"
+            className="fixed inset-y-0 right-0 w-full max-w-full sm:max-w-lg bg-[#FFFFFF] shadow-2xl z-55 flex flex-col border-l border-[#E2E0D8]"
           >
             {/* Header */}
             <div className="p-4 border-b border-[#E2E0D8] flex items-center justify-between bg-[#F7F6F0]">

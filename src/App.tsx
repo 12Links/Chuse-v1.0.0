@@ -242,39 +242,80 @@ function MainPage({ user, setUser }: MainPageProps) {
   };
 
   return (
-    <div id="chuse-container" className="min-h-screen bg-[#F7F6F0] text-slate-900 font-sans selection:bg-[#FFE600] selection:text-black">
+    <div id="chuse-container" className="min-h-screen bg-[#F7F6F0] text-slate-900 font-sans selection:bg-[#FFE600] selection:text-black overflow-x-hidden w-full max-w-full">
       
       {/* Clean Utility Header */}
-      <header className="bg-[#FFFFFF] border-b border-[#E2E0D8] sticky top-0 z-30">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
-          <div className="flex items-center justify-between gap-3 sm:gap-6">
+      <header className="bg-[#FFFFFF] border-b border-[#E2E0D8] sticky top-0 z-30 w-full overflow-hidden">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-2.5 sm:py-3">
+          
+          {/* Main Header Container: 2-row on mobile, 1-row on tablet/desktop */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-6">
             
-            {/* Logo & Province Selector */}
-            <div className="flex items-center gap-3 sm:gap-4 shrink-0">
-              <Link 
-                to="/" 
-                onClick={() => { setActiveTab('catalog'); setSelectedStoreFilter('all'); setSelectedCategoryFilter('All'); }}
-                className="flex items-center gap-1.5 cursor-pointer group"
-              >
-                <span className="text-2xl font-black font-display lowercase tracking-tight text-slate-950 leading-none">
-                  chuse<span className="text-[#FFE600] text-3xl font-black">.</span>
-                </span>
-              </Link>
+            {/* Top Row on Mobile: Logo/Province on Left, User/Cart on Right */}
+            <div className="flex items-center justify-between w-full sm:w-auto shrink-0">
+              
+              {/* Logo & Province Selector */}
+              <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+                <Link 
+                  to="/" 
+                  onClick={() => { setActiveTab('catalog'); setSelectedStoreFilter('all'); setSelectedCategoryFilter('All'); }}
+                  className="flex items-center gap-1 cursor-pointer group"
+                >
+                  <span className="text-xl sm:text-2xl font-black font-display lowercase tracking-tight text-slate-950 leading-none">
+                    chuse<span className="text-[#FFE600] text-2xl sm:text-3xl font-black">.</span>
+                  </span>
+                </Link>
 
-              {/* Province Dropdown Trigger */}
-              <button
-                onClick={() => setIsProvinceModalOpen(true)}
-                className="flex items-center gap-1 text-xs font-bold text-slate-700 hover:text-black px-2.5 py-1 rounded-[4px] border border-[#E2E0D8] bg-[#F7F6F0] cursor-pointer"
-                title="Change shopping province"
-              >
-                <MapPin className="w-3.5 h-3.5 text-rose-600" />
-                <span>{selectedProvince}</span>
-                <ChevronDown className="w-3 h-3 text-slate-400" />
-              </button>
+                {/* Province Dropdown Trigger */}
+                <button
+                  onClick={() => setIsProvinceModalOpen(true)}
+                  className="flex items-center gap-1 text-[11px] sm:text-xs font-bold text-slate-700 hover:text-black px-2 py-1 rounded-[4px] border border-[#E2E0D8] bg-[#F7F6F0] cursor-pointer"
+                  title="Change shopping province"
+                >
+                  <MapPin className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-rose-600 shrink-0" />
+                  <span className="truncate max-w-[80px] sm:max-w-none">{selectedProvince}</span>
+                  <ChevronDown className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-slate-400 shrink-0" />
+                </button>
+              </div>
+
+              {/* Mobile Right Actions: Sign In + Cart (Hidden on Desktop) */}
+              <div className="flex sm:hidden items-center gap-2 shrink-0">
+                {user ? (
+                  <button
+                    onClick={() => setActiveTab('settings')}
+                    className="flex items-center cursor-pointer"
+                  >
+                    <img 
+                      src={user.avatarUrl} 
+                      alt="User" 
+                      className="w-6 h-6 rounded-full bg-slate-200 border border-slate-300 object-cover"
+                    />
+                  </button>
+                ) : (
+                  <Link
+                    to="/auth"
+                    className="text-xs font-bold text-slate-700 hover:text-black underline decoration-slate-300 cursor-pointer px-1"
+                  >
+                    Sign In
+                  </Link>
+                )}
+
+                {/* Mobile Cart Trigger Button */}
+                <button
+                  onClick={() => setIsCartOpen(true)}
+                  className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-[4px] bg-[#FFE600] hover:bg-yellow-400 text-black font-extrabold text-xs cursor-pointer transition-colors border border-yellow-400 shadow-2xs"
+                  aria-label="Open Cart"
+                >
+                  <ShoppingBag className="w-3.5 h-3.5 stroke-[2.5]" />
+                  <span className="font-mono">
+                    {basketItemCount === 0 ? 'Cart' : `R${basketLowestTotal.toFixed(0)} (${basketItemCount})`}
+                  </span>
+                </button>
+              </div>
             </div>
 
             {/* Clean Omnipresent Search Input with Embedded Barcode Scan Icon */}
-            <div className="flex-1 max-w-xl relative">
+            <div className="w-full sm:flex-1 sm:max-w-xl relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
               <input
                 type="text"
@@ -311,8 +352,8 @@ function MainPage({ user, setUser }: MainPageProps) {
               </div>
             </div>
 
-            {/* Right Utility Actions: User + Cart Drawer Button */}
-            <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+            {/* Desktop Right Utility Actions: User + Cart Drawer Button (Hidden on Mobile) */}
+            <div className="hidden sm:flex items-center gap-2 sm:gap-3 shrink-0">
               {user ? (
                 <button
                   onClick={() => setActiveTab('settings')}
@@ -349,7 +390,7 @@ function MainPage({ user, setUser }: MainPageProps) {
           </div>
 
           {/* 4 Clean Text-Only Navigation Links - NO ICONS */}
-          <nav className="flex items-center gap-8 border-t border-[#E2E0D8] mt-3 pt-2 text-xs sm:text-sm font-semibold tracking-wide overflow-x-auto no-scrollbar">
+          <nav className="flex items-center gap-6 sm:gap-8 border-t border-[#E2E0D8] mt-2.5 sm:mt-3 pt-2 text-xs sm:text-sm font-semibold tracking-wide overflow-x-auto no-scrollbar">
             <button
               onClick={() => setActiveTab('catalog')}
               className={`py-1.5 whitespace-nowrap transition-colors cursor-pointer ${
