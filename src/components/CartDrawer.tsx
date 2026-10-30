@@ -184,7 +184,7 @@ export default function CartDrawer({
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
             transition={{ type: 'spring', damping: 30, stiffness: 350 }}
-            className="fixed inset-y-0 right-0 w-full max-w-md bg-[#FFFFFF] shadow-2xl z-55 flex flex-col border-l border-[#E2E0D8]"
+            className="fixed inset-y-0 right-0 w-full max-w-md sm:max-w-lg bg-[#FFFFFF] shadow-2xl z-55 flex flex-col border-l border-[#E2E0D8]"
           >
             {/* Header */}
             <div className="p-4 border-b border-[#E2E0D8] flex items-center justify-between bg-[#F7F6F0]">
@@ -321,13 +321,13 @@ export default function CartDrawer({
                           return (
                             <div
                               key={swap.targetProduct.id}
-                              className="p-2.5 bg-white rounded-[3px] border border-[#E2E0D8] flex items-center justify-between text-xs"
+                              className="p-3 bg-white rounded-[3px] border border-[#E2E0D8] flex items-center justify-between gap-3 text-xs"
                             >
-                              <div>
+                              <div className="min-w-0 flex-1">
                                 <span className="font-bold text-slate-900 block font-sans">
                                   {swap.targetProduct.name}
                                 </span>
-                                <span className="text-[10.5px] text-emerald-700 font-mono">
+                                <span className="text-[11px] text-emerald-700 font-mono block whitespace-normal break-words leading-snug mt-0.5">
                                   Save ~R{swap.savings.toFixed(2)} total ({swap.reason})
                                 </span>
                               </div>
@@ -339,7 +339,7 @@ export default function CartDrawer({
                                   }
                                   onSwapItem?.(swap.currentProduct.id, swap.targetProduct.id);
                                 }}
-                                className="px-2 py-1 rounded-[3px] bg-[#FFE600] hover:bg-yellow-400 text-black font-bold text-[10px] uppercase font-mono cursor-pointer shrink-0 ml-2"
+                                className="px-3 py-1.5 rounded-[3px] bg-[#FFE600] hover:bg-yellow-400 text-black font-bold text-[10px] uppercase font-mono cursor-pointer shrink-0"
                               >
                                 Swap
                               </button>

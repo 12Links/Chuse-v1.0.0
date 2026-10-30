@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { Product, StoreId, BasketItem } from '../types';
 import { STORES } from '../data/catalog';
 import { 
@@ -11,7 +11,9 @@ import {
   AlertCircle,
   Bookmark,
   BookmarkCheck,
-  Clock
+  Clock,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { PriceHistoryChart } from './PriceHistoryChart';
@@ -74,6 +76,16 @@ export default function ProductCatalog({
   const [timingFilter, setTimingFilter] = useState<'all' | 'buy_now' | 'tracked'>('all');
   const [trackedIds, setTrackedIds] = useState<string[]>(() => getTrackedStapleIds());
   const [inspectProduct, setInspectProduct] = useState<Product | null>(null);
+
+  // Category horizontal scroll ref and control
+  const categoryScrollRef = useRef<HTMLDivElement>(null);
+
+  const scrollCategories = (direction: 'left' | 'right') => {
+    if (categoryScrollRef.current) {
+      const scrollAmount = direction === 'left' ? -220 : 220;
+      categoryScrollRef.current.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+    }
+  };
 
   // Sync tracked staples across tabs and storage events
   useEffect(() => {
@@ -238,24 +250,52 @@ export default function ProductCatalog({
         </div>
 
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
-          {/* Category scrolling tabs */}
-          <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5 flex-1">
-            {dynamicCategories.map((cat) => {
-              const isSelected = selectedCategoryFilter === cat;
-              return (
-                <button
-                  key={cat}
-                  onClick={() => onSelectCategoryFilter?.(cat)}
-                  className={`px-3 py-1.5 rounded-[4px] text-xs font-bold whitespace-nowrap transition-all cursor-pointer font-sans ${
-                    isSelected
-                      ? 'bg-slate-950 text-white font-black'
-                      : 'bg-[#F7F6F0] text-slate-700 hover:bg-slate-200'
-                  }`}
-                >
-                  {cat}
-                </button>
-              );
-            })}
+          {/* Category scrolling tabs with desktop scroll buttons & generous px-8 padding */}
+          <div className="relative flex-1 min-w-0">
+            {/* Left Scroll Arrow */}
+            <button
+              type="button"
+              onClick={() => scrollCategories('left')}
+              className="hidden md:flex absolute left-0 top-1/2 -translate-y-1/2 z-10 w-7 h-7 rounded-[3px] bg-white/95 border border-[#E2E0D8] shadow-xs items-center justify-center text-slate-700 hover:text-black hover:bg-[#F7F6F0] transition-colors cursor-pointer"
+              title="Scroll categories left"
+              aria-label="Scroll categories left"
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </button>
+
+            {/* Inner scroll container with md:px-8 so arrows never overlap pills */}
+            <div 
+              ref={categoryScrollRef}
+              className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5 md:px-8 scroll-smooth"
+            >
+              {dynamicCategories.map((cat) => {
+                const isSelected = selectedCategoryFilter === cat;
+                return (
+                  <button
+                    key={cat}
+                    onClick={() => onSelectCategoryFilter?.(cat)}
+                    className={`px-3 py-1.5 rounded-[4px] text-xs font-bold whitespace-nowrap transition-all cursor-pointer font-sans shrink-0 ${
+                      isSelected
+                        ? 'bg-slate-950 text-white font-black'
+                        : 'bg-[#F7F6F0] text-slate-700 hover:bg-slate-200'
+                    }`}
+                  >
+                    {cat}
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Right Scroll Arrow */}
+            <button
+              type="button"
+              onClick={() => scrollCategories('right')}
+              className="hidden md:flex absolute right-0 top-1/2 -translate-y-1/2 z-10 w-7 h-7 rounded-[3px] bg-white/95 border border-[#E2E0D8] shadow-xs items-center justify-center text-slate-700 hover:text-black hover:bg-[#F7F6F0] transition-colors cursor-pointer"
+              title="Scroll categories right"
+              aria-label="Scroll categories right"
+            >
+              <ChevronRight className="w-4 h-4" />
+            </button>
           </div>
 
           {/* Sort selector */}

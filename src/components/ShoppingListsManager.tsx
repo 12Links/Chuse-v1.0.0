@@ -318,13 +318,26 @@ export default function ShoppingListsManager({ products, onAddToBasket, currentB
           <p className="text-xs text-slate-500 font-medium mt-1">Design weekly staple lists, track local budgets, and compare final basket optimization scores</p>
         </div>
         
-        <button 
-          onClick={handleImportCurrentBasket}
-          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-full text-xs font-black bg-[#FFE600] border border-black text-black hover:bg-black hover:text-white transition-all cursor-pointer shadow-xs active:scale-95"
-        >
-          <ListPlus className="w-4 h-4" />
-          <span>Import Live Basket</span>
-        </button>
+        <div className="flex flex-col sm:items-end gap-1.5">
+          <button 
+            onClick={handleImportCurrentBasket}
+            disabled={currentBasket.length === 0}
+            className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-[4px] text-xs font-bold transition-all shadow-xs ${
+              currentBasket.length === 0
+                ? 'bg-neutral-100 text-neutral-500 border border-neutral-300 cursor-not-allowed'
+                : 'bg-[#FFE600] border border-black text-black hover:bg-black hover:text-white transition-all cursor-pointer active:scale-95'
+            }`}
+            title={currentBasket.length === 0 ? "Basket is empty. Add groceries first to import." : "Import live basket items into a list"}
+          >
+            <ListPlus className="w-4 h-4" />
+            <span>Import Live Basket</span>
+          </button>
+          {currentBasket.length === 0 && (
+            <span className="text-[10px] text-neutral-500 font-mono font-medium">
+              Basket empty • Add groceries first to import as list
+            </span>
+          )}
+        </div>
       </div>
 
       {successMsg && (
@@ -378,38 +391,38 @@ export default function ShoppingListsManager({ products, onAddToBasket, currentB
               })}
 
               {lists.length === 0 && (
-                <div className="text-center py-6 border border-dashed border-slate-200 rounded-xl bg-slate-50/50">
-                  <span className="text-xs text-slate-400 font-bold">No saved lists. Create one below!</span>
+                <div className="text-center py-6 border border-dashed border-neutral-300 rounded-[4px] bg-[#F7F6F0]">
+                  <span className="text-xs text-neutral-500 font-bold font-sans">No saved lists. Create one below!</span>
                 </div>
               )}
             </div>
           </div>
 
           {/* Create New List */}
-          <div className="bg-white border border-slate-200 rounded-[24px] p-5.5 space-y-4 shadow-xs">
-            <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 block">Create List Container</span>
+          <div className="bg-white border border-[#E2E0D8] rounded-[6px] p-5 space-y-4 shadow-2xs">
+            <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-slate-400 block">Create List Container</span>
             
             <form onSubmit={handleCreateList} className="space-y-3.5">
               <div className="space-y-1.5">
-                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wide">List Name</label>
+                <label className="text-[10px] font-mono font-bold text-slate-500 uppercase tracking-wide">List Name</label>
                 <input 
                   type="text"
                   placeholder="e.g. Monthly Pantry staples"
                   value={newListName}
                   onChange={e => setNewListName(e.target.value)}
-                  className="w-full px-3 py-2.5 bg-slate-50 rounded-xl border border-slate-200 focus:outline-none focus:border-yellow-400 text-xs font-semibold"
+                  className="w-full px-3 py-2 bg-[#F7F6F0] rounded-[4px] border border-[#E2E0D8] focus:outline-none focus:border-black text-xs font-semibold text-slate-900"
                   required
                 />
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wide">Allocated Budget (ZAR)</label>
+                <label className="text-[10px] font-mono font-bold text-slate-500 uppercase tracking-wide">Allocated Budget (ZAR)</label>
                 <input 
                   type="number"
                   placeholder="e.g. 500"
                   value={newListBudget}
                   onChange={e => setNewListBudget(Number(e.target.value))}
-                  className="w-full px-3 py-2.5 bg-slate-50 rounded-xl border border-slate-200 focus:outline-none focus:border-yellow-400 text-xs font-semibold"
+                  className="w-full px-3 py-2 bg-[#F7F6F0] rounded-[4px] border border-[#E2E0D8] focus:outline-none focus:border-black text-xs font-semibold text-slate-900 font-mono"
                   min="50"
                   max="10000"
                   required
@@ -418,7 +431,12 @@ export default function ShoppingListsManager({ products, onAddToBasket, currentB
 
               <button 
                 type="submit"
-                className="w-full py-2.5 bg-black text-white hover:bg-[#FFE600] hover:text-black transition-all rounded-xl text-xs font-black uppercase tracking-wider cursor-pointer"
+                disabled={!newListName.trim()}
+                className={`w-full py-2.5 transition-all rounded-[4px] text-xs font-bold uppercase tracking-wider font-mono ${
+                  !newListName.trim()
+                    ? 'bg-neutral-100 text-neutral-500 border border-neutral-300 cursor-not-allowed'
+                    : 'bg-black text-white hover:bg-[#FFE600] hover:text-black cursor-pointer'
+                }`}
               >
                 Create New List
               </button>
@@ -681,11 +699,13 @@ export default function ShoppingListsManager({ products, onAddToBasket, currentB
 
             </div>
           ) : (
-            <div className="bg-white border-2 border-dashed border-slate-200 rounded-[32px] p-12 text-center space-y-4">
-              <ClipboardList className="w-12 h-12 text-slate-300 mx-auto" />
+            <div className="bg-white border-2 border-dashed border-neutral-300 rounded-[6px] p-12 text-center space-y-4">
+              <ClipboardList className="w-12 h-12 text-neutral-400 mx-auto" />
               <div>
-                <h3 className="text-sm font-black uppercase tracking-wide text-slate-800">No Grocery List Workspace Selected</h3>
-                <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">Select a list from the side panel or create a brand new container to start planning your multi-supermarket comparative budget optimizations.</p>
+                <h3 className="text-sm font-black uppercase tracking-wide text-slate-900 font-sans">No Grocery List Workspace Selected</h3>
+                <p className="text-xs text-neutral-600 mt-1 max-w-sm mx-auto font-sans leading-relaxed">
+                  Select a list from the side panel or create a brand new container to start planning your multi-supermarket comparative budget optimizations.
+                </p>
               </div>
             </div>
           )}
