@@ -202,16 +202,50 @@ app.get("/api/products", async (req, res) => {
 });
 
 // POST /api/products/search
-app.post("/api/products/search", (req, res) => {
+app.post("/api/products/search", async (req, res) => {
   const query = (req.body.query || "").trim().toLowerCase();
   if (!query) {
     return res.json([]);
   }
+
+  // 1. Try querying Supabase live database
+  if (supabase) {
+    try {
+      const { data, error } = await supabase
+        .from("products")
+        .select("*, prices(*)")
+        .or(`name.ilike.%${query}%,category.ilike.%${query}%,barcode.ilike.%${query}%`);
+      if (!error && data && data.length > 0) {
+        const formatted = data.map((d: any) => ({
+          id: d.id,
+          name: d.name,
+          category: d.category || "Groceries",
+          unit: d.unit || "1 Unit",
+          isPopular: Boolean(d.is_popular),
+          barcode: d.barcode || "",
+          imageUrl:
+            d.image_url ||
+            "https://images.unsplash.com/photo-1542838132-92c53300491e?w=400&auto=format&fit=crop&q=80",
+          prices: (d.prices || []).map((pr: any) => ({
+            storeId: pr.store_id,
+            price: Number(pr.price),
+            onSpecial: Boolean(pr.on_special),
+            specialDetail: pr.special_detail || "",
+            inStock: true,
+          })),
+        }));
+        return res.json(formatted);
+      }
+    } catch (err: any) {
+      console.warn("[Search] Supabase live search error:", err.message);
+    }
+  }
+
+  // 2. Multi-token fuzzy fallback on memory cache
+  const tokens = query.split(/\s+/).filter(Boolean);
   const filtered = productsList.filter((p) => {
-    const nameMatch = p.name && p.name.toLowerCase().includes(query);
-    const catMatch = p.category && p.category.toLowerCase().includes(query);
-    const barcodeMatch = p.barcode && p.barcode.includes(query);
-    return nameMatch || catMatch || barcodeMatch;
+    const text = `${p.name} ${p.category} ${p.unit || ""} ${p.barcode || ""}`.toLowerCase();
+    return tokens.every((t) => text.includes(t));
   });
   res.json(filtered);
 });
@@ -222,14 +256,14 @@ app.get(["/api/autocomplete", "/api/v1/autocomplete"], (req, res) => {
   if (!q) {
     return res.json([]);
   }
+  const tokens = q.split(/\s+/).filter(Boolean);
   const matchingNames = Array.from(
     new Set(
       productsList
-        .filter(
-          (p) =>
-            (p.name && p.name.toLowerCase().includes(q)) ||
-            (p.category && p.category.toLowerCase().includes(q))
-        )
+        .filter((p) => {
+          const text = `${p.name} ${p.category}`.toLowerCase();
+          return tokens.every((t) => text.includes(t));
+        })
         .map((p) => p.name)
     )
   ).slice(0, 10);
@@ -246,10 +280,10 @@ app.get(["/api/search", "/api/v1/search"], (req, res) => {
     return res.json({ items: [], has_more: false, limit, offset });
   }
 
+  const tokens = q.split(/\s+/).filter(Boolean);
   const filtered = productsList.filter((p) => {
-    const nameMatch = p.name && p.name.toLowerCase().includes(q);
-    const catMatch = p.category && p.category.toLowerCase().includes(q);
-    return nameMatch || catMatch;
+    const text = `${p.name} ${p.category} ${p.unit || ""}`.toLowerCase();
+    return tokens.every((t) => text.includes(t));
   });
 
   const sliced = filtered.slice(offset, offset + limit);

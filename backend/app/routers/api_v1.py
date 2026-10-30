@@ -3,6 +3,8 @@ from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from sqlalchemy import select
 from typing import Optional
+import os
+import json
 from ..auth import get_current_user
 from ..models import User
 from ..database import get_db
@@ -62,6 +64,29 @@ MOCK_PRODUCTS = [
         ],
     },
 ]
+
+# Dynamically load the comprehensive South African synced catalog if present
+synced_file = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..", "synced_products.json"))
+if os.path.exists(synced_file):
+    try:
+        with open(synced_file, "r", encoding="utf-8") as f:
+            full_catalog = json.load(f)
+            if full_catalog and isinstance(full_catalog, list):
+                MOCK_PRODUCTS = [
+                    {
+                        "id": p.get("id"),
+                        "name": p.get("name"),
+                        "brand": p.get("name", "").split()[0],
+                        "category": p.get("category"),
+                        "prices": [
+                            {"storeName": pr.get("storeId", "").capitalize(), "price": pr.get("price")}
+                            for pr in p.get("prices", [])
+                        ],
+                    }
+                    for p in full_catalog
+                ]
+    except Exception as e:
+        pass
 
 MOCK_USER = {
     "id": "user-001",
@@ -275,10 +300,14 @@ def search_products(
     if not query:
         return []
 
+    query_tokens = query.split()
     results = [
         product
         for product in MOCK_PRODUCTS
-        if query in product["name"].lower() or query in product["brand"].lower()
+        if all(
+            t in f"{product['name']} {product.get('brand', '')} {product.get('category', '')}".lower()
+            for t in query_tokens
+        )
     ]
     return results
 

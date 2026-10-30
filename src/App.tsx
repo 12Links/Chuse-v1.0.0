@@ -111,25 +111,8 @@ function MainPage({ user, setUser, isDarkMode, onToggleDarkMode }: MainPageProps
       })
       .then((serverProds: Product[]) => {
         if (serverProds && serverProds.length > 0) {
-          setProducts(prevProducts => {
-            const currentList = prevProducts.length > 0 ? prevProducts : [];
-            const serverMap = new Map(serverProds.map(p => [p.id, p]));
-            
-            const merged = currentList.map(localProd => {
-              const serverProd = serverMap.get(localProd.id);
-              if (serverProd) {
-                return { ...localProd, prices: serverProd.prices };
-              }
-              return localProd;
-            });
-
-            const localIds = new Set(currentList.map(p => p.id));
-            const brandNew = serverProds.filter(p => !localIds.has(p.id));
-            const finalProducts = [...merged, ...brandNew];
-            
-            localStorage.setItem('sa_price_compare_products', JSON.stringify(finalProducts));
-            return finalProducts;
-          });
+          setProducts(serverProds);
+          localStorage.setItem('sa_price_compare_products', JSON.stringify(serverProds));
         }
       })
       .catch(err => {

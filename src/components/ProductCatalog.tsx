@@ -46,15 +46,22 @@ export default function ProductCatalog({
     return basket.find(item => item.productId === productId)?.quantity || 0;
   };
 
-  // Filter products
+  // Multi-token fuzzy filtering
   const filteredProducts = products.filter(p => {
-    const matchesSearch = p.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-      p.category.toLowerCase().includes(searchTerm.toLowerCase());
-    
+    const query = searchTerm.toLowerCase().trim();
     const matchesCategory = selectedCategory === 'All' || p.category === selectedCategory;
-    
     const matchesStore = selectedStoreFilter === 'all' || 
       p.prices.some(pr => pr.storeId === selectedStoreFilter && pr.inStock && pr.price > 0);
+
+    if (!query) {
+      return matchesCategory && matchesStore;
+    }
+
+    const searchTokens = query.split(/\s+/).filter(Boolean);
+    const searchableText = `${p.name} ${p.category} ${p.unit || ''} ${p.barcode || ''}`.toLowerCase();
+    
+    // Every search token must match somewhere in the product info
+    const matchesSearch = searchTokens.every(token => searchableText.includes(token));
 
     return matchesSearch && matchesCategory && matchesStore;
   });
