@@ -8110,49 +8110,49 @@
     "prices": [
       {
         "storeId": "woolworths",
-        "price": 170.95,
+        "price": 167.45,
         "onSpecial": false,
         "specialDetail": "",
         "inStock": true
       },
       {
         "storeId": "checkers",
-        "price": 149.54,
-        "onSpecial": false,
-        "specialDetail": "",
+        "price": 127.29,
+        "onSpecial": true,
+        "specialDetail": "Special Promo Price",
         "inStock": true
       },
       {
         "storeId": "pnp",
-        "price": 157.34,
+        "price": 157.96,
         "onSpecial": false,
         "specialDetail": "",
         "inStock": true
       },
       {
         "storeId": "shoprite",
-        "price": 141.09,
+        "price": 142.07,
+        "onSpecial": false,
+        "specialDetail": "",
+        "inStock": false
+      },
+      {
+        "storeId": "spar",
+        "price": 151.4,
         "onSpecial": false,
         "specialDetail": "",
         "inStock": true
       },
       {
-        "storeId": "spar",
-        "price": 133.54,
-        "onSpecial": true,
-        "specialDetail": "Save R14.50 with SPAR Rewards",
-        "inStock": true
-      },
-      {
         "storeId": "foodlovers",
-        "price": 149.65,
+        "price": 142.61,
         "onSpecial": false,
         "specialDetail": "",
         "inStock": true
       },
       {
         "storeId": "boxer",
-        "price": 136.79,
+        "price": 134.06,
         "onSpecial": false,
         "specialDetail": "",
         "inStock": true
@@ -8170,51 +8170,51 @@
     "prices": [
       {
         "storeId": "woolworths",
-        "price": 45.58,
+        "price": 44.27,
         "onSpecial": false,
         "specialDetail": "",
         "inStock": true
       },
       {
         "storeId": "checkers",
-        "price": 32.55,
-        "onSpecial": true,
-        "specialDetail": "Special Promo Price",
+        "price": 37.46,
+        "onSpecial": false,
+        "specialDetail": "",
         "inStock": true
       },
       {
         "storeId": "pnp",
-        "price": 40.3,
+        "price": 38.44,
         "onSpecial": false,
         "specialDetail": "",
         "inStock": true
       },
       {
         "storeId": "shoprite",
-        "price": 37.01,
-        "onSpecial": false,
-        "specialDetail": "",
+        "price": 30.11,
+        "onSpecial": true,
+        "specialDetail": "Buy 2 for R60.20",
         "inStock": true
       },
       {
         "storeId": "spar",
-        "price": 37.83,
+        "price": 39.27,
         "onSpecial": false,
         "specialDetail": "",
         "inStock": true
       },
       {
         "storeId": "foodlovers",
-        "price": 36.72,
-        "onSpecial": false,
-        "specialDetail": "",
+        "price": 32.14,
+        "onSpecial": true,
+        "specialDetail": "Weekly Special Price",
         "inStock": true
       },
       {
         "storeId": "boxer",
-        "price": 36.47,
-        "onSpecial": false,
-        "specialDetail": "",
+        "price": 32.11,
+        "onSpecial": true,
+        "specialDetail": "Weekly Special Price",
         "inStock": true
       }
     ]
@@ -8230,51 +8230,51 @@
     "prices": [
       {
         "storeId": "woolworths",
-        "price": 21.75,
+        "price": 21.77,
         "onSpecial": false,
         "specialDetail": "",
         "inStock": true
       },
       {
         "storeId": "checkers",
-        "price": 16.09,
-        "onSpecial": true,
-        "specialDetail": "Save R2.30 with Xtra Savings",
+        "price": 18.9,
+        "onSpecial": false,
+        "specialDetail": "",
         "inStock": true
       },
       {
         "storeId": "pnp",
-        "price": 16.94,
-        "onSpecial": true,
-        "specialDetail": "Buy 2 for R33.90",
+        "price": 18.3,
+        "onSpecial": false,
+        "specialDetail": "",
         "inStock": true
       },
       {
         "storeId": "shoprite",
-        "price": 16.81,
-        "onSpecial": false,
-        "specialDetail": "",
+        "price": 14.55,
+        "onSpecial": true,
+        "specialDetail": "Special Promo Price",
         "inStock": true
       },
       {
         "storeId": "spar",
-        "price": 19.41,
+        "price": 18.11,
         "onSpecial": false,
         "specialDetail": "",
-        "inStock": true
+        "inStock": false
       },
       {
         "storeId": "foodlovers",
-        "price": 18.32,
+        "price": 18.1,
         "onSpecial": false,
         "specialDetail": "",
         "inStock": true
       },
       {
         "storeId": "boxer",
-        "price": 13.93,
-        "onSpecial": true,
-        "specialDetail": "Weekly Special Price",
+        "price": 16.85,
+        "onSpecial": false,
+        "specialDetail": "",
         "inStock": true
       }
     ]
@@ -8290,52 +8290,52 @@
     "prices": [
       {
         "storeId": "woolworths",
-        "price": 74.38,
+        "price": 74.88,
         "onSpecial": false,
         "specialDetail": "",
         "inStock": true
       },
       {
         "storeId": "checkers",
-        "price": 56.39,
-        "onSpecial": true,
-        "specialDetail": "Buy 2 for R112.80",
+        "price": 62.66,
+        "onSpecial": false,
+        "specialDetail": "",
         "inStock": true
       },
       {
         "storeId": "pnp",
-        "price": 65.5,
+        "price": 63.39,
         "onSpecial": false,
         "specialDetail": "",
         "inStock": true
       },
       {
         "storeId": "shoprite",
-        "price": 60.7,
-        "onSpecial": false,
-        "specialDetail": "",
+        "price": 48.44,
+        "onSpecial": true,
+        "specialDetail": "Save R9.30 with Xtra Savings",
         "inStock": true
       },
       {
         "storeId": "spar",
-        "price": 61.7,
+        "price": 64.52,
         "onSpecial": false,
         "specialDetail": "",
         "inStock": true
       },
       {
         "storeId": "foodlovers",
-        "price": 62.01,
+        "price": 60.22,
         "onSpecial": false,
         "specialDetail": "",
         "inStock": true
       },
       {
         "storeId": "boxer",
-        "price": 55.85,
+        "price": 58.31,
         "onSpecial": false,
         "specialDetail": "",
-        "inStock": true
+        "inStock": false
       }
     ]
   },
@@ -8350,51 +8350,51 @@
     "prices": [
       {
         "storeId": "woolworths",
-        "price": 95.09,
+        "price": 92.76,
         "onSpecial": false,
         "specialDetail": "",
         "inStock": true
       },
       {
         "storeId": "checkers",
-        "price": 77.24,
-        "onSpecial": false,
-        "specialDetail": "",
+        "price": 72.75,
+        "onSpecial": true,
+        "specialDetail": "Buy 2 for R145.50",
         "inStock": true
       },
       {
         "storeId": "pnp",
-        "price": 71.64,
+        "price": 67.51,
         "onSpecial": true,
         "specialDetail": "Special Promo Price",
         "inStock": true
       },
       {
         "storeId": "shoprite",
-        "price": 74.24,
+        "price": 76.93,
         "onSpecial": false,
         "specialDetail": "",
         "inStock": true
       },
       {
         "storeId": "spar",
-        "price": 73.02,
-        "onSpecial": true,
-        "specialDetail": "Buy 2 for R146.00",
-        "inStock": true
-      },
-      {
-        "storeId": "foodlovers",
-        "price": 74.16,
+        "price": 80.13,
         "onSpecial": false,
         "specialDetail": "",
         "inStock": true
       },
       {
-        "storeId": "boxer",
-        "price": 67.52,
+        "storeId": "foodlovers",
+        "price": 67.81,
         "onSpecial": true,
         "specialDetail": "Weekly Special Price",
+        "inStock": true
+      },
+      {
+        "storeId": "boxer",
+        "price": 72.1,
+        "onSpecial": false,
+        "specialDetail": "",
         "inStock": true
       }
     ]
@@ -8410,49 +8410,49 @@
     "prices": [
       {
         "storeId": "woolworths",
-        "price": 155.22,
+        "price": 151.86,
         "onSpecial": false,
         "specialDetail": "",
         "inStock": true
       },
       {
         "storeId": "checkers",
-        "price": 134.04,
+        "price": 128.35,
         "onSpecial": false,
         "specialDetail": "",
         "inStock": true
       },
       {
         "storeId": "pnp",
-        "price": 112.79,
-        "onSpecial": true,
-        "specialDetail": "Save R24.70 with Smart Shopper",
+        "price": 129.36,
+        "onSpecial": false,
+        "specialDetail": "",
         "inStock": true
       },
       {
         "storeId": "shoprite",
-        "price": 105.34,
+        "price": 99.77,
         "onSpecial": true,
-        "specialDetail": "Save R20.60 with Xtra Savings",
+        "specialDetail": "Save R21.40 with Xtra Savings",
         "inStock": true
       },
       {
         "storeId": "spar",
-        "price": 132.9,
+        "price": 127.02,
         "onSpecial": false,
         "specialDetail": "",
         "inStock": true
       },
       {
         "storeId": "foodlovers",
-        "price": 121.1,
+        "price": 126.27,
         "onSpecial": false,
         "specialDetail": "",
         "inStock": true
       },
       {
         "storeId": "boxer",
-        "price": 119.68,
+        "price": 123.58,
         "onSpecial": false,
         "specialDetail": "",
         "inStock": true
@@ -8470,51 +8470,51 @@
     "prices": [
       {
         "storeId": "woolworths",
-        "price": 47.92,
-        "onSpecial": true,
-        "specialDetail": "Buy 2 for R95.80",
+        "price": 52.99,
+        "onSpecial": false,
+        "specialDetail": "",
         "inStock": true
       },
       {
         "storeId": "checkers",
-        "price": 46.05,
+        "price": 44.9,
         "onSpecial": false,
         "specialDetail": "",
         "inStock": true
       },
       {
         "storeId": "pnp",
-        "price": 46.37,
-        "onSpecial": false,
-        "specialDetail": "",
+        "price": 39.9,
+        "onSpecial": true,
+        "specialDetail": "Special Promo Price",
         "inStock": true
       },
       {
         "storeId": "shoprite",
-        "price": 42.83,
-        "onSpecial": false,
-        "specialDetail": "",
+        "price": 35.76,
+        "onSpecial": true,
+        "specialDetail": "Special Promo Price",
         "inStock": true
       },
       {
         "storeId": "spar",
-        "price": 44.56,
+        "price": 46.72,
         "onSpecial": false,
         "specialDetail": "",
         "inStock": true
       },
       {
         "storeId": "foodlovers",
-        "price": 43.45,
+        "price": 43.93,
         "onSpecial": false,
         "specialDetail": "",
-        "inStock": true
+        "inStock": false
       },
       {
         "storeId": "boxer",
-        "price": 36.58,
-        "onSpecial": true,
-        "specialDetail": "Weekly Special Price",
+        "price": 42.62,
+        "onSpecial": false,
+        "specialDetail": "",
         "inStock": true
       }
     ]
@@ -8530,49 +8530,49 @@
     "prices": [
       {
         "storeId": "woolworths",
-        "price": 50.67,
+        "price": 55.25,
         "onSpecial": true,
-        "specialDetail": "Save R10.70 with W-Rewards",
+        "specialDetail": "Buy 2 for R110.50",
         "inStock": true
       },
       {
         "storeId": "checkers",
-        "price": 56.0,
-        "onSpecial": false,
-        "specialDetail": "",
+        "price": 50.77,
+        "onSpecial": true,
+        "specialDetail": "Save R4.50 with Xtra Savings",
         "inStock": true
       },
       {
         "storeId": "pnp",
-        "price": 58.29,
+        "price": 54.57,
         "onSpecial": false,
         "specialDetail": "",
         "inStock": true
       },
       {
         "storeId": "shoprite",
-        "price": 50.39,
+        "price": 49.68,
         "onSpecial": false,
         "specialDetail": "",
         "inStock": true
       },
       {
         "storeId": "spar",
-        "price": 57.71,
+        "price": 53.55,
         "onSpecial": false,
         "specialDetail": "",
         "inStock": true
       },
       {
         "storeId": "foodlovers",
-        "price": 53.92,
+        "price": 54.65,
         "onSpecial": false,
         "specialDetail": "",
         "inStock": true
       },
       {
         "storeId": "boxer",
-        "price": 48.72,
+        "price": 51.04,
         "onSpecial": false,
         "specialDetail": "",
         "inStock": true
@@ -8590,49 +8590,49 @@
     "prices": [
       {
         "storeId": "woolworths",
-        "price": 37.35,
+        "price": 38.07,
         "onSpecial": false,
         "specialDetail": "",
         "inStock": true
       },
       {
         "storeId": "checkers",
-        "price": 34.1,
-        "onSpecial": false,
-        "specialDetail": "",
+        "price": 27.8,
+        "onSpecial": true,
+        "specialDetail": "Special Promo Price",
         "inStock": true
       },
       {
         "storeId": "pnp",
-        "price": 33.15,
+        "price": 34.02,
         "onSpecial": false,
         "specialDetail": "",
         "inStock": true
       },
       {
         "storeId": "shoprite",
-        "price": 31.04,
+        "price": 31.55,
         "onSpecial": false,
         "specialDetail": "",
         "inStock": true
       },
       {
         "storeId": "spar",
-        "price": 32.4,
+        "price": 32.31,
         "onSpecial": false,
         "specialDetail": "",
         "inStock": true
       },
       {
         "storeId": "foodlovers",
-        "price": 32.21,
+        "price": 31.28,
         "onSpecial": false,
         "specialDetail": "",
         "inStock": true
       },
       {
         "storeId": "boxer",
-        "price": 30.59,
+        "price": 30.81,
         "onSpecial": false,
         "specialDetail": "",
         "inStock": true
@@ -8650,49 +8650,49 @@
     "prices": [
       {
         "storeId": "woolworths",
-        "price": 74.75,
+        "price": 76.97,
         "onSpecial": false,
         "specialDetail": "",
         "inStock": true
       },
       {
         "storeId": "checkers",
-        "price": 67.07,
+        "price": 66.94,
         "onSpecial": false,
         "specialDetail": "",
         "inStock": true
       },
       {
         "storeId": "pnp",
-        "price": 56.05,
-        "onSpecial": true,
-        "specialDetail": "Special Promo Price",
-        "inStock": true
-      },
-      {
-        "storeId": "shoprite",
-        "price": 62.34,
+        "price": 65.81,
         "onSpecial": false,
         "specialDetail": "",
         "inStock": true
       },
       {
+        "storeId": "shoprite",
+        "price": 54.19,
+        "onSpecial": true,
+        "specialDetail": "Buy 2 for R108.40",
+        "inStock": true
+      },
+      {
         "storeId": "spar",
-        "price": 67.28,
+        "price": 66.69,
         "onSpecial": false,
         "specialDetail": "",
         "inStock": true
       },
       {
         "storeId": "foodlovers",
-        "price": 63.39,
-        "onSpecial": false,
-        "specialDetail": "",
+        "price": 51.43,
+        "onSpecial": true,
+        "specialDetail": "Weekly Special Price",
         "inStock": true
       },
       {
         "storeId": "boxer",
-        "price": 59.22,
+        "price": 60.67,
         "onSpecial": false,
         "specialDetail": "",
         "inStock": true
@@ -8710,49 +8710,49 @@
     "prices": [
       {
         "storeId": "woolworths",
-        "price": 18.96,
+        "price": 18.97,
         "onSpecial": false,
         "specialDetail": "",
         "inStock": true
       },
       {
         "storeId": "checkers",
-        "price": 15.67,
-        "onSpecial": true,
-        "specialDetail": "Buy 2 for R31.30",
+        "price": 16.63,
+        "onSpecial": false,
+        "specialDetail": "",
         "inStock": true
       },
       {
         "storeId": "pnp",
-        "price": 17.92,
+        "price": 16.79,
         "onSpecial": false,
         "specialDetail": "",
         "inStock": true
       },
       {
         "storeId": "shoprite",
-        "price": 15.34,
+        "price": 15.44,
         "onSpecial": false,
         "specialDetail": "",
         "inStock": true
       },
       {
         "storeId": "spar",
-        "price": 17.03,
-        "onSpecial": false,
-        "specialDetail": "",
+        "price": 15.81,
+        "onSpecial": true,
+        "specialDetail": "Buy 2 for R31.60",
         "inStock": true
       },
       {
         "storeId": "foodlovers",
-        "price": 16.41,
+        "price": 16.57,
         "onSpecial": false,
         "specialDetail": "",
         "inStock": true
       },
       {
         "storeId": "boxer",
-        "price": 15.64,
+        "price": 16.2,
         "onSpecial": false,
         "specialDetail": "",
         "inStock": true
@@ -8770,49 +8770,49 @@
     "prices": [
       {
         "storeId": "woolworths",
-        "price": 45.99,
-        "onSpecial": false,
-        "specialDetail": "",
+        "price": 41.7,
+        "onSpecial": true,
+        "specialDetail": "Save R5.20 with W-Rewards",
         "inStock": true
       },
       {
         "storeId": "checkers",
-        "price": 41.08,
+        "price": 41.14,
         "onSpecial": false,
         "specialDetail": "",
         "inStock": true
       },
       {
         "storeId": "pnp",
-        "price": 40.24,
+        "price": 39.34,
         "onSpecial": false,
         "specialDetail": "",
         "inStock": true
       },
       {
         "storeId": "shoprite",
-        "price": 38.45,
+        "price": 37.61,
         "onSpecial": false,
         "specialDetail": "",
         "inStock": true
       },
       {
         "storeId": "spar",
-        "price": 40.36,
+        "price": 41.9,
         "onSpecial": false,
         "specialDetail": "",
         "inStock": true
       },
       {
         "storeId": "foodlovers",
-        "price": 39.87,
+        "price": 39.81,
         "onSpecial": false,
         "specialDetail": "",
         "inStock": true
       },
       {
         "storeId": "boxer",
-        "price": 35.71,
+        "price": 37.2,
         "onSpecial": false,
         "specialDetail": "",
         "inStock": true
@@ -8830,49 +8830,49 @@
     "prices": [
       {
         "storeId": "woolworths",
-        "price": 56.49,
-        "onSpecial": true,
-        "specialDetail": "Special Promo Price",
+        "price": 59.54,
+        "onSpecial": false,
+        "specialDetail": "",
         "inStock": true
       },
       {
         "storeId": "checkers",
-        "price": 52.9,
+        "price": 54.77,
         "onSpecial": false,
         "specialDetail": "",
         "inStock": true
       },
       {
         "storeId": "pnp",
-        "price": 53.73,
+        "price": 53.18,
         "onSpecial": false,
         "specialDetail": "",
         "inStock": true
       },
       {
         "storeId": "shoprite",
-        "price": 50.36,
+        "price": 48.22,
         "onSpecial": false,
         "specialDetail": "",
         "inStock": true
       },
       {
         "storeId": "spar",
-        "price": 54.14,
+        "price": 51.71,
         "onSpecial": false,
         "specialDetail": "",
         "inStock": true
       },
       {
         "storeId": "foodlovers",
-        "price": 52.83,
+        "price": 52.43,
         "onSpecial": false,
         "specialDetail": "",
         "inStock": true
       },
       {
         "storeId": "boxer",
-        "price": 46.92,
+        "price": 48.61,
         "onSpecial": false,
         "specialDetail": "",
         "inStock": true
@@ -8890,52 +8890,52 @@
     "prices": [
       {
         "storeId": "woolworths",
-        "price": 101.17,
-        "onSpecial": false,
-        "specialDetail": "",
+        "price": 92.15,
+        "onSpecial": true,
+        "specialDetail": "Buy 2 for R184.30",
         "inStock": true
       },
       {
         "storeId": "checkers",
-        "price": 86.75,
+        "price": 87.2,
         "onSpecial": false,
         "specialDetail": "",
         "inStock": true
       },
       {
         "storeId": "pnp",
-        "price": 88.44,
+        "price": 91.98,
         "onSpecial": false,
         "specialDetail": "",
         "inStock": true
       },
       {
         "storeId": "shoprite",
-        "price": 87.67,
+        "price": 84.95,
         "onSpecial": false,
         "specialDetail": "",
         "inStock": true
       },
       {
         "storeId": "spar",
-        "price": 90.54,
+        "price": 92.58,
         "onSpecial": false,
         "specialDetail": "",
         "inStock": true
       },
       {
         "storeId": "foodlovers",
-        "price": 87.42,
-        "onSpecial": false,
-        "specialDetail": "",
+        "price": 70.95,
+        "onSpecial": true,
+        "specialDetail": "Weekly Special Price",
         "inStock": true
       },
       {
         "storeId": "boxer",
-        "price": 79.86,
-        "onSpecial": false,
-        "specialDetail": "",
-        "inStock": false
+        "price": 73.87,
+        "onSpecial": true,
+        "specialDetail": "Weekly Special Price",
+        "inStock": true
       }
     ]
   },
@@ -8950,49 +8950,49 @@
     "prices": [
       {
         "storeId": "woolworths",
-        "price": 31.05,
-        "onSpecial": true,
-        "specialDetail": "Save R5.30 with W-Rewards",
+        "price": 36.39,
+        "onSpecial": false,
+        "specialDetail": "",
         "inStock": true
       },
       {
         "storeId": "checkers",
-        "price": 33.15,
+        "price": 31.73,
         "onSpecial": false,
         "specialDetail": "",
         "inStock": true
       },
       {
         "storeId": "pnp",
-        "price": 33.52,
+        "price": 33.75,
         "onSpecial": false,
         "specialDetail": "",
         "inStock": true
       },
       {
         "storeId": "shoprite",
-        "price": 28.98,
+        "price": 31.01,
         "onSpecial": false,
         "specialDetail": "",
         "inStock": true
       },
       {
         "storeId": "spar",
-        "price": 31.1,
+        "price": 31.09,
         "onSpecial": false,
         "specialDetail": "",
         "inStock": true
       },
       {
         "storeId": "foodlovers",
-        "price": 30.67,
+        "price": 30.09,
         "onSpecial": false,
         "specialDetail": "",
         "inStock": true
       },
       {
         "storeId": "boxer",
-        "price": 28.35,
+        "price": 29.3,
         "onSpecial": false,
         "specialDetail": "",
         "inStock": true
