@@ -40,18 +40,6 @@ interface BarcodeScannerProps {
   onClose?: () => void;
 }
 
-// Verified South African staple grocery presets for instant 1-click test scanning
-const POPULAR_STAPLE_BARCODES = [
-  { name: 'Clover Fresh Milk 2L', barcode: '6001299011113', emoji: '🥛', desc: 'Dairy' },
-  { name: 'Albany White Bread', barcode: '6001248000144', emoji: '🍞', desc: 'Bakery' },
-  { name: 'Sunfoil Sunflower Oil 2L', barcode: '6001087000034', emoji: '🌻', desc: 'Pantry' },
-  { name: 'Snowflake Cake Flour 2.5kg', barcode: '6001007000015', emoji: '🌾', desc: 'Baking' },
-  { name: 'Spekko Long Grain Rice 2kg', barcode: '6001016112233', emoji: '🍚', desc: 'Grains' },
-  { name: 'Nulaid Large Eggs 18pk', barcode: '6002135468790', emoji: '🥚', desc: 'Eggs' },
-  { name: 'Nescafe Gold Coffee 200g', barcode: '6001056123456', emoji: '☕', desc: 'Hot Drinks' },
-  { name: 'Huletts White Sugar 2.5kg', barcode: '6001007001001', emoji: '🍬', desc: 'Pantry' }
-];
-
 export default function BarcodeScanner({ 
   products, 
   onAddToBasket, 
@@ -244,7 +232,7 @@ export default function BarcodeScanner({
       if (err.name === 'NotAllowedError' || err.message?.includes('denied')) {
         setErrorMessage('Camera access was denied. Please allow camera permissions in your browser or enter the barcode numbers below.');
       } else if (err.name === 'NotFoundError' || err.message?.includes('not found')) {
-        setErrorMessage('No camera device found on this system. You can scan by typing the barcode numbers or picking a staple below.');
+        setErrorMessage('No camera device found on this system. You can scan by typing the barcode numbers or uploading a photo.');
       } else {
         setErrorMessage('Could not activate camera scanner. You can use photo upload or manual barcode entry.');
       }
@@ -631,6 +619,53 @@ export default function BarcodeScanner({
             </div>
           )}
 
+          {/* Manual Digits View (Active when manual tab selected) */}
+          {scanStatus === 'scanning' && activeTab === 'manual' && (
+            <div className="p-6 border border-slate-200 rounded-2xl bg-slate-50 text-center space-y-4">
+              <div className="w-12 h-12 rounded-2xl bg-white border border-slate-200 shadow-xs flex items-center justify-center mx-auto text-slate-800">
+                <Scan className="w-6 h-6 text-slate-700" />
+              </div>
+              <div className="space-y-1">
+                <h4 className="text-sm font-bold text-slate-900 font-sans">
+                  Enter Barcode Number
+                </h4>
+                <p className="text-xs text-slate-500 font-sans max-w-sm mx-auto">
+                  Type the 8, 12, or 13 digits printed beneath the barcode stripes on the packaging
+                </p>
+              </div>
+
+              <div className="relative max-w-md mx-auto">
+                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <input
+                  type="text"
+                  value={manualInput}
+                  onChange={(e) => setManualInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && manualInput.trim()) {
+                      handleBarcodeDiscovered(manualInput);
+                    }
+                  }}
+                  autoFocus
+                  placeholder="e.g. 6001299011113"
+                  className="w-full pl-10 pr-24 py-3 rounded-xl bg-white border-2 border-slate-200 text-sm font-mono font-bold text-slate-900 tracking-wider placeholder:text-slate-400 placeholder:tracking-normal focus:outline-none focus:border-slate-950 transition-all shadow-xs"
+                />
+                <button
+                  type="button"
+                  disabled={!manualInput.trim()}
+                  onClick={() => handleBarcodeDiscovered(manualInput)}
+                  className="absolute right-1.5 top-1/2 -translate-y-1/2 px-3.5 py-1.5 rounded-lg bg-slate-950 hover:bg-black disabled:bg-slate-300 text-white text-xs font-mono font-bold uppercase cursor-pointer disabled:cursor-not-allowed transition-colors shadow-xs"
+                >
+                  Lookup
+                </button>
+              </div>
+
+              <div className="flex items-center justify-center gap-1.5 text-[11px] text-slate-500 font-mono">
+                <Info className="w-3.5 h-3.5 text-slate-400" />
+                <span>Compatible with South African GS1 EAN-13, EAN-8 & UPC</span>
+              </div>
+            </div>
+          )}
+
           {/* Hidden File Input for Image Upload */}
           <input
             ref={fileInputRef}
@@ -671,8 +706,8 @@ export default function BarcodeScanner({
             </div>
           )}
 
-          {/* Manual Barcode & Name Search Input */}
-          {scanStatus === 'scanning' && (
+          {/* Inline Quick Search (when in Camera mode) */}
+          {scanStatus === 'scanning' && activeTab === 'camera' && (
             <div className="space-y-1.5">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
@@ -685,7 +720,7 @@ export default function BarcodeScanner({
                       handleBarcodeDiscovered(manualInput);
                     }
                   }}
-                  placeholder="Type barcode digits (e.g. 6001299011113)..."
+                  placeholder="Or enter barcode digits directly..."
                   className="w-full pl-9 pr-20 py-2.5 rounded-xl bg-slate-100 border border-slate-200 text-xs sm:text-sm font-mono font-bold text-slate-900 placeholder:text-slate-400 placeholder:font-sans focus:outline-none focus:border-slate-950 focus:bg-white transition-all shadow-2xs"
                 />
                 {manualInput.trim() && (
@@ -697,36 +732,6 @@ export default function BarcodeScanner({
                     Lookup
                   </button>
                 )}
-              </div>
-            </div>
-          )}
-
-          {/* Quick Demo Staple Presets (1-Tap Simulation) */}
-          {scanStatus === 'scanning' && (
-            <div className="space-y-2 pt-1 border-t border-slate-100">
-              <div className="flex items-center justify-between text-[10.5px] font-mono font-bold uppercase tracking-wider text-slate-500">
-                <span>Instant Demo Barcode Presets</span>
-                <span className="text-amber-700 font-bold">Tap to Simulate Scan</span>
-              </div>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
-                {POPULAR_STAPLE_BARCODES.map((item) => (
-                  <button
-                    key={item.barcode}
-                    type="button"
-                    onClick={() => handleBarcodeDiscovered(item.barcode)}
-                    className="p-2 rounded-xl bg-white border border-slate-200 hover:border-slate-400 text-left transition-all hover:bg-slate-50 cursor-pointer shadow-2xs group flex items-center gap-2"
-                  >
-                    <span className="text-base shrink-0">{item.emoji}</span>
-                    <div className="min-w-0 flex-1">
-                      <span className="text-[11px] font-bold text-slate-900 block truncate group-hover:text-black">
-                        {item.name}
-                      </span>
-                      <span className="text-[9px] font-mono text-slate-400 block truncate">
-                        #{item.barcode.slice(-5)}
-                      </span>
-                    </div>
-                  </button>
-                ))}
               </div>
             </div>
           )}
