@@ -18,6 +18,8 @@ import { supabase } from './lib/supabase';
 import { getCurrentUserProfile, loginUser, syncBasket } from './lib/api';
 import { FulfillmentModal, FulfillmentSettings } from './components/FulfillmentModal';
 import { NearbyStoresModal } from './components/NearbyStoresModal';
+import { FirstTimeOnboardingModal } from './components/FirstTimeOnboardingModal';
+import { findNearestBranches } from './lib/locationService';
 import { SearchOmnibar } from './components/SearchOmnibar';
 import { MobileBottomNav } from './components/MobileBottomNav';
 import initialProductsData from './data/initialProducts.json';
@@ -85,6 +87,15 @@ function MainPage({ user, setUser }: MainPageProps) {
   });
   const [isFulfillmentModalOpen, setIsFulfillmentModalOpen] = useState(false);
   const [isNearbyStoresModalOpen, setIsNearbyStoresModalOpen] = useState(false);
+  // First-time onboarding walkthrough modal (shows only once on first install/open)
+  const [isOnboardingOpen, setIsOnboardingOpen] = useState(() => {
+    try {
+      const completed = localStorage.getItem('chuse_has_completed_onboarding');
+      return completed !== 'true';
+    } catch {
+      return false;
+    }
+  });
   
   const [isSearchingRealTime, setIsSearchingRealTime] = useState(false);
   const [searchError, setSearchError] = useState<string | null>(null);
@@ -169,6 +180,51 @@ function MainPage({ user, setUser }: MainPageProps) {
       }
     };
     fetchLiveProducts();
+
+    // Automatic Location Update (detects where user is without needing to manually click update)
+    if (typeof navigator !== 'undefined' && navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const coords = {
+            lat: position.coords.latitude,
+            lng: position.coords.longitude,
+            accuracy: position.coords.accuracy,
+            source: 'gps' as const
+          };
+          try {
+            localStorage.setItem('chuse_user_coordinates', JSON.stringify(coords));
+          } catch {}
+
+          const branches = findNearestBranches(coords, { maxDistanceKm: 35, limit: 1 });
+          if (branches.length > 0) {
+            const closest = branches[0];
+            setFulfillmentSettings(prev => {
+              if (prev.suburb === closest.suburb && prev.activeStoreBranchId === closest.id) {
+                return prev;
+              }
+              const updated: FulfillmentSettings = {
+                ...prev,
+                suburb: closest.suburb,
+                postalCode: closest.postalCode,
+                province: closest.province,
+                hub: closest.city,
+                activeStoreBranchId: closest.id,
+                activeStoreBranchName: closest.name,
+                distanceFormatted: closest.distanceFormatted
+              };
+              try {
+                localStorage.setItem('sa_fulfillment_settings', JSON.stringify(updated));
+              } catch {}
+              return updated;
+            });
+          }
+        },
+        (err) => {
+          console.log('[Auto-location] Idle or awaiting user permission:', err.message);
+        },
+        { enableHighAccuracy: false, timeout: 8000, maximumAge: 180000 }
+      );
+    }
 
     try {
       const savedBasket = localStorage.getItem('sa_price_compare_basket');
@@ -720,6 +776,21 @@ function MainPage({ user, setUser }: MainPageProps) {
           };
           handleSaveFulfillment(updated);
         }}
+      />
+
+      {/* First-Time Installation Onboarding & Location Walkthrough (Shows Only Once) */}
+      <FirstTimeOnboardingModal
+        isOpen={isOnboardingOpen}
+        onComplete={() => {
+          setIsOnboardingOpen(false);
+          try {
+            localStorage.setItem('chuse_has_completed_onboarding', 'true');
+          } catch {}
+        }}
+        onLocationDetected={(newSettings) => {
+          handleSaveFulfillment(newSettings);
+        }}
+        currentSettings={fulfillmentSettings}
       />
 
       {/* Mobile-First Fixed Bottom Navigation Bar (md:hidden) */}

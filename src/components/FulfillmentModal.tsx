@@ -43,12 +43,14 @@ interface FulfillmentModalProps {
 }
 
 export const POPULAR_SUBURBS = [
-  // Gauteng
+  // Gauteng - Pretoria & Joburg
+  { suburb: 'Hatfield', postalCode: '0083', province: 'Gauteng', hub: 'Pretoria Central' },
+  { suburb: 'Brooklyn', postalCode: '0181', province: 'Gauteng', hub: 'Pretoria East' },
+  { suburb: 'Menlyn Park', postalCode: '0081', province: 'Gauteng', hub: 'Pretoria East' },
+  { suburb: 'Centurion Mall', postalCode: '0157', province: 'Gauteng', hub: 'Centurion' },
   { suburb: 'Sandton City', postalCode: '2196', province: 'Gauteng', hub: 'Johannesburg' },
   { suburb: 'Fourways Hyper', postalCode: '2055', province: 'Gauteng', hub: 'Johannesburg North' },
   { suburb: 'Rosebank Mall', postalCode: '2196', province: 'Gauteng', hub: 'Johannesburg' },
-  { suburb: 'Menlyn Park', postalCode: '0081', province: 'Gauteng', hub: 'Pretoria East' },
-  { suburb: 'Centurion Mall', postalCode: '0157', province: 'Gauteng', hub: 'Centurion' },
   { suburb: 'Bryanston', postalCode: '2191', province: 'Gauteng', hub: 'Johannesburg North' },
 
   // Western Cape
@@ -139,21 +141,28 @@ export function FulfillmentModal({
     setGpsError(null);
     try {
       const coords = await requestUserLocation();
-      const branches = findNearestBranches(coords, { maxDistanceKm: 25, limit: 3 });
+      const branches = findNearestBranches(coords, { maxDistanceKm: 35, limit: 3 });
       setNearbyBranches(branches);
 
       if (branches.length > 0) {
         const closest = branches[0];
-        setTempSettings(prev => ({
-          ...prev,
+        const autoApplied: FulfillmentSettings = {
+          ...tempSettings,
           suburb: closest.suburb,
           postalCode: closest.postalCode,
           province: closest.province,
           hub: closest.city,
           activeStoreBranchId: closest.id,
           activeStoreBranchName: closest.name,
-          distanceFormatted: closest.distanceFormatted
-        }));
+          distanceFormatted: closest.distanceFormatted,
+          mode: selectedMode
+        };
+        setTempSettings(autoApplied);
+        // Automatically save and apply immediately without requiring manual update
+        onSave(autoApplied);
+        setTimeout(() => {
+          onClose();
+        }, 500);
       }
     } catch (err: any) {
       setGpsError(err.message || 'Could not access GPS location.');
