@@ -16,7 +16,10 @@
     "backend": "python backend/main_fastapi.py",
     "scraper": "python scraper.py --mock",
     "scraper:live": "python scraper.py --live",
-    "receipt:demo": "node scripts/receipt_cli.js"
+    "receipt:demo": "node scripts/receipt_cli.js",
+    "android:sync": "npm run build && npx cap sync android",
+    "android:open": "npx cap open android",
+    "android:build": "npm run build && npx cap sync android && cd android && gradlew.bat assembleDebug"
   },
   "dependencies": {
     "@capacitor/android": "^8.4.1",
