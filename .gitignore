@@ -38,3 +38,9 @@ firebase-applet-config.json
 backend/Data/
 .vercel/
 *.pdf
+
+# Android APK and artifact builds
+*.apk
+*.zip
+android-apk-output/
+android/app/build/
