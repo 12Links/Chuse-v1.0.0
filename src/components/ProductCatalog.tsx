@@ -7,13 +7,19 @@ import {
   Plus, 
   Minus, 
   ArrowUpDown, 
-  X,
-  AlertCircle,
-  Bookmark,
-  BookmarkCheck,
-  Clock,
-  ChevronLeft,
-  ChevronRight
+  X, 
+  AlertCircle, 
+  Bookmark, 
+  BookmarkCheck, 
+  ChevronLeft, 
+  ChevronRight,
+  ExternalLink,
+  Tag,
+  Flame,
+  Check,
+  TrendingDown,
+  Layers,
+  Sparkles
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { PriceHistoryChart } from './PriceHistoryChart';
@@ -23,13 +29,14 @@ import {
   toggleTrackStaple 
 } from '../lib/priceTiming';
 import { StapleTimingSection } from './StapleTimingSection';
+import { RETAILER_THEMES, calculateNormalizedUnitPrice } from '../lib/retailerTokens';
 
 interface ProductCatalogProps {
   products: Product[];
   basket: BasketItem[];
   addToBasket: (productId: string) => void;
   updateQuantity: (productId: string, delta: number) => void;
-  removeFromBasket: (productId: string) => void;
+  removeFromBasket?: (productId: string) => void;
   onSearchRealTime: (query: string) => Promise<void>;
   isSearchingRealTime: boolean;
   searchError: string | null;
@@ -43,17 +50,6 @@ interface ProductCatalogProps {
   onReportDiscrepancy?: (product: Product) => void;
 }
 
-// Brand color styles for store badges
-const STORE_BADGE_STYLES: Record<string, { bg: string; text: string; label: string }> = {
-  checkers: { bg: 'bg-[#008374] text-white', text: 'text-[#008374]', label: 'Checkers' },
-  pnp: { bg: 'bg-[#002B49] text-white', text: 'text-[#002B49]', label: 'Pick n Pay' },
-  woolworths: { bg: 'bg-black text-white', text: 'text-black', label: 'Woolworths' },
-  shoprite: { bg: 'bg-[#D61B28] text-white', text: 'text-[#D61B28]', label: 'Shoprite' },
-  spar: { bg: 'bg-[#007A3D] text-white', text: 'text-[#007A3D]', label: 'SPAR' },
-  boxer: { bg: 'bg-[#FF6A13] text-white', text: 'text-[#FF6A13]', label: 'Boxer' },
-  foodlovers: { bg: 'bg-[#557A18] text-white', text: 'text-[#557A18]', label: "Food Lover's" },
-};
-
 // Canonical South African Supermarket Aisles
 export interface Aisle {
   id: string;
@@ -63,59 +59,55 @@ export interface Aisle {
 }
 
 export const SUPERMARKET_AISLES: Aisle[] = [
-  { id: 'All', name: 'All Aisles', emoji: '🛒', thumbnail: 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=120' },
-  { id: 'Milk, Dairy & Eggs', name: 'Milk, Dairy & Eggs', emoji: '🥛', thumbnail: 'https://images.unsplash.com/photo-1550583724-b2692b85b150?w=120' },
-  { id: 'Bakery & Bread', name: 'Bakery & Bread', emoji: '🍞', thumbnail: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=120' },
-  { id: 'Pantry Staples', name: 'Pantry Staples', emoji: '🌾', thumbnail: 'https://images.unsplash.com/photo-1586201375761-83865001e31c?w=120' },
-  { id: 'Breakfast & Cereals', name: 'Breakfast & Cereals', emoji: '🥣', thumbnail: 'https://images.unsplash.com/photo-1521483451569-e33803c0330c?w=120' },
-  { id: 'Fresh Produce', name: 'Fresh Produce', emoji: '🍎', thumbnail: 'https://images.unsplash.com/photo-1610832958506-aa56368176cf?w=120' },
-  { id: 'Meat & Poultry', name: 'Meat & Poultry', emoji: '🥩', thumbnail: 'https://images.unsplash.com/photo-1607623814075-e51df1bdc82f?w=120' },
-  { id: 'Beverages', name: 'Beverages', emoji: '🧃', thumbnail: 'https://images.unsplash.com/photo-1544787219-7f47ccb76574?w=120' },
-  { id: 'Snacks & Treats', name: 'Snacks & Treats', emoji: '🍫', thumbnail: 'https://images.unsplash.com/photo-1582293041079-7814c2f12063?w=120' },
-  { id: 'Household & Cleaning', name: 'Household & Cleaning', emoji: '🧼', thumbnail: 'https://images.unsplash.com/photo-1585421514738-01798e348b17?w=120' },
-  { id: 'Personal Care', name: 'Personal Care', emoji: '🧴', thumbnail: 'https://images.unsplash.com/photo-1556228720-195a672e8a03?w=120' },
-  { id: 'Baby Care', name: 'Baby Care', emoji: '👶', thumbnail: 'https://images.unsplash.com/photo-1515488042361-ee00e0ddd4e4?w=120' },
+  { id: 'All', name: 'All Aisles', emoji: '🛒', thumbnail: 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=140' },
+  { id: 'Milk, Dairy & Eggs', name: 'Milk, Dairy & Eggs', emoji: '🥛', thumbnail: 'https://images.unsplash.com/photo-1550583724-b2692b85b150?w=140' },
+  { id: 'Bakery & Bread', name: 'Bakery & Bread', emoji: '🍞', thumbnail: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=140' },
+  { id: 'Pantry Staples', name: 'Pantry Staples', emoji: '🌾', thumbnail: 'https://images.unsplash.com/photo-1586201375761-83865001e31c?w=140' },
+  { id: 'Breakfast & Cereals', name: 'Breakfast & Cereals', emoji: '🥣', thumbnail: 'https://images.unsplash.com/photo-1521483451569-e33803c0330c?w=140' },
+  { id: 'Fresh Produce', name: 'Fresh Produce', emoji: '🍎', thumbnail: 'https://images.unsplash.com/photo-1610832958506-aa56368176cf?w=140' },
+  { id: 'Meat & Poultry', name: 'Meat & Poultry', emoji: '🥩', thumbnail: 'https://images.unsplash.com/photo-1607623814075-e51df1bdc82f?w=140' },
+  { id: 'Beverages', name: 'Beverages', emoji: '🧃', thumbnail: 'https://images.unsplash.com/photo-1544787219-7f47ccb76574?w=140' },
+  { id: 'Snacks & Treats', name: 'Snacks & Treats', emoji: '🍫', thumbnail: 'https://images.unsplash.com/photo-1582293041079-7814c2f12063?w=140' },
+  { id: 'Household & Cleaning', name: 'Household & Cleaning', emoji: '🧼', thumbnail: 'https://images.unsplash.com/photo-1585421514738-01798e348b17?w=140' },
+  { id: 'Personal Care', name: 'Personal Care', emoji: '🧴', thumbnail: 'https://images.unsplash.com/photo-1556228720-195a672e8a03?w=140' },
+  { id: 'Baby Care', name: 'Baby Care', emoji: '👶', thumbnail: 'https://images.unsplash.com/photo-1515488042361-ee00e0ddd4e4?w=140' },
 ];
 
-/**
- * Deduplicates and normalizes catalog category strings into standard SA supermarket aisles
- */
 export function normalizeCategory(cat: string): string {
   const c = (cat || '').trim().toLowerCase();
-  if (c.includes('dairy') || c.includes('milk') || c.includes('egg')) {
-    return 'Milk, Dairy & Eggs';
-  }
-  if (c.includes('breakfast') || c.includes('cereal') || c.includes('oats')) {
-    return 'Breakfast & Cereals';
-  }
-  if (c.includes('pantry') || c.includes('staple') || c.includes('cupboard') || c.includes('oil') || c.includes('flour') || c.includes('rice') || c.includes('sugar') || c.includes('maize')) {
-    return 'Pantry Staples';
-  }
-  if (c.includes('bakery') || c.includes('bread')) {
-    return 'Bakery & Bread';
-  }
-  if (c.includes('meat') || c.includes('poultry') || c.includes('chicken') || c.includes('beef')) {
-    return 'Meat & Poultry';
-  }
-  if (c.includes('produce') || c.includes('fruit') || c.includes('veg')) {
-    return 'Fresh Produce';
-  }
-  if (c.includes('beverage') || c.includes('drink') || c.includes('tea') || c.includes('coffee') || c.includes('juice')) {
-    return 'Beverages';
-  }
-  if (c.includes('snack') || c.includes('sweet') || c.includes('treat') || c.includes('biscuit') || c.includes('chocolate') || c.includes('chip')) {
-    return 'Snacks & Treats';
-  }
-  if (c.includes('household') || c.includes('cleaning') || c.includes('detergent') || c.includes('paper')) {
-    return 'Household & Cleaning';
-  }
-  if (c.includes('baby')) {
-    return 'Baby Care';
-  }
-  if (c.includes('personal') || c.includes('toilet') || c.includes('beauty') || c.includes('hygiene')) {
-    return 'Personal Care';
-  }
+  if (c.includes('dairy') || c.includes('milk') || c.includes('egg')) return 'Milk, Dairy & Eggs';
+  if (c.includes('breakfast') || c.includes('cereal') || c.includes('oats')) return 'Breakfast & Cereals';
+  if (c.includes('pantry') || c.includes('staple') || c.includes('cupboard') || c.includes('oil') || c.includes('flour') || c.includes('rice') || c.includes('sugar') || c.includes('maize')) return 'Pantry Staples';
+  if (c.includes('bakery') || c.includes('bread')) return 'Bakery & Bread';
+  if (c.includes('meat') || c.includes('poultry') || c.includes('chicken') || c.includes('beef')) return 'Meat & Poultry';
+  if (c.includes('produce') || c.includes('fruit') || c.includes('veg')) return 'Fresh Produce';
+  if (c.includes('beverage') || c.includes('drink') || c.includes('tea') || c.includes('coffee') || c.includes('juice')) return 'Beverages';
+  if (c.includes('snack') || c.includes('sweet') || c.includes('treat') || c.includes('biscuit') || c.includes('chocolate') || c.includes('chip')) return 'Snacks & Treats';
+  if (c.includes('household') || c.includes('cleaning') || c.includes('detergent') || c.includes('paper')) return 'Household & Cleaning';
+  if (c.includes('baby')) return 'Baby Care';
+  if (c.includes('personal') || c.includes('toilet') || c.includes('beauty') || c.includes('hygiene')) return 'Personal Care';
   return cat || 'General Groceries';
+}
+
+function matchesDietary(product: Product, tag: string): boolean {
+  const text = `${product.name} ${product.category}`.toLowerCase();
+  if (tag === 'Halaal') {
+    return !text.includes('pork') && !text.includes('bacon') && !text.includes('ham') && !text.includes('wine') && !text.includes('beer');
+  }
+  if (tag === 'Kosher') {
+    return !text.includes('pork') && !text.includes('bacon') && !text.includes('shellfish') && !text.includes('ham');
+  }
+  if (tag === 'Vegan') {
+    return !text.includes('milk') && !text.includes('cheese') && !text.includes('butter') && !text.includes('dairy') && 
+           !text.includes('meat') && !text.includes('beef') && !text.includes('chicken') && !text.includes('egg') && 
+           !text.includes('yogurt') && !text.includes('yoghurt') && !text.includes('bacon') && !text.includes('polony') && !text.includes('fish');
+  }
+  if (tag === 'Gluten-Free') {
+    return !text.includes('bread') && !text.includes('flour') && !text.includes('wheat') && 
+           !text.includes('cereal') && !text.includes('biscuit') && !text.includes('pasta') && 
+           !text.includes('oats') && !text.includes('cake');
+  }
+  return true;
 }
 
 export default function ProductCatalog({
@@ -136,22 +128,22 @@ export default function ProductCatalog({
   onReportDiscrepancy
 }: ProductCatalogProps) {
   const [internalSearch, setInternalSearch] = useState('');
-  const [sortBy, setSortBy] = useState<'lowestPrice' | 'biggestSavings' | 'name' | 'popular' | 'bestTimeToBuy'>('popular');
-  const [timingFilter, setTimingFilter] = useState<'all' | 'buy_now' | 'tracked'>('all');
+  const [sortBy, setSortBy] = useState<'popular' | 'bestTimeToBuy' | 'lowestPrice' | 'biggestSavings' | 'name'>('popular');
+  const [activeSecondaryFilter, setActiveSecondaryFilter] = useState<'all' | 'specials' | 'multibuys' | 'drops' | 'tracked' | 'halaal' | 'vegan' | 'gluten_free'>('all');
   const [trackedIds, setTrackedIds] = useState<string[]>(() => getTrackedStapleIds());
   const [inspectProduct, setInspectProduct] = useState<Product | null>(null);
 
-  // Category horizontal scroll ref and control
+  // Category horizontal scroll ref
   const categoryScrollRef = useRef<HTMLDivElement>(null);
 
   const scrollCategories = (direction: 'left' | 'right') => {
     if (categoryScrollRef.current) {
-      const scrollAmount = direction === 'left' ? -220 : 220;
+      const scrollAmount = direction === 'left' ? -240 : 240;
       categoryScrollRef.current.scrollBy({ left: scrollAmount, behavior: 'smooth' });
     }
   };
 
-  // Sync tracked staples across tabs and storage events
+  // Sync tracked staples across tabs
   useEffect(() => {
     const handleTrackedUpdated = () => {
       setTrackedIds(getTrackedStapleIds());
@@ -164,10 +156,9 @@ export default function ProductCatalog({
     };
   }, []);
 
-  // Use external search term if provided, otherwise internal
   const activeSearch = externalSearchTerm || internalSearch;
 
-  // Memoized 30-day Price Timing Analysis for all catalog items
+  // Memoized 30-day Price Timing Analysis
   const timingAnalyses = useMemo(() => {
     const map = new Map<string, ReturnType<typeof analyzePriceTiming>>();
     products.forEach(p => {
@@ -176,16 +167,27 @@ export default function ProductCatalog({
     return map;
   }, [products]);
 
-  // Aggregate badge counts
-  const buyNowCount = useMemo(() => {
-    let count = 0;
-    timingAnalyses.forEach(analysis => {
-      if (analysis.status === 'buy') count++;
-    });
-    return count;
-  }, [timingAnalyses]);
+  // Counts for secondary filter badges
+  const filterCounts = useMemo(() => {
+    let specials = 0;
+    let multibuys = 0;
+    let drops = 0;
 
-  // Deduplicated active aisles list
+    products.forEach(p => {
+      const hasSpecial = p.prices.some(pr => pr.inStock && pr.onSpecial);
+      if (hasSpecial) specials++;
+
+      const hasMulti = p.prices.some(pr => pr.inStock && pr.specialDetail && /buy\s*\d|for\s*r/i.test(pr.specialDetail));
+      if (hasMulti) multibuys++;
+
+      const timing = timingAnalyses.get(p.id);
+      if (timing?.status === 'buy') drops++;
+    });
+
+    return { specials, multibuys, drops, tracked: trackedIds.length };
+  }, [products, timingAnalyses, trackedIds]);
+
+  // Deduplicated active aisles
   const activeAisles = useMemo(() => {
     const productCategories = new Set(products.map(p => normalizeCategory(p.category)));
     return SUPERMARKET_AISLES.filter(aisle => {
@@ -199,7 +201,7 @@ export default function ProductCatalog({
     const map: Record<string, string> = {};
     SUPERMARKET_AISLES.forEach(aisle => {
       if (aisle.id === 'All') {
-        map['All'] = 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=120';
+        map['All'] = 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=140';
         return;
       }
       const sample = products.find(p => normalizeCategory(p.category) === aisle.id && p.imageUrl);
@@ -226,7 +228,7 @@ export default function ProductCatalog({
           if (!matches) return false;
         }
 
-        // Category matching with deduplication
+        // Category matching
         if (selectedCategoryFilter !== 'All') {
           const norm = normalizeCategory(p.category);
           if (norm !== selectedCategoryFilter && p.category !== selectedCategoryFilter) {
@@ -240,12 +242,24 @@ export default function ProductCatalog({
           if (!hasInStore) return false;
         }
 
-        // Timing Filter (All | Buy Now Deals | Tracked Staples)
-        if (timingFilter === 'buy_now') {
-          const analysis = timingAnalyses.get(p.id);
-          if (analysis?.status !== 'buy') return false;
-        } else if (timingFilter === 'tracked') {
+        // Secondary Filters
+        if (activeSecondaryFilter === 'specials') {
+          const hasSpecial = p.prices.some(pr => pr.inStock && pr.onSpecial);
+          if (!hasSpecial) return false;
+        } else if (activeSecondaryFilter === 'multibuys') {
+          const hasMulti = p.prices.some(pr => pr.inStock && pr.specialDetail && /buy\s*\d|for\s*r/i.test(pr.specialDetail));
+          if (!hasMulti) return false;
+        } else if (activeSecondaryFilter === 'drops') {
+          const timing = timingAnalyses.get(p.id);
+          if (timing?.status !== 'buy') return false;
+        } else if (activeSecondaryFilter === 'tracked') {
           if (!trackedIds.includes(p.id)) return false;
+        } else if (activeSecondaryFilter === 'halaal') {
+          if (!matchesDietary(p, 'Halaal')) return false;
+        } else if (activeSecondaryFilter === 'vegan') {
+          if (!matchesDietary(p, 'Vegan')) return false;
+        } else if (activeSecondaryFilter === 'gluten_free') {
+          if (!matchesDietary(p, 'Gluten-Free')) return false;
         }
 
         return true;
@@ -258,7 +272,6 @@ export default function ProductCatalog({
           const pA = statusPriority[tA?.status || 'fair'] || 0;
           const pB = statusPriority[tB?.status || 'fair'] || 0;
           if (pA !== pB) return pB - pA;
-          // When both are "buy", sort by largest discount below 30d avg
           return (tA?.diffFromAvgPercent || 0) - (tB?.diffFromAvgPercent || 0);
         }
 
@@ -286,18 +299,18 @@ export default function ProductCatalog({
           return 0;
         }
       });
-  }, [products, activeSearch, selectedCategoryFilter, selectedStoreFilter, sortBy, timingFilter, timingAnalyses, trackedIds]);
+  }, [products, activeSearch, selectedCategoryFilter, selectedStoreFilter, sortBy, activeSecondaryFilter, timingAnalyses, trackedIds]);
 
   return (
     <div id="product-catalog-view" className="space-y-4">
-      {/* 1. Visual "Shop by Aisle" Strip (Checkers & Pick n Pay Style) */}
+      {/* 1. Visual "Shop by Aisle" Strip (Checkers Sixty60 Style) */}
       <div className="relative py-1 w-full max-w-full overflow-hidden">
         {/* Left Arrow with Soft Gradient Fade */}
-        <div className="hidden md:flex absolute left-0 top-0 bottom-0 w-12 bg-gradient-to-r from-[#F7F6F0] via-[#F7F6F0]/90 to-transparent z-10 items-center justify-start pointer-events-none">
+        <div className="hidden md:flex absolute left-0 top-0 bottom-0 w-12 bg-gradient-to-r from-[#F8FAFC] via-[#F8FAFC]/90 to-transparent z-10 items-center justify-start pointer-events-none">
           <button
             type="button"
             onClick={() => scrollCategories('left')}
-            className="pointer-events-auto w-7 h-7 rounded-full bg-white border border-[#E2E0D8] shadow-md flex items-center justify-center text-slate-700 hover:text-black hover:bg-slate-50 transition-all cursor-pointer"
+            className="pointer-events-auto w-7 h-7 rounded-full bg-white border border-slate-200 shadow-md flex items-center justify-center text-slate-700 hover:text-black hover:bg-slate-50 transition-all cursor-pointer"
             title="Scroll aisles left"
             aria-label="Scroll aisles left"
           >
@@ -318,15 +331,16 @@ export default function ProductCatalog({
             return (
               <button
                 key={aisle.id}
+                type="button"
                 onClick={() => onSelectCategoryFilter?.(aisle.id)}
                 className="flex flex-col items-center gap-1.5 shrink-0 group cursor-pointer focus:outline-none"
               >
-                {/* 56x56 / 64x64 Tile Box */}
+                {/* 58x58 / 64x64 Tile Box */}
                 <div
-                  className={`w-14 h-14 sm:w-16 sm:h-16 rounded-[8px] flex items-center justify-center p-2 transition-all relative ${
+                  className={`w-14 h-14 sm:w-16 sm:h-16 rounded-xl flex items-center justify-center p-2 transition-all relative ${
                     isSelected
-                      ? 'bg-slate-950 border-2 border-slate-950 shadow-sm ring-2 ring-slate-950/15'
-                      : 'bg-white border border-[#E2E0D8] shadow-2xs group-hover:border-slate-400 group-hover:bg-[#FDFCF7]'
+                      ? 'bg-slate-950 border-2 border-slate-950 shadow-md ring-2 ring-slate-950/20'
+                      : 'bg-white border border-slate-200 shadow-2xs group-hover:border-slate-300 group-hover:shadow-sm'
                   }`}
                 >
                   {thumbUrl ? (
@@ -348,10 +362,10 @@ export default function ProductCatalog({
 
                 {/* Aisle Name Underneath */}
                 <span
-                  className={`text-[11px] sm:text-xs text-center leading-tight line-clamp-1 max-w-[76px] transition-colors font-sans ${
+                  className={`text-[11px] sm:text-xs text-center leading-tight line-clamp-1 max-w-[80px] transition-colors font-sans ${
                     isSelected
                       ? 'font-black text-slate-950'
-                      : 'font-semibold text-slate-700 group-hover:text-black'
+                      : 'font-semibold text-slate-600 group-hover:text-black'
                   }`}
                 >
                   {aisle.name}
@@ -362,11 +376,11 @@ export default function ProductCatalog({
         </div>
 
         {/* Right Arrow with Soft Gradient Fade */}
-        <div className="hidden md:flex absolute right-0 top-0 bottom-0 w-12 bg-gradient-to-l from-[#F7F6F0] via-[#F7F6F0]/90 to-transparent z-10 items-center justify-end pointer-events-none">
+        <div className="hidden md:flex absolute right-0 top-0 bottom-0 w-12 bg-gradient-to-l from-[#F8FAFC] via-[#F8FAFC]/90 to-transparent z-10 items-center justify-end pointer-events-none">
           <button
             type="button"
             onClick={() => scrollCategories('right')}
-            className="pointer-events-auto w-7 h-7 rounded-full bg-white border border-[#E2E0D8] shadow-md flex items-center justify-center text-slate-700 hover:text-black hover:bg-slate-50 transition-all cursor-pointer"
+            className="pointer-events-auto w-7 h-7 rounded-full bg-white border border-slate-200 shadow-md flex items-center justify-center text-slate-700 hover:text-black hover:bg-slate-50 transition-all cursor-pointer"
             title="Scroll aisles right"
             aria-label="Scroll aisles right"
           >
@@ -375,100 +389,166 @@ export default function ProductCatalog({
         </div>
       </div>
 
-      {/* 2. Flattened Single-Row Utility Toolbar (Checkers & Pick n Pay style) */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-3 pt-2 pb-1.5 border-b border-[#E2E0D8] font-sans w-full max-w-full">
-        
+      {/* 2. Secondary Sticky Filter Chips Strip (Checkers/PnP style) */}
+      <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-1 text-xs font-sans w-full">
+        <button
+          type="button"
+          onClick={() => setActiveSecondaryFilter('all')}
+          className={`px-3 py-1.5 rounded-full font-bold whitespace-nowrap transition-all cursor-pointer border ${
+            activeSecondaryFilter === 'all'
+              ? 'bg-slate-950 text-white border-slate-950 shadow-xs'
+              : 'bg-white text-slate-700 border-slate-200 hover:border-slate-300'
+          }`}
+        >
+          All Items ({products.length})
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveSecondaryFilter('specials')}
+          className={`px-3 py-1.5 rounded-full font-bold whitespace-nowrap transition-all cursor-pointer flex items-center gap-1.5 border ${
+            activeSecondaryFilter === 'specials'
+              ? 'bg-[#FFE600] text-slate-950 border-yellow-400 font-black shadow-xs'
+              : 'bg-white text-slate-700 border-slate-200 hover:border-slate-300'
+          }`}
+        >
+          <Tag className="w-3.5 h-3.5 text-amber-600" />
+          <span>Specials Only ({filterCounts.specials})</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveSecondaryFilter('multibuys')}
+          className={`px-3 py-1.5 rounded-full font-bold whitespace-nowrap transition-all cursor-pointer flex items-center gap-1.5 border ${
+            activeSecondaryFilter === 'multibuys'
+              ? 'bg-[#004D40] text-[#FFE600] border-[#004D40] font-black shadow-xs'
+              : 'bg-white text-slate-700 border-slate-200 hover:border-slate-300'
+          }`}
+        >
+          <Layers className="w-3.5 h-3.5 text-teal-600" />
+          <span>Multi-Buys (Buy 2...) ({filterCounts.multibuys})</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveSecondaryFilter('drops')}
+          className={`px-3 py-1.5 rounded-full font-bold whitespace-nowrap transition-all cursor-pointer flex items-center gap-1.5 border ${
+            activeSecondaryFilter === 'drops'
+              ? 'bg-emerald-700 text-white border-emerald-700 font-black shadow-xs'
+              : 'bg-white text-emerald-800 border-slate-200 hover:border-emerald-300'
+          }`}
+        >
+          <TrendingDown className="w-3.5 h-3.5 text-emerald-600" />
+          <span>Price Drops &lt;30d ({filterCounts.drops})</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveSecondaryFilter('tracked')}
+          className={`px-3 py-1.5 rounded-full font-bold whitespace-nowrap transition-all cursor-pointer flex items-center gap-1.5 border ${
+            activeSecondaryFilter === 'tracked'
+              ? 'bg-slate-950 text-[#FFE600] border-slate-950 font-black shadow-xs'
+              : 'bg-white text-slate-700 border-slate-200 hover:border-slate-300'
+          }`}
+        >
+          <Bookmark className={`w-3.5 h-3.5 ${activeSecondaryFilter === 'tracked' ? 'fill-[#FFE600] text-[#FFE600]' : 'text-slate-400'}`} />
+          <span>Saved Staples ({filterCounts.tracked})</span>
+        </button>
+
+        {/* Dietary Badges */}
+        <span className="w-px h-4 bg-slate-300 mx-1 shrink-0" />
+
+        <button
+          type="button"
+          onClick={() => setActiveSecondaryFilter(activeSecondaryFilter === 'halaal' ? 'all' : 'halaal')}
+          className={`px-2.5 py-1.5 rounded-full text-[11px] font-bold whitespace-nowrap transition-all cursor-pointer border ${
+            activeSecondaryFilter === 'halaal'
+              ? 'bg-emerald-600 text-white border-emerald-600 shadow-xs'
+              : 'bg-white text-slate-600 border-slate-200 hover:border-slate-300'
+          }`}
+        >
+          ☪ Halaal
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveSecondaryFilter(activeSecondaryFilter === 'vegan' ? 'all' : 'vegan')}
+          className={`px-2.5 py-1.5 rounded-full text-[11px] font-bold whitespace-nowrap transition-all cursor-pointer border ${
+            activeSecondaryFilter === 'vegan'
+              ? 'bg-green-600 text-white border-green-600 shadow-xs'
+              : 'bg-white text-slate-600 border-slate-200 hover:border-slate-300'
+          }`}
+        >
+          🌱 Vegan
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveSecondaryFilter(activeSecondaryFilter === 'gluten_free' ? 'all' : 'gluten_free')}
+          className={`px-2.5 py-1.5 rounded-full text-[11px] font-bold whitespace-nowrap transition-all cursor-pointer border ${
+            activeSecondaryFilter === 'gluten_free'
+              ? 'bg-amber-600 text-white border-amber-600 shadow-xs'
+              : 'bg-white text-slate-600 border-slate-200 hover:border-slate-300'
+          }`}
+        >
+          🌾 Gluten-Free
+        </button>
+      </div>
+
+      {/* 3. Utility Toolbar: Aisle Header + Sort Dropdown */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-3 pt-1 pb-1.5 border-b border-slate-200 font-sans w-full max-w-full">
         {/* Left: Bold Aisle Title & Count */}
         <div className="flex items-center gap-2 flex-wrap">
           <h3 className="text-base sm:text-lg font-black text-slate-950 font-display uppercase tracking-tight">
             {selectedCategoryFilter === 'All' ? 'All Groceries' : selectedCategoryFilter}
             <span className="ml-2 text-xs font-mono font-bold text-slate-500 normal-case">
-              ({processedProducts.length} {processedProducts.length === 1 ? 'product' : 'products'})
+              ({processedProducts.length} {processedProducts.length === 1 ? 'item' : 'items'})
             </span>
           </h3>
 
           {/* Active search chip */}
           {activeSearch && (
-            <span className="bg-[#FFE600] text-black px-2 py-0.5 rounded-[2px] text-[10px] font-black uppercase font-mono">
+            <span className="bg-[#FFE600] text-slate-950 px-2 py-0.5 rounded text-[10px] font-black uppercase font-mono shadow-2xs">
               "{activeSearch}"
             </span>
           )}
 
           {/* Reset button if any filter is active */}
-          {(activeSearch || selectedCategoryFilter !== 'All' || selectedStoreFilter !== 'all' || timingFilter !== 'all') && (
+          {(activeSearch || selectedCategoryFilter !== 'All' || selectedStoreFilter !== 'all' || activeSecondaryFilter !== 'all') && (
             <button
+              type="button"
               onClick={() => {
                 onClearSearch?.();
                 setInternalSearch('');
                 onSelectCategoryFilter?.('All');
                 onSelectStoreFilter?.('all');
-                setTimingFilter('all');
+                setActiveSecondaryFilter('all');
               }}
               className="text-[11px] text-slate-500 hover:text-black underline font-mono cursor-pointer ml-1"
             >
-              Reset filters
+              Reset all filters
             </button>
           )}
         </div>
 
-        {/* Right: Quick Filter Pills + Sort Dropdown on the exact same horizontal line */}
-        <div className="flex items-center gap-2 sm:gap-3 flex-wrap sm:flex-nowrap w-full sm:w-auto">
-          {/* Quick Filter Pills */}
-          <div className="flex items-center gap-1 bg-white p-0.5 rounded-[4px] border border-[#E2E0D8] shadow-2xs overflow-x-auto no-scrollbar max-w-full">
-            <button
-              onClick={() => setTimingFilter('all')}
-              className={`px-2.5 py-1 rounded-[3px] text-xs font-bold transition-all cursor-pointer font-sans whitespace-nowrap ${
-                timingFilter === 'all'
-                  ? 'bg-slate-950 text-white shadow-2xs'
-                  : 'text-slate-600 hover:text-black hover:bg-slate-100'
-              }`}
-            >
-              All Items
-            </button>
-            <button
-              onClick={() => setTimingFilter('buy_now')}
-              className={`px-2.5 py-1 rounded-[3px] text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 font-sans whitespace-nowrap ${
-                timingFilter === 'buy_now'
-                  ? 'bg-emerald-700 text-white shadow-2xs font-extrabold'
-                  : 'text-emerald-800 hover:bg-emerald-50'
-              }`}
-            >
-              <span className={`w-1.5 h-1.5 rounded-full ${timingFilter === 'buy_now' ? 'bg-white' : 'bg-emerald-600'}`} />
-              <span>Best Drops ({buyNowCount})</span>
-            </button>
-            <button
-              onClick={() => setTimingFilter('tracked')}
-              className={`px-2.5 py-1 rounded-[3px] text-xs font-bold transition-all cursor-pointer flex items-center gap-1 font-sans whitespace-nowrap ${
-                timingFilter === 'tracked'
-                  ? 'bg-slate-950 text-[#FFE600] shadow-2xs'
-                  : 'text-slate-600 hover:text-black hover:bg-slate-100'
-              }`}
-            >
-              <Bookmark className={`w-3.5 h-3.5 ${timingFilter === 'tracked' ? 'text-[#FFE600] fill-[#FFE600]' : 'text-slate-400'}`} />
-              <span>Saved ({trackedIds.length})</span>
-            </button>
-          </div>
-
-          {/* Sort Selector Dropdown */}
-          <div className="flex items-center gap-1.5 shrink-0 w-full sm:w-auto">
-            <select
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value as any)}
-              className="w-full sm:w-auto px-2.5 py-1.5 rounded-[4px] bg-[#FFFFFF] border border-[#E2E0D8] text-xs font-bold text-slate-800 focus:outline-none focus:border-slate-950 cursor-pointer shadow-2xs font-sans"
-              aria-label="Sort products"
-            >
-              <option value="popular">Sort: Most Popular</option>
-              <option value="bestTimeToBuy">Sort: Best Drops (Stock Up First)</option>
-              <option value="lowestPrice">Sort: Price (Low to High)</option>
-              <option value="biggestSavings">Sort: Highest Store Savings</option>
-              <option value="name">Sort: Name (A-Z)</option>
-            </select>
-          </div>
+        {/* Right: Sort Dropdown */}
+        <div className="flex items-center gap-1.5 shrink-0 w-full sm:w-auto">
+          <select
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value as any)}
+            className="w-full sm:w-auto px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-xs font-bold text-slate-800 focus:outline-none focus:border-slate-950 cursor-pointer shadow-2xs font-sans"
+            aria-label="Sort products"
+          >
+            <option value="popular">Sort: Most Popular</option>
+            <option value="bestTimeToBuy">Sort: Best Price Drops (Stock Up)</option>
+            <option value="lowestPrice">Sort: Price (Low to High)</option>
+            <option value="biggestSavings">Sort: Highest Multi-Store Savings</option>
+            <option value="name">Sort: Name (A-Z)</option>
+          </select>
         </div>
-
       </div>
 
-      {/* Tactile Supermarket Product Grid - Crisp 6px corners & clean typography */}
+      {/* 4. Tactile Supermarket Product Grid - Pure White Cards, 1px Border, Soft Elevation */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3.5">
         {processedProducts.map((product) => {
           const basketQty = getBasketQty(product.id);
@@ -479,33 +559,56 @@ export default function ProductCatalog({
           const cheapest = sortedPrices[0];
           const secondCheapest = sortedPrices[1];
           const highest = sortedPrices[sortedPrices.length - 1];
-          const bestBadge = cheapest ? STORE_BADGE_STYLES[cheapest.storeId] : null;
+          const bestRetailer = cheapest ? RETAILER_THEMES[cheapest.storeId] : null;
 
-          // Single muted competitor comparison summary
-          let comparisonSummary = '';
-          if (secondCheapest && highest && highest.price > cheapest.price) {
-            const secondBadge = STORE_BADGE_STYLES[secondCheapest.storeId]?.label || secondCheapest.storeId;
-            const highBadge = STORE_BADGE_STYLES[highest.storeId]?.label || highest.storeId;
-            if (sortedPrices.length === 2) {
-              comparisonSummary = `R${highest.price.toFixed(2)} at ${highBadge}`;
-            } else {
-              comparisonSummary = `R${secondCheapest.price.toFixed(2)} at ${secondBadge} · Up to R${highest.price.toFixed(2)} at ${highBadge}`;
-            }
+          // Normalized Unit Price (e.g. R14.95 / L or R39.20 / kg)
+          const unitPriceInfo = calculateNormalizedUnitPrice(cheapest?.price || 0, product.unit);
+
+          // Regular price calculation (for strikethrough if on special)
+          const hasPromo = cheapest?.onSpecial || (highest && highest.price > cheapest.price * 1.08);
+          const strikethroughPrice = cheapest?.onSpecial 
+            ? Math.round(cheapest.price * 1.18 * 100) / 100
+            : (highest && highest.price > cheapest.price * 1.05 ? highest.price : null);
+
+          // Promotional Badge text
+          let promoBadgeText = '';
+          if (cheapest?.onSpecial && cheapest?.specialDetail) {
+            promoBadgeText = cheapest.specialDetail;
+          } else if (bestRetailer) {
+            promoBadgeText = `${bestRetailer.loyaltyProgram} Price`;
           }
+
+          // Timing analysis for stock up callout
+          const timing = timingAnalyses.get(product.id);
 
           return (
             <div
               key={product.id}
-              className="bg-[#FFFFFF] rounded-[6px] border border-[#E2E0D8] p-3.5 flex flex-col justify-between hover:border-slate-400 transition-all duration-150 shadow-2xs"
+              className="bg-white rounded-xl border border-slate-200/90 p-3.5 flex flex-col justify-between hover:border-slate-300 hover:shadow-md transition-all duration-200 shadow-2xs group relative"
               id={`product-card-${product.id}`}
             >
               <div>
-                {/* Product Image Container */}
+                {/* Product Image Packshot Box with Badges */}
                 <div 
                   onClick={() => setInspectProduct(product)}
-                  className="relative aspect-square w-full rounded-[4px] bg-[#F7F6F0] p-3 mb-2.5 flex items-center justify-center cursor-pointer group"
+                  className="relative aspect-square w-full rounded-lg bg-slate-50/80 p-3 mb-2.5 flex items-center justify-center cursor-pointer group-hover:bg-slate-100/60 transition-colors"
                 >
-                  {/* Staple Watchlist / LocalStorage Toggle */}
+                  {/* Top-Left Promotional Badge */}
+                  {promoBadgeText ? (
+                    <span 
+                      className={`absolute top-2 left-2 z-10 text-[9px] font-mono font-black uppercase tracking-tight px-1.5 py-0.5 rounded shadow-xs max-w-[140px] truncate ${
+                        bestRetailer ? `${bestRetailer.badgeBg} ${bestRetailer.badgeText}` : 'bg-slate-950 text-white'
+                      }`}
+                    >
+                      {promoBadgeText}
+                    </span>
+                  ) : timing?.status === 'buy' ? (
+                    <span className="absolute top-2 left-2 z-10 text-[9px] font-mono font-black uppercase tracking-tight px-1.5 py-0.5 rounded bg-emerald-700 text-white shadow-xs">
+                      Best Drop
+                    </span>
+                  ) : null}
+
+                  {/* Top-Right Staple Watchlist / LocalStorage Toggle */}
                   <button
                     type="button"
                     onClick={(e) => {
@@ -513,12 +616,12 @@ export default function ProductCatalog({
                       toggleTrackStaple(product.id);
                       setTrackedIds(getTrackedStapleIds());
                     }}
-                    className={`absolute top-2 right-2 p-1.5 rounded-[3px] border transition-all z-10 cursor-pointer ${
+                    className={`absolute top-2 right-2 p-1.5 rounded-md border transition-all z-10 cursor-pointer ${
                       trackedIds.includes(product.id)
-                        ? 'bg-slate-950 text-[#FFE600] border-black shadow-xs'
-                        : 'bg-white/90 hover:bg-white text-slate-400 hover:text-black border-[#E2E0D8]'
+                        ? 'bg-slate-950 text-[#FFE600] border-slate-950 shadow-xs'
+                        : 'bg-white/95 hover:bg-white text-slate-400 hover:text-slate-950 border-slate-200 shadow-2xs'
                     }`}
-                    title={trackedIds.includes(product.id) ? "Tracking this staple (Saved in Local Storage)" : "Track staple price timing"}
+                    title={trackedIds.includes(product.id) ? "Saved in Local Storage (Tracking)" : "Track price drops for this staple"}
                     aria-label="Track staple"
                   >
                     {trackedIds.includes(product.id) ? (
@@ -528,6 +631,7 @@ export default function ProductCatalog({
                     )}
                   </button>
 
+                  {/* Packshot Image */}
                   <img
                     src={product.imageUrl || 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=300'}
                     alt={product.name}
@@ -537,134 +641,134 @@ export default function ProductCatalog({
                       (e.target as HTMLImageElement).src = `https://placehold.co/200x200?text=${encodeURIComponent(product.name.charAt(0))}`;
                     }}
                   />
+
+                  {/* Bottom-Right Pack Size Pill */}
                   {product.unit && (
-                    <span className="absolute bottom-1.5 right-1.5 text-[9.5px] font-mono bg-white/95 text-slate-700 px-1.5 py-0.5 rounded-[2px] border border-[#E2E0D8] font-bold">
+                    <span className="absolute bottom-1.5 right-1.5 text-[9.5px] font-mono bg-white/95 text-slate-800 px-1.5 py-0.5 rounded border border-slate-200 font-bold shadow-2xs">
                       {product.unit}
                     </span>
                   )}
                 </div>
 
-                {/* Product Title */}
+                {/* Product Title & Category */}
                 <div className="mb-2">
-                  <span className="text-[9.5px] font-mono text-slate-400 uppercase tracking-widest block mb-0.5">
+                  <span className="text-[9.5px] font-mono font-bold text-slate-400 uppercase tracking-widest block mb-0.5">
                     {product.category}
                   </span>
                   <h4 
                     onClick={() => setInspectProduct(product)}
-                    className="font-bold text-slate-900 text-xs leading-snug line-clamp-2 hover:underline cursor-pointer font-sans"
+                    className="font-bold text-slate-900 text-xs sm:text-[13px] leading-snug line-clamp-2 hover:text-black cursor-pointer font-sans group-hover:text-slate-950"
                   >
                     {product.name}
                   </h4>
                 </div>
 
-                {/* Lead with ONE Winning Price & Staple Timing */}
-                <div className="pt-2 border-t border-[#E2E0D8] mb-3">
-                  <div className="flex items-baseline justify-between gap-1 mb-1">
-                    <span className="text-lg font-black text-slate-950 font-mono tracking-tight tabular-nums">
-                      R{cheapest ? cheapest.price.toFixed(2) : '--'}
-                    </span>
-                    {bestBadge && (
-                      <span className={`text-[9.5px] font-bold px-2 py-0.5 rounded-[2px] uppercase font-mono ${bestBadge.bg}`}>
-                        {bestBadge.label}
+                {/* Hero Pricing Row */}
+                <div className="pt-2 border-t border-slate-100 mb-3 space-y-1">
+                  <div className="flex items-baseline justify-between gap-1 flex-wrap">
+                    <div className="flex items-baseline gap-1.5">
+                      <span className="text-xl font-black text-slate-950 font-mono tracking-tight tabular-nums">
+                        R{cheapest ? cheapest.price.toFixed(2) : '--'}
+                      </span>
+                      {strikethroughPrice && strikethroughPrice > (cheapest?.price || 0) && (
+                        <span className="text-xs text-slate-400 line-through font-mono tabular-nums">
+                          R{strikethroughPrice.toFixed(2)}
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Winning Store Badge */}
+                    {bestRetailer && (
+                      <span className={`text-[9.5px] font-bold px-2 py-0.5 rounded font-mono uppercase tracking-tight shadow-2xs ${bestRetailer.badgeBg} ${bestRetailer.badgeText}`}>
+                        {bestRetailer.shortName}
                       </span>
                     )}
                   </div>
 
-                  {/* Best Time to Buy Pill */}
-                  {(() => {
-                    const timing = timingAnalyses.get(product.id);
-                    if (!timing) return null;
-                    return (
-                      <div className="flex items-center gap-1.5 mb-1.5">
-                        <span
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setInspectProduct(product);
-                          }}
-                          className={`cursor-pointer inline-flex items-center gap-1 text-[9px] font-mono font-black uppercase px-1.5 py-0.5 rounded-[2px] border ${
-                            timing.status === 'buy'
-                              ? 'bg-emerald-50 text-emerald-800 border-emerald-300'
-                              : timing.status === 'fair'
-                              ? 'bg-amber-50 text-amber-800 border-amber-200'
-                              : 'bg-rose-50 text-rose-700 border-rose-200'
-                          }`}
-                          title="Click to view staple timing predictor breakdown"
-                        >
-                          <span
-                            className={`w-1.5 h-1.5 rounded-full ${
-                              timing.status === 'buy'
-                                ? 'bg-emerald-600'
-                                : timing.status === 'fair'
-                                ? 'bg-amber-500'
-                                : 'bg-rose-500'
-                            }`}
-                          />
-                          {timing.badgeLabel}
-                        </span>
-                        {timing.diffFromAvgPercent !== 0 && (
-                          <span className="text-[9.5px] font-mono text-slate-400">
-                            {timing.diffFromAvgPercent < 0
-                              ? `${timing.diffFromAvgPercent}% vs 30d`
-                              : `+${timing.diffFromAvgPercent}% vs 30d`}
-                          </span>
-                        )}
-                      </div>
-                    );
-                  })()}
-
-                  {/* Muted Competitor Line */}
-                  {comparisonSummary ? (
-                    <p 
-                      onClick={() => setInspectProduct(product)}
-                      className="text-[10.5px] text-slate-500 font-mono truncate cursor-pointer hover:underline"
-                      title="Click to compare all 7 stores"
-                    >
-                      {comparisonSummary}
-                    </p>
-                  ) : (
-                    <p className="text-[10.5px] text-slate-400 font-mono">
-                      Single store available
-                    </p>
+                  {/* Normalized Unit Price (R/L, R/kg, etc.) */}
+                  {unitPriceInfo && (
+                    <div className="text-[10px] font-mono font-bold text-slate-500">
+                      {unitPriceInfo.formatted}
+                    </div>
                   )}
+
+                  {/* 7-Store Comparison Rank Indicator (Checkers vs Competitors Sparkline) */}
+                  <div 
+                    onClick={() => setInspectProduct(product)}
+                    className="pt-1.5 cursor-pointer"
+                    title="Click to view all 7 stores price comparison"
+                  >
+                    <div className="flex items-center gap-1">
+                      {sortedPrices.slice(0, 5).map((pr, i) => {
+                        const r = RETAILER_THEMES[pr.storeId];
+                        return (
+                          <div
+                            key={pr.storeId}
+                            className={`h-1.5 rounded-full flex-1 transition-all ${
+                              i === 0 
+                                ? 'bg-emerald-500 ring-1 ring-emerald-600' 
+                                : 'bg-slate-200 hover:bg-slate-300'
+                            }`}
+                            title={`${r?.shortName || pr.storeId}: R${pr.price.toFixed(2)}`}
+                          />
+                        );
+                      })}
+                    </div>
+
+                    <div className="flex items-center justify-between text-[9.5px] font-mono text-slate-500 mt-1">
+                      <span className="text-emerald-700 font-bold truncate">
+                        Lowest at {bestRetailer?.shortName || cheapest?.storeId}
+                      </span>
+                      {secondCheapest && (
+                        <span className="text-slate-400">
+                          +R{(secondCheapest.price - (cheapest?.price || 0)).toFixed(2)} next
+                        </span>
+                      )}
+                    </div>
+                  </div>
                 </div>
               </div>
 
-              {/* Action Buttons: Add / Stepper + Compare Link */}
-              <div className="flex items-center gap-2 pt-2 border-t border-[#E2E0D8]">
+              {/* Action Buttons: Add / Morphing Stepper + Compare Link */}
+              <div className="flex items-center gap-1.5 pt-2 border-t border-slate-100">
                 {basketQty > 0 ? (
-                  <div className="flex-1 flex items-center justify-between bg-slate-950 text-white rounded-[4px] p-1">
+                  <div className="flex-1 flex items-center justify-between bg-slate-950 text-white rounded-lg p-1 shadow-xs">
                     <button
+                      type="button"
                       onClick={() => updateQuantity(product.id, -1)}
-                      className="w-6 h-6 rounded-[2px] hover:bg-slate-800 flex items-center justify-center text-[#FFE600] active:scale-95 transition-all cursor-pointer"
+                      className="w-6 h-6 rounded hover:bg-slate-800 flex items-center justify-center text-[#FFE600] active:scale-95 transition-all cursor-pointer"
                       aria-label="Decrease quantity"
                     >
-                      <Minus className="w-3.5 h-3.5" />
+                      <Minus className="w-3.5 h-3.5 stroke-[3]" />
                     </button>
-                    <span className="font-mono font-bold text-xs">
+                    <span className="font-mono font-black text-xs text-white">
                       {basketQty} in basket
                     </span>
                     <button
+                      type="button"
                       onClick={() => updateQuantity(product.id, 1)}
-                      className="w-6 h-6 rounded-[2px] hover:bg-slate-800 flex items-center justify-center text-[#FFE600] active:scale-95 transition-all cursor-pointer"
+                      className="w-6 h-6 rounded hover:bg-slate-800 flex items-center justify-center text-[#FFE600] active:scale-95 transition-all cursor-pointer"
                       aria-label="Increase quantity"
                     >
-                      <Plus className="w-3.5 h-3.5" />
+                      <Plus className="w-3.5 h-3.5 stroke-[3]" />
                     </button>
                   </div>
                 ) : (
                   <button
+                    type="button"
                     onClick={() => addToBasket(product.id)}
-                    className="flex-1 py-2 px-3 rounded-[4px] bg-[#FFE600] hover:bg-yellow-400 active:scale-98 text-black font-extrabold text-xs transition-all cursor-pointer flex items-center justify-center gap-1.5 font-sans"
+                    className="flex-1 py-2 px-3 rounded-lg bg-[#FFE600] hover:bg-yellow-400 active:scale-98 text-slate-950 font-extrabold text-xs transition-all cursor-pointer flex items-center justify-center gap-1.5 font-sans border border-yellow-400 shadow-2xs hover:shadow-xs"
                   >
-                    <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
+                    <Plus className="w-3.5 h-3.5 stroke-[3]" />
                     <span>Add to Basket</span>
                   </button>
                 )}
 
                 <button
+                  type="button"
                   onClick={() => setInspectProduct(product)}
-                  className="px-2.5 py-2 rounded-[4px] border border-[#E2E0D8] bg-[#F7F6F0] hover:bg-slate-200 text-slate-700 text-[11px] font-bold font-mono transition-colors cursor-pointer"
-                  title="Compare all 7 stores"
+                  className="px-2.5 py-2 rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 hover:text-slate-950 text-[11px] font-bold font-mono transition-colors cursor-pointer shrink-0"
+                  title="Compare all 7 supermarkets"
                 >
                   Compare
                 </button>
@@ -675,44 +779,60 @@ export default function ProductCatalog({
 
         {/* Empty Search State */}
         {processedProducts.length === 0 && (
-          <div className="col-span-full py-16 text-center bg-[#FFFFFF] rounded-[6px] border border-[#E2E0D8] p-6 space-y-3">
-            <div className="w-12 h-12 rounded-full bg-[#F7F6F0] flex items-center justify-center text-slate-400 mx-auto">
+          <div className="col-span-full py-16 text-center bg-white rounded-xl border border-slate-200 p-8 space-y-3 shadow-2xs">
+            <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 mx-auto">
               <Search className="w-6 h-6" />
             </div>
-            <h4 className="font-bold text-slate-900 text-sm font-sans">
+            <h4 className="font-bold text-slate-900 text-base font-sans">
               No products found matching "{activeSearch}"
             </h4>
             <p className="text-xs text-slate-500 max-w-sm mx-auto font-sans">
-              Try searching for basic grocery staples like milk, bread, sunflower oil, eggs, or rice.
+              Try searching for staple groceries like Clover milk, Albany bread, Sunfoil oil, or large eggs.
             </p>
+            <button
+              type="button"
+              onClick={() => {
+                onClearSearch?.();
+                setInternalSearch('');
+                onSelectCategoryFilter?.('All');
+                setActiveSecondaryFilter('all');
+              }}
+              className="mt-2 px-4 py-2 rounded-lg bg-[#FFE600] text-slate-950 font-bold text-xs font-mono cursor-pointer shadow-xs"
+            >
+              View All Products
+            </button>
           </div>
         )}
       </div>
 
-      {/* Product Deep Comparison Modal with "Report Discrepancy" */}
+      {/* 5. Product Deep Comparison Modal / Bottom Sheet */}
       <AnimatePresence>
         {inspectProduct && (
-          <div className="fixed inset-0 z-60 flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-60 flex items-end sm:items-center justify-center p-0 sm:p-4">
+            {/* Backdrop */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setInspectProduct(null)}
-              className="fixed inset-0 bg-black/50 backdrop-blur-xs"
+              className="fixed inset-0 bg-black/60 backdrop-blur-xs"
             />
 
+            {/* Modal / Bottom Sheet Box */}
             <motion.div
-              initial={{ scale: 0.98, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.98, opacity: 0 }}
-              className="bg-white rounded-[6px] p-5 sm:p-6 max-w-xl w-full max-h-[90vh] overflow-y-auto shadow-xl relative z-10 border border-[#E2E0D8] space-y-5"
+              initial={{ y: '100%', opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: '100%', opacity: 0 }}
+              transition={{ type: 'spring', damping: 28, stiffness: 300 }}
+              className="bg-white rounded-t-2xl sm:rounded-xl p-5 sm:p-6 max-w-xl w-full max-h-[92vh] overflow-y-auto shadow-2xl relative z-10 border border-slate-200 space-y-5 font-sans"
             >
-              <div className="flex items-start justify-between border-b border-[#E2E0D8] pb-4">
+              {/* Header */}
+              <div className="flex items-start justify-between border-b border-slate-200 pb-4">
                 <div className="flex items-center gap-3.5">
                   <img
                     src={inspectProduct.imageUrl || 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=120'}
                     alt={inspectProduct.name}
-                    className="w-14 h-14 rounded-[4px] object-contain bg-[#F7F6F0] p-2 border border-[#E2E0D8] shrink-0"
+                    className="w-14 h-14 rounded-lg object-contain bg-slate-50 p-2 border border-slate-200 shrink-0"
                   />
                   <div>
                     <span className="text-[10px] font-mono uppercase tracking-widest text-slate-400 block">
@@ -724,8 +844,10 @@ export default function ProductCatalog({
                   </div>
                 </div>
                 <button
+                  type="button"
                   onClick={() => setInspectProduct(null)}
-                  className="w-8 h-8 rounded-[4px] bg-[#F7F6F0] flex items-center justify-center text-slate-500 hover:text-black transition-all cursor-pointer"
+                  className="w-8 h-8 rounded-lg bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500 hover:text-black transition-all cursor-pointer"
+                  aria-label="Close"
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -748,55 +870,97 @@ export default function ProductCatalog({
                 );
               })()}
 
-              {/* 7-Store Comparison Table */}
+              {/* 7-Store Comparison Table with Deep Links */}
               <div className="space-y-2">
-                <h5 className="text-xs font-mono font-bold uppercase tracking-wider text-slate-500">
-                  Store Price Breakdown
-                </h5>
+                <div className="flex items-center justify-between">
+                  <h5 className="text-xs font-mono font-bold uppercase tracking-wider text-slate-500">
+                    Live Supermarket Price Matrix
+                  </h5>
+                  <span className="text-[10.5px] font-mono text-slate-400">
+                    Ranked Lowest to Highest
+                  </span>
+                </div>
+
                 <div className="space-y-1.5 font-sans">
-                  {[...inspectProduct.prices].sort((a, b) => a.price - b.price).map((pr, idx) => {
-                    const store = STORES.find(s => s.id === pr.storeId);
-                    const isLowest = idx === 0;
-                    return (
-                      <div
-                        key={pr.storeId}
-                        className={`p-3 rounded-[4px] flex items-center justify-between border ${
-                          isLowest 
-                            ? 'bg-[#F0FDF4] border-emerald-300' 
-                            : 'bg-[#F7F6F0] border-[#E2E0D8]'
-                        }`}
-                      >
-                        <div className="flex items-center gap-2.5">
-                          <span className={`w-5 h-5 rounded-[2px] flex items-center justify-center text-[10px] font-mono font-bold ${
-                            isLowest ? 'bg-emerald-700 text-white' : 'bg-slate-300 text-slate-800'
-                          }`}>
-                            {idx + 1}
-                          </span>
-                          <div>
-                            <span className="text-xs font-bold text-slate-900 block font-sans">
-                              {store?.name || pr.storeId}
+                  {(() => {
+                    const sorted = [...inspectProduct.prices].sort((a, b) => a.price - b.price);
+                    const lowestPrice = sorted[0]?.price || 0;
+
+                    return sorted.map((pr, idx) => {
+                      const retailer = RETAILER_THEMES[pr.storeId];
+                      const isLowest = idx === 0;
+                      const diffFromLowest = pr.price - lowestPrice;
+                      const diffPercent = lowestPrice > 0 ? (diffFromLowest / lowestPrice) * 100 : 0;
+                      const storeDeepLink = retailer?.appDeepLinkPrefix ? `${retailer.appDeepLinkPrefix}${encodeURIComponent(inspectProduct.name)}` : null;
+
+                      return (
+                        <div
+                          key={pr.storeId}
+                          className={`p-3 rounded-lg flex items-center justify-between border transition-all ${
+                            isLowest 
+                              ? 'bg-emerald-50/70 border-emerald-300 ring-1 ring-emerald-300/30' 
+                              : 'bg-white border-slate-200 hover:border-slate-300'
+                          }`}
+                        >
+                          <div className="flex items-center gap-2.5">
+                            <span className={`w-5 h-5 rounded-md flex items-center justify-center text-[10px] font-mono font-bold ${
+                              isLowest ? 'bg-emerald-700 text-white' : 'bg-slate-200 text-slate-700'
+                            }`}>
+                              #{idx + 1}
                             </span>
-                            {pr.onSpecial && (
-                              <span className="text-[10px] font-bold text-amber-700 font-mono">
-                                {pr.specialDetail || 'Special Deal'}
+                            <div>
+                              <div className="flex items-center gap-1.5">
+                                <span className="text-xs font-bold text-slate-950 font-sans">
+                                  {retailer?.name || pr.storeId}
+                                </span>
+                                {retailer && (
+                                  <span className={`text-[9px] px-1.5 py-0.2 rounded font-mono font-bold ${retailer.badgeBg} ${retailer.badgeText}`}>
+                                    {retailer.loyaltyProgram}
+                                  </span>
+                                )}
+                              </div>
+                              {pr.onSpecial && (
+                                <span className="text-[10.5px] font-bold text-amber-700 font-mono flex items-center gap-1 mt-0.5">
+                                  <Tag className="w-3 h-3" />
+                                  {pr.specialDetail || 'Special Deal'}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+
+                          <div className="text-right flex items-center gap-3">
+                            <div>
+                              <span className={`text-sm font-black font-mono ${isLowest ? 'text-emerald-700' : 'text-slate-950'}`}>
+                                R{pr.price.toFixed(2)}
                               </span>
+                              {isLowest ? (
+                                <span className="block text-[9.5px] font-bold text-emerald-700 uppercase font-mono">
+                                  Cheapest
+                                </span>
+                              ) : (
+                                <span className="block text-[9.5px] font-mono text-slate-400">
+                                  +{diffPercent.toFixed(1)}% (+R{diffFromLowest.toFixed(2)})
+                                </span>
+                              )}
+                            </div>
+
+                            {/* Store Deep Link */}
+                            {storeDeepLink && (
+                              <a
+                                href={storeDeepLink}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="p-1 text-slate-400 hover:text-slate-950 hover:bg-slate-100 rounded cursor-pointer transition-colors"
+                                title={`Open on ${retailer?.name || pr.storeId}`}
+                              >
+                                <ExternalLink className="w-3.5 h-3.5" />
+                              </a>
                             )}
                           </div>
                         </div>
-
-                        <div className="text-right">
-                          <span className={`text-sm font-black font-mono ${isLowest ? 'text-emerald-700' : 'text-slate-900'}`}>
-                            R{pr.price.toFixed(2)}
-                          </span>
-                          {isLowest && (
-                            <span className="block text-[9px] font-bold text-emerald-700 uppercase font-mono">
-                              Cheapest
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })}
+                      );
+                    });
+                  })()}
                 </div>
               </div>
 
@@ -805,22 +969,23 @@ export default function ProductCatalog({
                 <PriceHistoryChart product={inspectProduct} />
               </div>
 
-              {/* Modal Actions: Add to Basket + Subtle Report Discrepancy Link */}
-              <div className="pt-2 border-t border-[#E2E0D8] space-y-3 font-sans">
+              {/* Modal Actions: Add to Basket + Discrepancy Link */}
+              <div className="pt-2 border-t border-slate-200 space-y-3 font-sans">
                 <button
+                  type="button"
                   onClick={() => {
                     addToBasket(inspectProduct.id);
                     setInspectProduct(null);
                   }}
-                  className="w-full py-3 rounded-[4px] bg-[#FFE600] hover:bg-yellow-400 text-black font-extrabold text-xs transition-all cursor-pointer flex items-center justify-center gap-2"
+                  className="w-full py-3 rounded-lg bg-[#FFE600] hover:bg-yellow-400 text-slate-950 font-extrabold text-xs transition-all cursor-pointer flex items-center justify-center gap-2 border border-yellow-400 shadow-xs"
                 >
                   <ShoppingCart className="w-4 h-4" />
                   <span>Add {inspectProduct.name} to Basket</span>
                 </button>
 
-                {/* Subtle Discrepancy Report Link */}
                 <div className="text-center">
                   <button
+                    type="button"
                     onClick={() => {
                       const prodToReport = inspectProduct;
                       setInspectProduct(null);
@@ -829,7 +994,7 @@ export default function ProductCatalog({
                     className="text-[11px] text-slate-400 hover:text-slate-700 underline underline-offset-2 inline-flex items-center gap-1 cursor-pointer"
                   >
                     <AlertCircle className="w-3.5 h-3.5" />
-                    <span>Wrong price? Report discrepancy</span>
+                    <span>Price discrepancy? Report to community</span>
                   </button>
                 </div>
               </div>

@@ -41,9 +41,9 @@ export const StapleTimingSection: React.FC<StapleTimingSectionProps> = ({
   } = analysis;
 
   return (
-    <div className="bg-[#FFFFFF] border border-[#E2E0D8] rounded-[6px] p-4 space-y-3.5 shadow-2xs font-sans">
+    <div className="bg-white border border-slate-200 rounded-xl p-4 space-y-3.5 shadow-2xs font-sans">
       {/* Header & Status Pill */}
-      <div className="flex items-start justify-between gap-3 border-b border-[#E2E0D8] pb-3">
+      <div className="flex items-start justify-between gap-3 border-b border-slate-200 pb-3">
         <div>
           <div className="flex items-center gap-1.5 mb-1">
             <Clock className="w-3.5 h-3.5 text-slate-700" />
@@ -124,7 +124,7 @@ export const StapleTimingSection: React.FC<StapleTimingSectionProps> = ({
 
       {/* 4-Metric Grid */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1 font-mono">
-        <div className="p-2.5 rounded-[3px] bg-[#F7F6F0] border border-[#E2E0D8]">
+        <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-200">
           <span className="text-[9px] uppercase tracking-wider text-slate-400 block font-bold">
             Today's Best
           </span>
@@ -136,7 +136,7 @@ export const StapleTimingSection: React.FC<StapleTimingSectionProps> = ({
           </span>
         </div>
 
-        <div className="p-2.5 rounded-[3px] bg-[#F7F6F0] border border-[#E2E0D8]">
+        <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-200">
           <span className="text-[9px] uppercase tracking-wider text-slate-400 block font-bold">
             30-Day Low
           </span>
@@ -148,7 +148,7 @@ export const StapleTimingSection: React.FC<StapleTimingSectionProps> = ({
           </span>
         </div>
 
-        <div className="p-2.5 rounded-[3px] bg-[#F7F6F0] border border-[#E2E0D8]">
+        <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-200">
           <span className="text-[9px] uppercase tracking-wider text-slate-400 block font-bold">
             30-Day Avg
           </span>
@@ -160,7 +160,7 @@ export const StapleTimingSection: React.FC<StapleTimingSectionProps> = ({
           </span>
         </div>
 
-        <div className="p-2.5 rounded-[3px] bg-[#F7F6F0] border border-[#E2E0D8]">
+        <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-200">
           <span className="text-[9px] uppercase tracking-wider text-slate-400 block font-bold">
             30-Day Peak
           </span>
@@ -174,7 +174,7 @@ export const StapleTimingSection: React.FC<StapleTimingSectionProps> = ({
       </div>
 
       {/* Explanation & Retail Advice */}
-      <div className="p-3 bg-[#F7F6F0] rounded-[4px] border border-[#E2E0D8] space-y-1.5 text-xs text-slate-700">
+      <div className="p-3 bg-slate-50 rounded-lg border border-slate-200 space-y-1.5 text-xs text-slate-700">
         <p className="font-medium leading-relaxed">
           {explanation}
         </p>
@@ -184,7 +184,7 @@ export const StapleTimingSection: React.FC<StapleTimingSectionProps> = ({
       </div>
 
       {/* South African Supermarket Flyer Cycle Note */}
-      <div className="flex items-start gap-2 p-2.5 bg-amber-50/70 border border-amber-200/80 rounded-[4px] text-xs text-amber-900">
+      <div className="flex items-start gap-2 p-2.5 bg-amber-50/70 border border-amber-200/80 rounded-lg text-xs text-amber-900">
         <Calendar className="w-4 h-4 text-amber-700 shrink-0 mt-0.5" />
         <div className="text-[11px] leading-snug">
           <span className="font-black uppercase tracking-wider text-[10px] block font-mono text-amber-800">
@@ -198,10 +198,10 @@ export const StapleTimingSection: React.FC<StapleTimingSectionProps> = ({
       <div className="pt-1">
         <button
           onClick={() => onToggleTrack(product.id)}
-          className={`w-full py-2 px-3 rounded-[4px] text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer border ${
+          className={`w-full py-2 px-3 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer border ${
             isTracked
               ? 'bg-slate-950 text-[#FFE600] border-black hover:bg-slate-900'
-              : 'bg-[#F7F6F0] text-slate-700 border-[#E2E0D8] hover:bg-slate-200'
+              : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
           }`}
         >
           {isTracked ? (

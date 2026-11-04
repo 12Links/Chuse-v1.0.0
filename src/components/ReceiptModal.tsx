@@ -54,10 +54,10 @@ export function ReceiptModal({ receipt, isOpen, onClose }: ReceiptModalProps) {
 
   return (
     <div className="fixed inset-0 z-60 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-xs overflow-y-auto">
-      <div className="bg-[#FFFFFF] rounded-[8px] max-w-md w-full shadow-2xl border border-[#E2E0D8] relative my-6 overflow-hidden flex flex-col max-h-[92vh]">
+      <div className="bg-white rounded-xl max-w-md w-full shadow-2xl border border-slate-200 relative my-6 overflow-hidden flex flex-col max-h-[92vh]">
         
         {/* Modal Top Action Bar */}
-        <div className="p-3.5 px-4 border-b border-[#E2E0D8] bg-[#F7F6F0] flex items-center justify-between shrink-0">
+        <div className="p-3.5 px-4 border-b border-slate-200 bg-slate-50 flex items-center justify-between shrink-0">
           <div className="flex items-center gap-2">
             <FileText className="w-4 h-4 text-slate-800" />
             <h3 className="font-bold text-xs uppercase font-mono tracking-wider text-slate-900">
@@ -66,7 +66,7 @@ export function ReceiptModal({ receipt, isOpen, onClose }: ReceiptModalProps) {
           </div>
           <button
             onClick={onClose}
-            className="w-7 h-7 rounded-[4px] bg-white border border-[#E2E0D8] flex items-center justify-center text-slate-500 hover:text-black cursor-pointer"
+            className="w-8 h-8 rounded-lg bg-white border border-slate-200 hover:border-slate-300 flex items-center justify-center text-slate-500 hover:text-black cursor-pointer transition-colors"
           >
             <X className="w-4 h-4" />
           </button>
@@ -198,12 +198,12 @@ export function ReceiptModal({ receipt, isOpen, onClose }: ReceiptModalProps) {
         </div>
 
         {/* Modal Action Buttons Footer */}
-        <div className="p-3.5 sm:p-4 border-t border-[#E2E0D8] bg-[#FFFFFF] space-y-2 shrink-0 font-sans">
+        <div className="p-3.5 sm:p-4 border-t border-slate-200 bg-white space-y-2 shrink-0 font-sans">
           <div className="grid grid-cols-2 gap-2">
             {/* WhatsApp Share Button */}
             <button
               onClick={handleWhatsApp}
-              className="py-2.5 px-3 rounded-[4px] bg-[#25D366] hover:bg-[#20ba59] text-white font-bold text-xs flex items-center justify-center gap-1.5 cursor-pointer shadow-xs transition-colors"
+              className="py-2.5 px-3 rounded-lg bg-[#25D366] hover:bg-[#20ba59] text-white font-bold text-xs flex items-center justify-center gap-1.5 cursor-pointer shadow-xs transition-colors"
             >
               <Share2 className="w-4 h-4" />
               <span>Share WhatsApp</span>
@@ -213,7 +213,7 @@ export function ReceiptModal({ receipt, isOpen, onClose }: ReceiptModalProps) {
             <button
               onClick={handleDownloadPdf}
               disabled={isDownloadingPdf}
-              className="py-2.5 px-3 rounded-[4px] bg-slate-900 hover:bg-black text-white font-bold text-xs flex items-center justify-center gap-1.5 cursor-pointer shadow-xs transition-colors"
+              className="py-2.5 px-3 rounded-lg bg-slate-900 hover:bg-black text-white font-bold text-xs flex items-center justify-center gap-1.5 cursor-pointer shadow-xs transition-colors"
             >
               <Download className="w-4 h-4" />
               <span>{isDownloadingPdf ? 'Generating...' : 'Download PDF'}</span>
@@ -222,7 +222,7 @@ export function ReceiptModal({ receipt, isOpen, onClose }: ReceiptModalProps) {
 
           <button
             onClick={handleCopyText}
-            className="w-full py-2 rounded-[4px] border border-[#E2E0D8] bg-[#F7F6F0] hover:bg-slate-200 text-slate-700 font-semibold text-xs flex items-center justify-center gap-1.5 cursor-pointer transition-colors"
+            className="w-full py-2 rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 font-semibold text-xs flex items-center justify-center gap-1.5 cursor-pointer transition-colors"
           >
             {copied ? (
               <>

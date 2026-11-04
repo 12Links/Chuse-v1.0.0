@@ -105,7 +105,7 @@ export function SignInForm({ onToggleForm, setUser }: SignInFormProps) {
         <Button
           type="button"
           variant="outline"
-          className="w-full h-10 text-xs font-bold border-[#E2E0D8] dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white hover:bg-[#FFE600] hover:text-black rounded-[4px]"
+          className="w-full h-10 text-xs font-bold border-slate-200 bg-white text-slate-900 hover:bg-[#FFE600] hover:text-black rounded-lg"
           onClick={handleGoogleSignIn}
         >
           <span className="w-4 h-4 mr-2 shrink-0 rounded-full bg-black text-[#FFE600] flex items-center justify-center text-[9px] font-black leading-none">
@@ -116,10 +116,10 @@ export function SignInForm({ onToggleForm, setUser }: SignInFormProps) {
 
         <div className="relative py-1">
           <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-[#E2E0D8] dark:border-slate-800" />
+            <div className="w-full border-t border-slate-200" />
           </div>
           <div className="relative flex justify-center text-[10px]">
-            <span className="px-2 bg-white dark:bg-slate-900 text-slate-400 font-mono uppercase tracking-wider">
+            <span className="px-2 bg-white text-slate-400 font-mono uppercase tracking-wider">
               or with email
             </span>
           </div>
@@ -139,7 +139,7 @@ export function SignInForm({ onToggleForm, setUser }: SignInFormProps) {
               placeholder="thabo@gmail.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="pl-9 h-10 bg-[#F7F6F0] dark:bg-slate-800 border-transparent text-xs rounded-[4px]"
+              className="pl-9 h-10 bg-slate-50 border border-slate-200 text-xs rounded-lg"
               required
             />
           </div>
@@ -157,7 +157,7 @@ export function SignInForm({ onToggleForm, setUser }: SignInFormProps) {
               placeholder="••••••••"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="pl-9 h-10 bg-[#F7F6F0] dark:bg-slate-800 border-transparent text-xs rounded-[4px]"
+              className="pl-9 h-10 bg-slate-50 border border-slate-200 text-xs rounded-lg"
               required
             />
           </div>
@@ -165,7 +165,7 @@ export function SignInForm({ onToggleForm, setUser }: SignInFormProps) {
 
         <Button
           type="submit"
-          className="w-full h-10 bg-slate-950 dark:bg-white text-white dark:text-black hover:bg-[#FFE600] hover:text-black text-xs font-black uppercase font-mono rounded-[4px]"
+          className="w-full h-10 bg-slate-950 text-white hover:bg-[#FFE600] hover:text-black text-xs font-black uppercase font-mono rounded-lg transition-colors cursor-pointer"
           disabled={isLoading}
         >
           {isLoading ? 'Signing In...' : 'Sign In'}
@@ -173,7 +173,7 @@ export function SignInForm({ onToggleForm, setUser }: SignInFormProps) {
         </Button>
       </form>
 
-      <div className="mt-6 text-center space-y-4 pt-4 border-t border-[#E2E0D8] dark:border-slate-800">
+      <div className="mt-6 text-center space-y-4 pt-4 border-t border-slate-200">
         <p className="text-xs text-slate-500">
           Don't have an account?{' '}
           <button onClick={onToggleForm} className="text-slate-900 dark:text-white font-bold underline cursor-pointer">

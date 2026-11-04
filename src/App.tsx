@@ -16,28 +16,20 @@ import { getCurrentReceipt } from './lib/receiptStorage';
 import { ChuseReceipt } from './types';
 import { supabase } from './lib/supabase';
 import { getCurrentUserProfile, loginUser, syncBasket } from './lib/api';
+import { FulfillmentModal, FulfillmentSettings } from './components/FulfillmentModal';
+import { SearchOmnibar } from './components/SearchOmnibar';
+import { MobileBottomNav } from './components/MobileBottomNav';
 import { 
-  Search, 
   ShoppingBag, 
   MapPin, 
   ChevronDown, 
   Scan, 
   X, 
-  Check 
+  Truck,
+  Store,
+  Sparkles
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-
-const SA_PROVINCES = [
-  { name: 'Gauteng', hub: 'Johannesburg & Pretoria' },
-  { name: 'Western Cape', hub: 'Cape Town & Winelands' },
-  { name: 'KwaZulu-Natal', hub: 'Durban & Pietermaritzburg' },
-  { name: 'Eastern Cape', hub: 'Gqeberha & East London' },
-  { name: 'Free State', hub: 'Bloemfontein & Welkom' },
-  { name: 'Mpumalanga', hub: 'Mbombela & Witbank' },
-  { name: 'Limpopo', hub: 'Polokwane & Tzaneen' },
-  { name: 'North West', hub: 'Rustenburg & Potchefstroom' },
-  { name: 'Northern Cape', hub: 'Kimberley & Upington' }
-];
 
 interface MainPageProps {
   user: UserProfile | null | undefined;
@@ -63,11 +55,21 @@ function MainPage({ user, setUser }: MainPageProps) {
   const [activeReceipt, setActiveReceipt] = useState<ChuseReceipt | null>(() => getCurrentReceipt());
   const [isReceiptModalOpen, setIsReceiptModalOpen] = useState(false);
 
-  // Province selector
-  const [selectedProvince, setSelectedProvince] = useState<string>(() => {
-    return user?.preferredStoreLocation || localStorage.getItem('sa_preferred_province') || 'Gauteng';
+  // Suburb & Fulfillment selector
+  const [fulfillmentSettings, setFulfillmentSettings] = useState<FulfillmentSettings>(() => {
+    try {
+      const stored = localStorage.getItem('sa_fulfillment_settings');
+      if (stored) return JSON.parse(stored);
+    } catch {}
+    return {
+      suburb: 'Sandton City',
+      postalCode: '2196',
+      province: user?.preferredStoreLocation || localStorage.getItem('sa_preferred_province') || 'Gauteng',
+      hub: 'Johannesburg',
+      mode: 'deliveryApp'
+    };
   });
-  const [isProvinceModalOpen, setIsProvinceModalOpen] = useState(false);
+  const [isFulfillmentModalOpen, setIsFulfillmentModalOpen] = useState(false);
   
   const [isSearchingRealTime, setIsSearchingRealTime] = useState(false);
   const [searchError, setSearchError] = useState<string | null>(null);
@@ -230,31 +232,45 @@ function MainPage({ user, setUser }: MainPageProps) {
     return sum;
   }, [basket, products]);
 
-  const handleSelectProvince = (prov: string) => {
-    setSelectedProvince(prov);
-    localStorage.setItem('sa_preferred_province', prov);
+  const basketTotalSavings = useMemo(() => {
+    if (basket.length === 0) return 0;
+    let savings = 0;
+    basket.forEach(item => {
+      const prod = products.find(p => p.id === item.productId);
+      if (!prod) return;
+      const validPrices = prod.prices.filter(p => p.inStock && p.price > 0).map(p => p.price);
+      if (validPrices.length > 1) {
+        savings += (Math.max(...validPrices) - Math.min(...validPrices)) * item.quantity;
+      }
+    });
+    return savings;
+  }, [basket, products]);
+
+  const handleSaveFulfillment = (newSettings: FulfillmentSettings) => {
+    setFulfillmentSettings(newSettings);
+    localStorage.setItem('sa_fulfillment_settings', JSON.stringify(newSettings));
+    localStorage.setItem('sa_preferred_province', newSettings.province);
     if (user) {
-      const updatedUser = { ...user, preferredStoreLocation: prov };
+      const updatedUser = { ...user, preferredStoreLocation: newSettings.province };
       setUser(updatedUser);
       localStorage.setItem('sa_user_profile', JSON.stringify(updatedUser));
     }
-    setIsProvinceModalOpen(false);
   };
 
   return (
-    <div id="chuse-container" className="min-h-screen bg-[#F7F6F0] text-slate-900 font-sans selection:bg-[#FFE600] selection:text-black overflow-x-hidden w-full max-w-full">
+    <div id="chuse-container" className="min-h-screen bg-[#F8FAFC] text-slate-900 font-sans selection:bg-[#FFE600] selection:text-black overflow-x-hidden w-full max-w-full">
       
-      {/* Clean Utility Header */}
-      <header className="bg-[#FFFFFF] border-b border-[#E2E0D8] sticky top-0 z-30 w-full overflow-hidden">
+      {/* Sticky Checkers/PnP Style Utility Header */}
+      <header className="bg-white border-b border-slate-200 sticky top-0 z-30 w-full overflow-hidden shadow-2xs">
         <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-2.5 sm:py-3">
           
           {/* Main Header Container: 2-row on mobile, 1-row on tablet/desktop */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-6">
             
-            {/* Top Row on Mobile: Logo/Province on Left, User/Cart on Right */}
+            {/* Top Row on Mobile: Logo & Suburb Selector on Left, User & Cart on Right */}
             <div className="flex items-center justify-between w-full sm:w-auto shrink-0">
               
-              {/* Logo & Province Selector */}
+              {/* Logo & Suburb Selector */}
               <div className="flex items-center gap-2 sm:gap-3 shrink-0">
                 <Link 
                   to="/" 
@@ -266,22 +282,33 @@ function MainPage({ user, setUser }: MainPageProps) {
                   </span>
                 </Link>
 
-                {/* Province Dropdown Trigger */}
+                {/* Checkers/PnP Style Fulfillment & Suburb Selector Trigger */}
                 <button
-                  onClick={() => setIsProvinceModalOpen(true)}
-                  className="flex items-center gap-1 text-[11px] sm:text-xs font-bold text-slate-700 hover:text-black px-2 py-1 rounded-[4px] border border-[#E2E0D8] bg-[#F7F6F0] cursor-pointer"
-                  title="Change shopping province"
+                  type="button"
+                  onClick={() => setIsFulfillmentModalOpen(true)}
+                  className="flex items-center gap-1.5 text-[11px] sm:text-xs font-bold text-slate-800 hover:text-black px-2.5 py-1.5 rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 cursor-pointer transition-colors shadow-2xs"
+                  title="Change delivery suburb or store pricing mode"
                 >
-                  <MapPin className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-rose-600 shrink-0" />
-                  <span className="truncate max-w-[80px] sm:max-w-none">{selectedProvince}</span>
-                  <ChevronDown className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-slate-400 shrink-0" />
+                  {fulfillmentSettings.mode === 'deliveryApp' ? (
+                    <Truck className="w-3.5 h-3.5 text-[#008374] shrink-0" />
+                  ) : (
+                    <Store className="w-3.5 h-3.5 text-slate-700 shrink-0" />
+                  )}
+                  <span className="truncate max-w-[90px] sm:max-w-[130px]">
+                    {fulfillmentSettings.suburb}
+                  </span>
+                  <span className="hidden md:inline text-[10px] font-mono font-normal text-slate-400">
+                    ({fulfillmentSettings.postalCode})
+                  </span>
+                  <ChevronDown className="w-3 h-3 text-slate-400 shrink-0" />
                 </button>
               </div>
 
-              {/* Mobile Right Actions: Sign In + Cart (Hidden on Desktop) */}
+              {/* Mobile Right Actions: Sign In + Dynamic Cart Pill (Hidden on Desktop) */}
               <div className="flex sm:hidden items-center gap-2 shrink-0">
                 {user ? (
                   <button
+                    type="button"
                     onClick={() => setActiveTab('settings')}
                     className="flex items-center cursor-pointer"
                   >
@@ -302,134 +329,132 @@ function MainPage({ user, setUser }: MainPageProps) {
 
                 {/* Mobile Cart Trigger Button */}
                 <button
+                  type="button"
                   onClick={() => setIsCartOpen(true)}
-                  className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-[4px] bg-[#FFE600] hover:bg-yellow-400 text-black font-extrabold text-xs cursor-pointer transition-colors border border-yellow-400 shadow-2xs"
+                  className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-[#FFE600] hover:bg-yellow-400 text-slate-950 font-black text-xs cursor-pointer transition-colors border border-yellow-400 shadow-xs"
                   aria-label="Open Cart"
                 >
                   <ShoppingBag className="w-3.5 h-3.5 stroke-[2.5]" />
                   <span className="font-mono">
-                    {basketItemCount === 0 ? 'Cart' : `R${basketLowestTotal.toFixed(0)} (${basketItemCount})`}
+                    {basketItemCount === 0 ? 'Cart' : `R${Math.round(basketLowestTotal)} (${basketItemCount})`}
                   </span>
                 </button>
               </div>
             </div>
 
-            {/* Clean Omnipresent Search Input with Embedded Barcode Scan Icon */}
-            <div className="w-full sm:flex-1 sm:max-w-xl relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
-              <input
-                type="text"
+            {/* Predictive Search Omnibar with Instant Typeahead */}
+            <div className="w-full sm:flex-1 sm:max-w-xl">
+              <SearchOmnibar
                 value={globalSearchTerm}
-                onChange={(e) => {
-                  setGlobalSearchTerm(e.target.value);
+                onChange={(val) => {
+                  setGlobalSearchTerm(val);
                   if (activeTab !== 'catalog') setActiveTab('catalog');
                 }}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && globalSearchTerm.trim()) {
-                    searchRealStorePricing(globalSearchTerm.trim());
-                  }
+                onSearchSubmit={(query) => {
+                  searchRealStorePricing(query);
                 }}
-                placeholder="Search groceries across Checkers, Pick n Pay, Woolies..."
-                className="w-full pl-9 pr-16 py-2 rounded-[4px] bg-[#F7F6F0] border border-[#E2E0D8] text-xs sm:text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-slate-900 transition-colors"
+                products={products}
+                onSelectProduct={(p) => {
+                  // Focus onto product or inspect
+                  setGlobalSearchTerm(p.name);
+                }}
+                onAddToBasket={(id) => {
+                  addToBasket(id);
+                }}
+                onOpenBarcodeScanner={() => setIsBarcodeModalOpen(true)}
+                isSearchingRealTime={isSearchingRealTime}
               />
-              <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
-                {globalSearchTerm && (
-                  <button
-                    onClick={() => setGlobalSearchTerm('')}
-                    className="p-1 text-slate-400 hover:text-black cursor-pointer"
-                  >
-                    <X className="w-3.5 h-3.5" />
-                  </button>
-                )}
-                {/* Embedded Barcode Scan Button */}
-                <button
-                  onClick={() => setIsBarcodeModalOpen(true)}
-                  className="p-1 text-slate-500 hover:text-black transition-colors cursor-pointer"
-                  title="Scan barcode with camera"
-                >
-                  <Scan className="w-4 h-4" />
-                </button>
-              </div>
             </div>
 
-            {/* Desktop Right Utility Actions: User + Cart Drawer Button (Hidden on Mobile) */}
-            <div className="hidden sm:flex items-center gap-2 sm:gap-3 shrink-0">
+            {/* Desktop Right Utility Actions: User Profile + Dynamic Cart Button */}
+            <div className="hidden sm:flex items-center gap-2.5 sm:gap-3 shrink-0">
               {user ? (
                 <button
+                  type="button"
                   onClick={() => setActiveTab('settings')}
-                  className="flex items-center gap-2 text-xs font-bold text-slate-800 hover:underline cursor-pointer"
+                  className="flex items-center gap-2 text-xs font-bold text-slate-800 hover:text-black hover:underline cursor-pointer"
                 >
                   <img 
                     src={user.avatarUrl} 
                     alt="User" 
-                    className="w-6 h-6 rounded-full bg-slate-200 border border-slate-300 object-cover"
+                    className="w-7 h-7 rounded-full bg-slate-200 border border-slate-300 object-cover"
                   />
                   <span className="hidden md:inline">{user.displayName}</span>
                 </button>
               ) : (
                 <Link
                   to="/auth"
-                  className="text-xs font-bold text-slate-700 hover:text-black underline decoration-slate-300 cursor-pointer px-1"
+                  className="text-xs font-bold text-slate-700 hover:text-black underline decoration-slate-300 cursor-pointer px-1.5"
                 >
                   Sign In
                 </Link>
               )}
 
-              {/* Cart Drawer Trigger Button */}
+              {/* Dynamic Cart Pill with Rand Total and Savings Badge */}
               <button
                 id="header-cart-button"
+                type="button"
                 onClick={() => setIsCartOpen(true)}
-                className="flex items-center gap-2 px-3.5 py-1.5 rounded-[4px] bg-[#FFE600] hover:bg-yellow-400 text-black font-extrabold text-xs cursor-pointer transition-colors border border-yellow-400 shadow-2xs"
+                className="flex items-center gap-2 px-3.5 py-2 rounded-lg bg-[#FFE600] hover:bg-yellow-400 text-slate-950 font-black text-xs cursor-pointer transition-all border border-yellow-400 shadow-xs hover:shadow-sm"
               >
                 <ShoppingBag className="w-4 h-4 stroke-[2.5]" />
                 <span className="font-mono">
-                  {basketItemCount === 0 ? 'Cart' : `R${basketLowestTotal.toFixed(2)} (${basketItemCount})`}
+                  {basketItemCount === 0 ? 'Basket (0)' : `R${basketLowestTotal.toFixed(2)} (${basketItemCount})`}
                 </span>
+                {basketTotalSavings > 0 && (
+                  <span className="hidden lg:inline-flex bg-emerald-800 text-[#FFE600] text-[10px] font-mono px-1.5 py-0.5 rounded font-black tracking-tight">
+                    Save R{basketTotalSavings.toFixed(0)}
+                  </span>
+                )}
               </button>
             </div>
           </div>
 
-          {/* 4 Clean Text-Only Navigation Links - NO ICONS */}
-          <nav className="flex items-center gap-6 sm:gap-8 border-t border-[#E2E0D8] mt-2.5 sm:mt-3 pt-2 text-xs sm:text-sm font-semibold tracking-wide overflow-x-auto no-scrollbar">
+          {/* 4 Clean Text-Only Navigation Links */}
+          <nav className="flex items-center gap-6 sm:gap-8 border-t border-slate-200 mt-2.5 sm:mt-3 pt-2 text-xs sm:text-sm font-semibold tracking-wide overflow-x-auto no-scrollbar">
             <button
+              type="button"
               onClick={() => setActiveTab('catalog')}
               className={`py-1.5 whitespace-nowrap transition-colors cursor-pointer ${
                 activeTab === 'catalog'
-                  ? 'text-black border-b-2 border-black font-bold'
-                  : 'text-slate-500 hover:text-black'
+                  ? 'text-slate-950 border-b-2 border-slate-950 font-black'
+                  : 'text-slate-500 hover:text-slate-950'
               }`}
             >
               Groceries
             </button>
 
             <button
+              type="button"
               onClick={() => setActiveTab('specials')}
               className={`py-1.5 whitespace-nowrap transition-colors cursor-pointer ${
                 activeTab === 'specials'
-                  ? 'text-black border-b-2 border-black font-bold'
-                  : 'text-slate-500 hover:text-black'
+                  ? 'text-slate-950 border-b-2 border-slate-950 font-black'
+                  : 'text-slate-500 hover:text-slate-950'
               }`}
             >
               Specials
             </button>
 
             <button
+              type="button"
               onClick={() => setActiveTab('lists')}
               className={`py-1.5 whitespace-nowrap transition-colors cursor-pointer ${
                 activeTab === 'lists'
-                  ? 'text-black border-b-2 border-black font-bold'
-                  : 'text-slate-500 hover:text-black'
+                  ? 'text-slate-950 border-b-2 border-slate-950 font-black'
+                  : 'text-slate-500 hover:text-slate-950'
               }`}
             >
               Shopping List
             </button>
 
             <button
+              type="button"
               onClick={() => setActiveTab('stats')}
               className={`py-1.5 whitespace-nowrap transition-colors cursor-pointer ${
                 activeTab === 'stats'
-                  ? 'text-black border-b-2 border-black font-bold'
-                  : 'text-slate-500 hover:text-black'
+                  ? 'text-slate-950 border-b-2 border-slate-950 font-black'
+                  : 'text-slate-500 hover:text-slate-950'
               }`}
             >
               Inflation Index
@@ -439,9 +464,9 @@ function MainPage({ user, setUser }: MainPageProps) {
       </header>
 
       {/* Main Container */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 pb-32">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 pb-32 sm:pb-24">
         
-        {/* Slim Single-Line Retailer Strip */}
+        {/* Retailer Brand Filter Strip */}
         {(activeTab === 'catalog' || activeTab === 'specials') && (
           <div className="mb-3">
             <HeroPromos 
@@ -531,15 +556,15 @@ function MainPage({ user, setUser }: MainPageProps) {
           </motion.div>
         </AnimatePresence>
 
-        {/* Tactile Newspaper / Retail Footer */}
-        <footer className="mt-16 py-8 border-t border-[#E2E0D8] flex flex-col md:flex-row justify-between items-center text-center md:text-left gap-3 text-xs text-slate-500">
+        {/* Tactile Supermarket Retail Footer */}
+        <footer className="mt-16 py-8 border-t border-slate-200 flex flex-col md:flex-row justify-between items-center text-center md:text-left gap-3 text-xs text-slate-500">
           <div>
-            <span className="font-bold font-display text-slate-900 text-sm">chuse.</span> — South African Supermarket Price Comparison
+            <span className="font-bold font-display text-slate-900 text-sm">chuse.</span> — South African Multi-Supermarket Price Comparison
           </div>
           <div className="flex gap-4 flex-wrap justify-center text-xs">
-            <span>Checkers</span>
+            <span>Checkers Sixty60</span>
             <span>•</span>
-            <span>Pick n Pay</span>
+            <span>Pick n Pay ASAP!</span>
             <span>•</span>
             <span>Woolworths</span>
             <span>•</span>
@@ -548,6 +573,8 @@ function MainPage({ user, setUser }: MainPageProps) {
             <span>SPAR</span>
             <span>•</span>
             <span>Boxer</span>
+            <span>•</span>
+            <span>Food Lover's</span>
           </div>
         </footer>
       </main>
@@ -558,7 +585,7 @@ function MainPage({ user, setUser }: MainPageProps) {
         onClose={() => setIsCartOpen(false)}
         basket={basket}
         products={products}
-        province={selectedProvince}
+        province={fulfillmentSettings.suburb}
         updateQuantity={updateQuantity}
         removeFromBasket={removeFromBasket}
         clearBasket={clearBasket}
@@ -579,15 +606,16 @@ function MainPage({ user, setUser }: MainPageProps) {
       {/* Embedded Barcode Scanner Modal */}
       {isBarcodeModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
-          <div className="bg-white rounded-[6px] max-w-lg w-full p-5 shadow-2xl border border-[#E2E0D8] relative">
-            <div className="flex items-center justify-between pb-3 border-b border-[#E2E0D8] mb-4">
+          <div className="bg-white rounded-xl max-w-lg w-full p-5 shadow-2xl border border-slate-200 relative">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-200 mb-4">
               <div className="flex items-center gap-2">
-                <Scan className="w-4 h-4 text-slate-900" />
+                <Scan className="w-4 h-4 text-slate-950" />
                 <h3 className="font-bold text-sm uppercase font-display">Scan Grocery Barcode</h3>
               </div>
               <button
+                type="button"
                 onClick={() => setIsBarcodeModalOpen(false)}
-                className="w-7 h-7 rounded-[4px] bg-[#F7F6F0] flex items-center justify-center text-slate-500 hover:text-black"
+                className="w-8 h-8 rounded-lg bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500 hover:text-black cursor-pointer transition-colors"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -607,12 +635,13 @@ function MainPage({ user, setUser }: MainPageProps) {
       {/* Embedded Price Discrepancy Reporter Modal */}
       {isReportModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
-          <div className="bg-white rounded-[6px] max-w-lg w-full p-5 shadow-2xl border border-[#E2E0D8] relative max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between pb-3 border-b border-[#E2E0D8] mb-4">
+          <div className="bg-white rounded-xl max-w-lg w-full p-5 shadow-2xl border border-slate-200 relative max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-200 mb-4">
               <h3 className="font-bold text-sm uppercase font-display">Report Price Discrepancy</h3>
               <button
+                type="button"
                 onClick={() => setIsReportModalOpen(false)}
-                className="w-7 h-7 rounded-[4px] bg-[#F7F6F0] flex items-center justify-center text-slate-500 hover:text-black"
+                className="w-8 h-8 rounded-lg bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500 hover:text-black cursor-pointer transition-colors"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -623,59 +652,28 @@ function MainPage({ user, setUser }: MainPageProps) {
         </div>
       )}
 
-      {/* South African Province Selector Modal */}
-      {isProvinceModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
-          <div className="bg-white rounded-[6px] max-w-md w-full p-5 shadow-2xl border border-[#E2E0D8]">
-            <div className="flex items-center justify-between pb-3 border-b border-[#E2E0D8]">
-              <div className="flex items-center gap-2">
-                <MapPin className="w-4 h-4 text-rose-600" />
-                <h3 className="font-bold text-sm uppercase font-display">Select Your Province</h3>
-              </div>
-              <button
-                onClick={() => setIsProvinceModalOpen(false)}
-                className="w-7 h-7 rounded-[4px] bg-[#F7F6F0] flex items-center justify-center text-slate-500 hover:text-black"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
+      {/* Checkers/PnP Style Suburb & Fulfillment Selector Modal */}
+      <FulfillmentModal
+        isOpen={isFulfillmentModalOpen}
+        onClose={() => setIsFulfillmentModalOpen(false)}
+        settings={fulfillmentSettings}
+        onSave={handleSaveFulfillment}
+      />
 
-            <div className="grid grid-cols-1 gap-1.5 mt-3 max-h-72 overflow-y-auto pr-1">
-              {SA_PROVINCES.map((prov) => {
-                const isSelected = selectedProvince === prov.name;
-                return (
-                  <button
-                    key={prov.name}
-                    onClick={() => handleSelectProvince(prov.name)}
-                    className={`flex items-center justify-between p-2.5 rounded-[4px] text-left transition-colors cursor-pointer border ${
-                      isSelected
-                        ? 'bg-[#FFE600] border-yellow-400 text-black font-extrabold'
-                        : 'bg-[#F7F6F0] border-[#E2E0D8] text-slate-700 hover:bg-slate-200'
-                    }`}
-                  >
-                    <div>
-                      <span className="block text-xs font-bold">{prov.name}</span>
-                      <span className="text-[10px] text-slate-500">{prov.hub}</span>
-                    </div>
-                    {isSelected && (
-                      <Check className="w-4 h-4 text-black stroke-[3]" />
-                    )}
-                  </button>
-                );
-              })}
-            </div>
-
-            <div className="mt-4 pt-3 border-t border-[#E2E0D8] flex justify-end">
-              <button
-                onClick={() => setIsProvinceModalOpen(false)}
-                className="px-4 py-1.5 rounded-[4px] bg-slate-900 text-white font-bold text-xs uppercase cursor-pointer"
-              >
-                Done
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Mobile-First Fixed Bottom Navigation Bar (md:hidden) */}
+      <MobileBottomNav
+        activeTab={activeTab}
+        onSelectTab={(tab) => {
+          setActiveTab(tab);
+          if (tab === 'catalog') {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }
+        }}
+        onOpenCart={() => setIsCartOpen(true)}
+        onOpenBarcodeScan={() => setIsBarcodeModalOpen(true)}
+        basketCount={basketItemCount}
+        basketTotal={basketLowestTotal}
+      />
     </div>
   );
 }

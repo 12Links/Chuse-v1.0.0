@@ -391,7 +391,7 @@ export default function ShoppingListsManager({ products, onAddToBasket, currentB
               })}
 
               {lists.length === 0 && (
-                <div className="text-center py-6 border border-dashed border-neutral-300 rounded-[4px] bg-[#F7F6F0]">
+                <div className="text-center py-6 border border-dashed border-neutral-300 rounded-lg bg-slate-50">
                   <span className="text-xs text-neutral-500 font-bold font-sans">No saved lists. Create one below!</span>
                 </div>
               )}
@@ -399,7 +399,7 @@ export default function ShoppingListsManager({ products, onAddToBasket, currentB
           </div>
 
           {/* Create New List */}
-          <div className="bg-white border border-[#E2E0D8] rounded-[6px] p-5 space-y-4 shadow-2xs">
+          <div className="bg-white border border-slate-200 rounded-xl p-5 space-y-4 shadow-2xs">
             <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-slate-400 block">Create List Container</span>
             
             <form onSubmit={handleCreateList} className="space-y-3.5">
@@ -410,7 +410,7 @@ export default function ShoppingListsManager({ products, onAddToBasket, currentB
                   placeholder="e.g. Monthly Pantry staples"
                   value={newListName}
                   onChange={e => setNewListName(e.target.value)}
-                  className="w-full px-3 py-2 bg-[#F7F6F0] rounded-[4px] border border-[#E2E0D8] focus:outline-none focus:border-black text-xs font-semibold text-slate-900"
+                  className="w-full px-3 py-2 bg-slate-50 rounded-lg border border-slate-200 focus:outline-none focus:border-black text-xs font-semibold text-slate-900"
                   required
                 />
               </div>
@@ -422,7 +422,7 @@ export default function ShoppingListsManager({ products, onAddToBasket, currentB
                   placeholder="e.g. 500"
                   value={newListBudget}
                   onChange={e => setNewListBudget(Number(e.target.value))}
-                  className="w-full px-3 py-2 bg-[#F7F6F0] rounded-[4px] border border-[#E2E0D8] focus:outline-none focus:border-black text-xs font-semibold text-slate-900 font-mono"
+                  className="w-full px-3 py-2 bg-slate-50 rounded-lg border border-slate-200 focus:outline-none focus:border-black text-xs font-semibold text-slate-900 font-mono"
                   min="50"
                   max="10000"
                   required
