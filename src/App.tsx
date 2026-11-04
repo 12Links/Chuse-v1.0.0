@@ -624,33 +624,16 @@ function MainPage({ user, setUser }: MainPageProps) {
         onClose={() => setIsReceiptModalOpen(false)}
       />
 
-      {/* Embedded Barcode Scanner Modal */}
+      {/* Barcode Scanner & Real-Time Price Matcher Modal */}
       {isBarcodeModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
-          <div className="bg-white rounded-xl max-w-lg w-full p-5 shadow-2xl border border-slate-200 relative">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-200 mb-4">
-              <div className="flex items-center gap-2">
-                <Scan className="w-4 h-4 text-slate-950" />
-                <h3 className="font-bold text-sm uppercase font-display">Scan Grocery Barcode</h3>
-              </div>
-              <button
-                type="button"
-                onClick={() => setIsBarcodeModalOpen(false)}
-                className="w-8 h-8 rounded-lg bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500 hover:text-black cursor-pointer transition-colors"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-
-            <BarcodeScanner 
-              products={products} 
-              onAddToBasket={(id) => {
-                addToBasket(id);
-                setIsBarcodeModalOpen(false);
-              }} 
-            />
-          </div>
-        </div>
+        <BarcodeScanner 
+          products={products}
+          isOpen={isBarcodeModalOpen}
+          onClose={() => setIsBarcodeModalOpen(false)}
+          onAddToBasket={(id) => {
+            addToBasket(id);
+          }} 
+        />
       )}
 
       {/* Embedded Price Discrepancy Reporter Modal */}
