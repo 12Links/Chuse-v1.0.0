@@ -308,6 +308,74 @@ app.get(
   }
 );
 
+// GET /api/barcode/:code & /api/v1/barcode/:code (National GS1 EAN-13 South Africa lookup)
+app.get(
+  ["/api/barcode/:code", "/api/v1/barcode/:code"],
+  async (req, res) => {
+    const rawCode = (req.params.code || "").trim();
+    if (!rawCode) {
+      return res.status(400).json({ error: "Barcode parameter required" });
+    }
+
+    // 1. Query Supabase if active
+    if (supabase) {
+      try {
+        const { data, error } = await supabase
+          .from("products")
+          .select("*, prices(*)")
+          .eq("barcode", rawCode)
+          .maybeSingle();
+
+        if (!error && data) {
+          const formatted = {
+            id: data.id,
+            name: data.name,
+            category: data.category || "Groceries",
+            unit: data.unit || "1 Unit",
+            isPopular: Boolean(data.is_popular),
+            barcode: data.barcode || rawCode,
+            imageUrl:
+              data.image_url ||
+              "https://images.unsplash.com/photo-1542838132-92c53300491e?w=400&auto=format&fit=crop&q=80",
+            prices: (data.prices || []).map((pr: any) => ({
+              storeId: pr.store_id,
+              price: Number(pr.price),
+              onSpecial: Boolean(pr.on_special),
+              specialDetail: pr.special_detail || "",
+              inStock: true,
+            })),
+          };
+          return res.json(formatted);
+        }
+      } catch (err: any) {
+        console.warn("[Barcode] Supabase barcode query error:", err.message);
+      }
+    }
+
+    // 2. Query synced_products catalog
+    const match = productsList.find(
+      (p) =>
+        p.barcode === rawCode ||
+        (p.barcode && p.barcode.endsWith(rawCode)) ||
+        p.id === rawCode
+    );
+
+    if (match) {
+      return res.json(match);
+    }
+
+    // 3. Substring match fallback
+    const partialMatch = productsList.find(
+      (p) => p.barcode && p.barcode.includes(rawCode)
+    );
+    if (partialMatch) {
+      return res.json(partialMatch);
+    }
+
+    return res.status(404).json({ error: "Product not found for barcode", barcode: rawCode });
+  }
+);
+
 // GET /products/:product_id/compare-stores
 app.get(
   [

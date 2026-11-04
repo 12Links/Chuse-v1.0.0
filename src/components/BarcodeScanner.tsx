@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   Scan, 
@@ -8,7 +8,6 @@ import {
   Plus, 
   ShoppingBag, 
   Check, 
-  ArrowRight,
   RefreshCw,
   Search,
   CheckCircle2,
@@ -20,8 +19,16 @@ import {
   X,
   MapPin,
   ExternalLink,
-  ChevronRight
+  ChevronRight,
+  Info,
+  Layers,
+  ArrowRight
 } from 'lucide-react';
+import { 
+  BrowserMultiFormatReader, 
+  BarcodeFormat, 
+  DecodeHintType 
+} from '@zxing/library';
 import { Product, StoreId } from '../types';
 import { RETAILER_THEMES } from '../lib/retailerTokens';
 import { getNearestBranchForStore, getSavedOrFallbackCoordinates } from '../lib/locationService';
@@ -33,16 +40,16 @@ interface BarcodeScannerProps {
   onClose?: () => void;
 }
 
-// Popular South African staple grocery presets for instant 1-click test scanning
+// Verified South African staple grocery presets for instant 1-click test scanning
 const POPULAR_STAPLE_BARCODES = [
-  { name: 'Clover Milk 2L', barcode: '6001299011113', emoji: '🥛' },
-  { name: 'Albany White Bread', barcode: '6001248000144', emoji: '🍞' },
-  { name: 'Sunfoil Oil 2L', barcode: '6001087000034', emoji: '🌻' },
-  { name: 'Snowflake Flour 2.5kg', barcode: '6001007000015', emoji: '🌾' },
-  { name: 'Spekko Rice 2kg', barcode: '6001016112233', emoji: '🍚' },
-  { name: 'Large Eggs 18s', barcode: '6002135468790', emoji: '🥚' },
-  { name: 'Nescafe Gold 200g', barcode: '6001056123456', emoji: '☕' },
-  { name: 'Huletts Sugar 2.5kg', barcode: '6001007001001', emoji: '🍬' }
+  { name: 'Clover Fresh Milk 2L', barcode: '6001299011113', emoji: '🥛', desc: 'Dairy' },
+  { name: 'Albany White Bread', barcode: '6001248000144', emoji: '🍞', desc: 'Bakery' },
+  { name: 'Sunfoil Sunflower Oil 2L', barcode: '6001087000034', emoji: '🌻', desc: 'Pantry' },
+  { name: 'Snowflake Cake Flour 2.5kg', barcode: '6001007000015', emoji: '🌾', desc: 'Baking' },
+  { name: 'Spekko Long Grain Rice 2kg', barcode: '6001016112233', emoji: '🍚', desc: 'Grains' },
+  { name: 'Nulaid Large Eggs 18pk', barcode: '6002135468790', emoji: '🥚', desc: 'Eggs' },
+  { name: 'Nescafe Gold Coffee 200g', barcode: '6001056123456', emoji: '☕', desc: 'Hot Drinks' },
+  { name: 'Huletts White Sugar 2.5kg', barcode: '6001007001001', emoji: '🍬', desc: 'Pantry' }
 ];
 
 export default function BarcodeScanner({ 
@@ -55,252 +62,342 @@ export default function BarcodeScanner({
   const [manualInput, setManualInput] = useState('');
   const [matchedProduct, setMatchedProduct] = useState<Product | null>(null);
   const [cameraActive, setCameraActive] = useState(true);
-  const [facingMode, setFacingMode] = useState<'environment' | 'user'>('environment');
+  const [isInitializingCamera, setIsInitializingCamera] = useState(false);
+  const [videoDevices, setVideoDevices] = useState<MediaDeviceInfo[]>([]);
+  const [selectedDeviceId, setSelectedDeviceId] = useState<string | undefined>(undefined);
   const [isTorchOn, setIsTorchOn] = useState(false);
   const [hasTorchCapability, setHasTorchCapability] = useState(false);
   const [scanStatus, setScanStatus] = useState<'scanning' | 'checking' | 'success' | 'not-found'>('scanning');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [hasAddedSuccess, setHasAddedSuccess] = useState(false);
+  const [activeTab, setActiveTab] = useState<'camera' | 'upload' | 'manual'>('camera');
+  const [uploadedImagePreview, setUploadedImagePreview] = useState<string | null>(null);
 
-  // Video feed stream target refs
+  // References
   const videoRef = useRef<HTMLVideoElement | null>(null);
-  const streamRef = useRef<MediaStream | null>(null);
-  const animationFrameRef = useRef<number | null>(null);
+  const codeReaderRef = useRef<BrowserMultiFormatReader | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
-
-  // User coordinates for nearby store distance
   const userCoords = useRef(getSavedOrFallbackCoordinates());
+  const isScanningRef = useRef<boolean>(false);
 
-  // Cash Register Audio Beep
-  const triggerScanAudioBeep = () => {
+  // Supermarket Cash Register Audio Beep & Haptics
+  const triggerScanAudioBeep = useCallback(() => {
     try {
       const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
-      if (!AudioCtx) return;
-      const ctx = new AudioCtx();
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
+      if (AudioCtx) {
+        const ctx = new AudioCtx();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
 
-      osc.connect(gain);
-      gain.connect(ctx.destination);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
 
-      osc.type = 'sine';
-      // Crisp 2-tone cash register chime
-      osc.frequency.setValueAtTime(1050, ctx.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(1450, ctx.currentTime + 0.08);
+        osc.type = 'sine';
+        // Crisp 2-tone cash register chime
+        osc.frequency.setValueAtTime(1050, ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(1450, ctx.currentTime + 0.08);
 
-      gain.gain.setValueAtTime(0.2, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.09);
+        gain.gain.setValueAtTime(0.2, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.09);
 
-      osc.start();
-      osc.stop(ctx.currentTime + 0.09);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.09);
+      }
     } catch (e) {
-      console.warn("Scan audio beep unavailable:", e);
+      // Audio not permitted or muted
     }
 
-    // Haptic vibration on supported devices
+    // Haptic vibration on physical phones
     try {
       if (typeof navigator !== 'undefined' && navigator.vibrate) {
         navigator.vibrate([40, 30, 40]);
       }
     } catch {}
-  };
+  }, []);
 
-  // Start or Stop camera stream when modal opens/closes or facing mode changes
+  // Initialize ZXing MultiFormatReader instance
   useEffect(() => {
-    if (cameraActive && scanStatus === 'scanning') {
-      startCamera();
-    } else {
-      stopCamera();
-    }
+    const hints = new Map();
+    const formats = [
+      BarcodeFormat.EAN_13,
+      BarcodeFormat.EAN_8,
+      BarcodeFormat.UPC_A,
+      BarcodeFormat.UPC_E,
+      BarcodeFormat.CODE_128,
+      BarcodeFormat.CODE_39,
+      BarcodeFormat.ITF,
+      BarcodeFormat.QR_CODE,
+    ];
+    hints.set(DecodeHintType.POSSIBLE_FORMATS, formats);
+    hints.set(DecodeHintType.TRY_HARDER, true);
+
+    const reader = new BrowserMultiFormatReader(hints);
+    codeReaderRef.current = reader;
 
     return () => {
-      stopCamera();
+      if (codeReaderRef.current) {
+        try {
+          codeReaderRef.current.reset();
+        } catch {}
+      }
     };
-  }, [cameraActive, facingMode, scanStatus]);
+  }, []);
 
-  const startCamera = async () => {
+  // Enumerate video camera input devices
+  const discoverVideoDevices = useCallback(async () => {
+    if (!codeReaderRef.current) return;
+    try {
+      const devices = await codeReaderRef.current.listVideoInputDevices();
+      setVideoDevices(devices);
+
+      if (devices.length > 0 && !selectedDeviceId) {
+        // Prefer back-facing camera on mobile phones
+        const backCamera = devices.find(d => 
+          d.label.toLowerCase().includes('back') || 
+          d.label.toLowerCase().includes('rear') || 
+          d.label.toLowerCase().includes('environment')
+        );
+        setSelectedDeviceId(backCamera ? backCamera.deviceId : devices[devices.length - 1].deviceId);
+      }
+    } catch (err) {
+      console.warn('Error discovering video input devices:', err);
+    }
+  }, [selectedDeviceId]);
+
+  // Start continuous barcode scanning from camera
+  const startScanningStream = useCallback(async () => {
+    if (!codeReaderRef.current || !videoRef.current || scanStatus !== 'scanning') return;
+
     setErrorMessage(null);
-    stopCamera();
+    setIsInitializingCamera(true);
 
     try {
-      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-        throw new Error('Camera access is not supported in this browser.');
+      // Reset any previous stream
+      codeReaderRef.current.reset();
+      isScanningRef.current = true;
+
+      // Discover available camera lenses
+      await discoverVideoDevices();
+
+      // Start continuous optical decoding
+      if (selectedDeviceId) {
+        await codeReaderRef.current.decodeFromVideoDevice(
+          selectedDeviceId,
+          videoRef.current,
+          (result, err) => {
+            if (result && isScanningRef.current) {
+              const text = result.getText();
+              if (text && text.trim()) {
+                isScanningRef.current = false;
+                handleBarcodeDiscovered(text.trim());
+              }
+            }
+          }
+        );
+      } else {
+        // Fallback to constraints with ideal environment camera
+        await codeReaderRef.current.decodeFromConstraints(
+          {
+            video: {
+              facingMode: { ideal: 'environment' },
+              width: { ideal: 1280 },
+              height: { ideal: 720 }
+            }
+          },
+          videoRef.current,
+          (result, err) => {
+            if (result && isScanningRef.current) {
+              const text = result.getText();
+              if (text && text.trim()) {
+                isScanningRef.current = false;
+                handleBarcodeDiscovered(text.trim());
+              }
+            }
+          }
+        );
       }
 
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: {
-          facingMode: { ideal: facingMode },
-          width: { ideal: 1280 },
-          height: { ideal: 720 }
-        },
-        audio: false
-      });
+      // Check for torch / flashlight capability
+      setTimeout(() => {
+        try {
+          const stream = videoRef.current?.srcObject as MediaStream | null;
+          if (stream) {
+            const track = stream.getVideoTracks()[0];
+            if (track) {
+              const capabilities = (track.getCapabilities ? track.getCapabilities() : {}) as any;
+              setHasTorchCapability(Boolean(capabilities.torch));
+            }
+          }
+        } catch (e) {
+          setHasTorchCapability(false);
+        }
+      }, 500);
 
-      streamRef.current = stream;
-
-      // Check if torch is supported
-      const track = stream.getVideoTracks()[0];
-      if (track) {
-        const capabilities = (track.getCapabilities ? track.getCapabilities() : {}) as any;
-        setHasTorchCapability(Boolean(capabilities.torch));
-      }
-
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-        videoRef.current.setAttribute('playsinline', 'true');
-        await videoRef.current.play().catch(() => {});
-      }
-
-      // Initialize hardware BarcodeDetector loop if supported
-      initBarcodeDetectionLoop();
+      setIsInitializingCamera(false);
+      setCameraActive(true);
     } catch (err: any) {
-      console.warn('Camera stream error:', err);
+      console.warn('Error starting camera stream with ZXing:', err);
+      setIsInitializingCamera(false);
       setCameraActive(false);
-      setErrorMessage(
-        err.name === 'NotAllowedError'
-          ? 'Camera permission denied. You can still scan by typing barcode numbers or picking a staple below.'
-          : 'Could not activate camera. Please use manual barcode entry or image upload.'
-      );
-    }
-  };
+      isScanningRef.current = false;
 
-  const stopCamera = () => {
-    if (animationFrameRef.current) {
-      cancelAnimationFrame(animationFrameRef.current);
-      animationFrameRef.current = null;
+      if (err.name === 'NotAllowedError' || err.message?.includes('denied')) {
+        setErrorMessage('Camera access was denied. Please allow camera permissions in your browser or enter the barcode numbers below.');
+      } else if (err.name === 'NotFoundError' || err.message?.includes('not found')) {
+        setErrorMessage('No camera device found on this system. You can scan by typing the barcode numbers or picking a staple below.');
+      } else {
+        setErrorMessage('Could not activate camera scanner. You can use photo upload or manual barcode entry.');
+      }
     }
-    if (streamRef.current) {
-      streamRef.current.getTracks().forEach(track => track.stop());
-      streamRef.current = null;
+  }, [discoverVideoDevices, scanStatus, selectedDeviceId]);
+
+  // Stop camera feed and reset optical decoder
+  const stopScanningStream = useCallback(() => {
+    isScanningRef.current = false;
+    if (codeReaderRef.current) {
+      try {
+        codeReaderRef.current.reset();
+      } catch {}
     }
     if (videoRef.current) {
       videoRef.current.srcObject = null;
     }
     setIsTorchOn(false);
-  };
+  }, []);
+
+  // Manage camera lifecycle
+  useEffect(() => {
+    if (isOpen && scanStatus === 'scanning' && cameraActive && activeTab === 'camera') {
+      startScanningStream();
+    } else {
+      stopScanningStream();
+    }
+
+    return () => {
+      stopScanningStream();
+    };
+  }, [isOpen, scanStatus, cameraActive, activeTab, startScanningStream, stopScanningStream]);
 
   // Toggle Torch / Flashlight
   const handleToggleTorch = async () => {
-    if (!streamRef.current) return;
-    const track = streamRef.current.getVideoTracks()[0];
-    if (track) {
-      try {
+    try {
+      const stream = videoRef.current?.srcObject as MediaStream | null;
+      if (!stream) return;
+      const track = stream.getVideoTracks()[0];
+      if (track) {
         const nextState = !isTorchOn;
         await (track as any).applyConstraints({
           advanced: [{ torch: nextState }]
         });
         setIsTorchOn(nextState);
-      } catch (e) {
-        console.warn('Torch constraint error:', e);
       }
-    }
-  };
-
-  // Switch between front and back cameras
-  const handleSwitchCamera = () => {
-    setFacingMode(prev => (prev === 'environment' ? 'user' : 'environment'));
-  };
-
-  // Continuous Hardware-accelerated Barcode Detection Loop
-  const initBarcodeDetectionLoop = () => {
-    const BarcodeDetectorClass = (window as any).BarcodeDetector;
-    if (!BarcodeDetectorClass) {
-      // Browser doesn't have native BarcodeDetector (fallback to manual & fast demo chips)
-      return;
-    }
-
-    try {
-      const barcodeDetector = new BarcodeDetectorClass({
-        formats: ['ean_13', 'ean_8', 'upc_a', 'upc_e', 'code_128', 'code_39', 'qr_code']
-      });
-
-      const detectFrame = async () => {
-        if (
-          videoRef.current &&
-          videoRef.current.readyState >= 2 &&
-          !videoRef.current.paused &&
-          scanStatus === 'scanning'
-        ) {
-          try {
-            const detected = await barcodeDetector.detect(videoRef.current);
-            if (detected && detected.length > 0) {
-              const code = detected[0].rawValue;
-              if (code && code.trim()) {
-                handleBarcodeDiscovered(code.trim());
-                return;
-              }
-            }
-          } catch (e) {
-            // frame skip
-          }
-        }
-
-        if (streamRef.current && scanStatus === 'scanning') {
-          animationFrameRef.current = requestAnimationFrame(detectFrame);
-        }
-      };
-
-      animationFrameRef.current = requestAnimationFrame(detectFrame);
     } catch (e) {
-      console.warn('BarcodeDetector initialization error:', e);
+      console.warn('Torch toggle error:', e);
     }
   };
 
-  // Handle Photo Upload Barcode Parsing
+  // Switch to next available camera device
+  const handleSwitchCamera = () => {
+    if (videoDevices.length <= 1) return;
+    const currentIndex = videoDevices.findIndex(d => d.deviceId === selectedDeviceId);
+    const nextIndex = (currentIndex + 1) % videoDevices.length;
+    stopScanningStream();
+    setSelectedDeviceId(videoDevices[nextIndex].deviceId);
+    setTimeout(() => {
+      startScanningStream();
+    }, 200);
+  };
+
+  // Decode barcode from an uploaded image photo
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file) return;
+    if (!file || !codeReaderRef.current) return;
 
     setScanStatus('checking');
-    try {
-      const BarcodeDetectorClass = (window as any).BarcodeDetector;
-      if (BarcodeDetectorClass) {
-        const detector = new BarcodeDetectorClass({
-          formats: ['ean_13', 'ean_8', 'upc_a', 'upc_e', 'code_128']
-        });
-        const imageBitmap = await createImageBitmap(file);
-        const results = await detector.detect(imageBitmap);
+    setErrorMessage(null);
 
-        if (results && results.length > 0) {
-          handleBarcodeDiscovered(results[0].rawValue);
-          return;
+    // Create a local data preview URL
+    const reader = new FileReader();
+    reader.onload = async () => {
+      const dataUrl = reader.result as string;
+      setUploadedImagePreview(dataUrl);
+
+      try {
+        if (!codeReaderRef.current) throw new Error('Reader not ready');
+        const result = await codeReaderRef.current.decodeFromImageUrl(dataUrl);
+        if (result && result.getText()) {
+          handleBarcodeDiscovered(result.getText().trim());
+        } else {
+          setScanStatus('not-found');
+          setScannedBarcode('Image Photo');
         }
+      } catch (err: any) {
+        console.warn('ZXing Image Decode failed:', err);
+        setScanStatus('not-found');
+        setScannedBarcode('Photo Upload');
+        setErrorMessage('Could not find a clear barcode in this photo. Please make sure the barcode is well-lit, sharp, and not cropped.');
       }
-
-      // If no barcode found in image
-      setScanStatus('not-found');
-      setScannedBarcode('Image Photo');
-    } catch (err) {
-      setScanStatus('not-found');
-      setScannedBarcode('Image Photo');
-    }
+    };
+    reader.readAsDataURL(file);
   };
 
-  // Barcode Lookup logic
-  const handleBarcodeDiscovered = (barcode: string) => {
+  // Search product across client catalog and backend API
+  const handleBarcodeDiscovered = async (barcode: string) => {
     const cleanCode = barcode.trim();
     if (!cleanCode) return;
 
     setScannedBarcode(cleanCode);
     setScanStatus('checking');
-    stopCamera();
+    stopScanningStream();
 
-    // Find in products catalog by barcode or ID
-    setTimeout(() => {
-      const match = products.find(p => p.barcode === cleanCode || p.barcode?.includes(cleanCode) || p.id === cleanCode);
+    // 1. Try local memory search
+    const localMatch = products.find(
+      p => p.barcode === cleanCode || 
+           (p.barcode && p.barcode.endsWith(cleanCode)) || 
+           p.id === cleanCode
+    );
 
-      if (match) {
-        setMatchedProduct(match);
-        setScanStatus('success');
-        triggerScanAudioBeep();
-      } else {
-        setMatchedProduct(null);
-        setScanStatus('not-found');
+    if (localMatch) {
+      setMatchedProduct(localMatch);
+      setScanStatus('success');
+      triggerScanAudioBeep();
+      return;
+    }
+
+    // 2. Try partial barcode match on local catalog
+    const partialMatch = products.find(
+      p => p.barcode && p.barcode.includes(cleanCode)
+    );
+
+    if (partialMatch) {
+      setMatchedProduct(partialMatch);
+      setScanStatus('success');
+      triggerScanAudioBeep();
+      return;
+    }
+
+    // 3. Fallback to server API barcode lookup
+    try {
+      const res = await fetch(`/api/barcode/${encodeURIComponent(cleanCode)}`);
+      if (res.ok) {
+        const serverProduct: Product = await res.json();
+        if (serverProduct && serverProduct.name) {
+          setMatchedProduct(serverProduct);
+          setScanStatus('success');
+          triggerScanAudioBeep();
+          return;
+        }
       }
-    }, 450);
+    } catch (e) {
+      console.warn('Network barcode lookup failed:', e);
+    }
+
+    // 4. Barcode not indexed
+    setMatchedProduct(null);
+    setScanStatus('not-found');
   };
 
-  // Add matched item to basket
+  // Put matched item in basket
   const handleAddToBasket = () => {
     if (!matchedProduct) return;
     onAddToBasket(matchedProduct.id);
@@ -314,12 +411,14 @@ export default function BarcodeScanner({
     setMatchedProduct(null);
     setScannedBarcode('');
     setManualInput('');
+    setUploadedImagePreview(null);
     setScanStatus('scanning');
     setCameraActive(true);
+    isScanningRef.current = true;
   };
 
-  // Sorted competitor prices for matched product
-  const sortedPrices = React.useMemo(() => {
+  // Ranked competitor prices for the scanned product
+  const sortedPrices = useMemo(() => {
     if (!matchedProduct) return [];
     return [...matchedProduct.prices]
       .filter(p => p.inStock && p.price > 0)
@@ -330,29 +429,35 @@ export default function BarcodeScanner({
   const highestPriceObj = sortedPrices[sortedPrices.length - 1];
   const potentialSavings = (highestPriceObj && cheapestPriceObj) ? Math.max(0, highestPriceObj.price - cheapestPriceObj.price) : 0;
   const bestRetailer = cheapestPriceObj ? RETAILER_THEMES[cheapestPriceObj.storeId] : null;
-  const nearestStoreBranch = cheapestPriceObj ? getNearestBranchForStore(userCoords.current, cheapestPriceObj.storeId) : null;
+
+  if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-60 flex items-center justify-center p-2 sm:p-4 bg-black/75 backdrop-blur-md overflow-y-auto">
+    <div className="fixed inset-0 z-60 flex items-center justify-center p-2 sm:p-4 bg-slate-950/80 backdrop-blur-md overflow-y-auto">
       <motion.div
         initial={{ opacity: 0, scale: 0.96, y: 15 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.96, y: 15 }}
-        className="bg-white rounded-2xl max-w-2xl w-full overflow-hidden shadow-2xl border border-slate-200 relative my-auto flex flex-col font-sans max-h-[94vh]"
+        className="bg-white rounded-2xl sm:rounded-3xl max-w-xl w-full overflow-hidden shadow-2xl border border-slate-200 relative my-auto flex flex-col font-sans max-h-[92vh]"
       >
         {/* Top Header */}
         <div className="p-3.5 sm:p-4 border-b border-slate-200 bg-slate-50 flex items-center justify-between shrink-0">
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-[#FFE600] flex items-center justify-center text-slate-950 font-black shadow-xs">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className="w-8 h-8 rounded-xl bg-[#FFE600] flex items-center justify-center text-slate-950 font-black shadow-xs shrink-0">
               <Scan className="w-4 h-4 stroke-[2.5]" />
             </div>
-            <div>
-              <h3 className="text-sm sm:text-base font-black text-slate-950 font-display uppercase tracking-tight leading-none">
-                Barcode Scanner & Price Matcher
-              </h3>
-              <span className="text-[10px] text-slate-500 font-sans">
-                Scan any South African supermarket product barcode for live price comparisons
-              </span>
+            <div className="min-w-0">
+              <div className="flex items-center gap-2">
+                <h3 className="text-sm sm:text-base font-black text-slate-950 font-display uppercase tracking-tight truncate">
+                  Barcode Price Matcher
+                </h3>
+                <span className="hidden sm:inline-flex px-1.5 py-0.5 rounded text-[9.5px] font-mono font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">
+                  GS1 EAN-13
+                </span>
+              </div>
+              <p className="text-[11px] text-slate-500 font-sans truncate">
+                Scan any South African grocery packaging for instant multi-store prices
+              </p>
             </div>
           </div>
 
@@ -360,7 +465,7 @@ export default function BarcodeScanner({
             <button
               type="button"
               onClick={onClose}
-              className="w-8 h-8 rounded-lg bg-white border border-slate-200 hover:border-slate-300 flex items-center justify-center text-slate-500 hover:text-black cursor-pointer transition-colors"
+              className="w-8 h-8 rounded-xl bg-white border border-slate-200 hover:border-slate-300 hover:bg-slate-100 flex items-center justify-center text-slate-600 hover:text-black cursor-pointer transition-colors shrink-0 ml-2"
               aria-label="Close Scanner"
             >
               <X className="w-4 h-4" />
@@ -371,182 +476,270 @@ export default function BarcodeScanner({
         {/* Modal Scrollable Body */}
         <div className="p-3.5 sm:p-5 overflow-y-auto space-y-4">
           
-          {/* Viewfinder Section (Active when scanning) */}
+          {/* Viewfinder Mode Selector (Camera vs Photo vs Manual) */}
           {scanStatus === 'scanning' && (
+            <div className="flex items-center p-1 bg-slate-100 rounded-xl border border-slate-200 text-xs font-mono font-bold">
+              <button
+                type="button"
+                onClick={() => {
+                  setActiveTab('camera');
+                  setCameraActive(true);
+                }}
+                className={`flex-1 py-1.5 rounded-lg flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                  activeTab === 'camera'
+                    ? 'bg-white text-slate-950 shadow-xs border border-slate-200 font-black'
+                    : 'text-slate-600 hover:text-slate-950'
+                }`}
+              >
+                <Camera className="w-3.5 h-3.5" />
+                <span>Live Camera</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setActiveTab('upload');
+                  fileInputRef.current?.click();
+                }}
+                className={`flex-1 py-1.5 rounded-lg flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                  activeTab === 'upload'
+                    ? 'bg-white text-slate-950 shadow-xs border border-slate-200 font-black'
+                    : 'text-slate-600 hover:text-slate-950'
+                }`}
+              >
+                <Upload className="w-3.5 h-3.5" />
+                <span>Upload Photo</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setActiveTab('manual')}
+                className={`flex-1 py-1.5 rounded-lg flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                  activeTab === 'manual'
+                    ? 'bg-white text-slate-950 shadow-xs border border-slate-200 font-black'
+                    : 'text-slate-600 hover:text-slate-950'
+                }`}
+              >
+                <Search className="w-3.5 h-3.5" />
+                <span>Manual Digits</span>
+              </button>
+            </div>
+          )}
+
+          {/* Optical Viewfinder (Active when in camera tab) */}
+          {scanStatus === 'scanning' && activeTab === 'camera' && (
             <div className="space-y-3">
-              <div className="relative rounded-2xl bg-slate-950 overflow-hidden shadow-lg aspect-4/3 sm:aspect-16/9 flex items-center justify-center border border-slate-800">
+              <div className="relative rounded-2xl bg-slate-950 overflow-hidden shadow-inner aspect-4/3 sm:aspect-16/9 flex items-center justify-center border border-slate-800">
                 
-                {/* Live Video Element */}
-                {cameraActive ? (
-                  <video
-                    ref={videoRef}
-                    playsInline
-                    muted
-                    className="absolute inset-0 w-full h-full object-cover"
-                  />
-                ) : (
-                  <div className="p-6 text-center text-slate-400 space-y-2">
-                    <Camera className="w-10 h-10 text-slate-600 mx-auto" />
-                    <p className="text-xs font-semibold">Camera is paused or unavailable.</p>
-                    <button
-                      type="button"
-                      onClick={() => setCameraActive(true)}
-                      className="px-3.5 py-1.5 rounded-lg bg-[#FFE600] text-slate-950 font-bold text-xs font-mono cursor-pointer"
-                    >
-                      Turn On Camera
-                    </button>
+                {/* Live Camera Video Feed */}
+                <video
+                  ref={videoRef}
+                  playsInline
+                  muted
+                  autoPlay
+                  className="absolute inset-0 w-full h-full object-cover"
+                />
+
+                {isInitializingCamera && (
+                  <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-xs flex flex-col items-center justify-center text-white space-y-2 z-20">
+                    <RefreshCw className="w-7 h-7 text-[#FFE600] animate-spin" />
+                    <span className="text-xs font-mono font-bold tracking-wide">Starting optical camera...</span>
                   </div>
                 )}
 
-                {/* Tactical HUD Overlay & Laser Scanline */}
-                {cameraActive && (
-                  <>
-                    {/* Targeting Reticle Frame */}
-                    <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
-                      <div className="w-64 sm:w-80 h-36 sm:h-44 border-2 border-white/60 rounded-xl relative flex items-center justify-center shadow-[0_0_0_9999px_rgba(0,0,0,0.4)]">
-                        {/* Red Laser Barcode Line with Sweep Animation */}
-                        <div className="absolute left-2 right-2 h-0.5 bg-red-500 shadow-[0_0_8px_2px_rgba(239,68,68,0.8)] animate-pulse" />
-                        
-                        {/* Corner Target Markers */}
-                        <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-[#FFE600]" />
-                        <div className="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-[#FFE600]" />
-                        <div className="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-[#FFE600]" />
-                        <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-[#FFE600]" />
+                {/* Laser Reticle & HUD Overlay */}
+                <div className="absolute inset-0 pointer-events-none flex items-center justify-center z-10">
+                  <div className="w-60 sm:w-72 h-32 sm:h-36 border-2 border-white/50 rounded-xl relative flex items-center justify-center shadow-[0_0_0_9999px_rgba(0,0,0,0.45)]">
+                    
+                    {/* Animated Red Laser Scanline */}
+                    <div className="absolute left-2 right-2 h-0.5 bg-red-500 shadow-[0_0_12px_2px_rgba(239,68,68,0.9)] animate-pulse" />
+                    
+                    {/* Corner Target Markers */}
+                    <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-[#FFE600]" />
+                    <div className="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-[#FFE600]" />
+                    <div className="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-[#FFE600]" />
+                    <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-[#FFE600]" />
 
-                        <span className="absolute -bottom-6 px-2 py-0.5 rounded bg-slate-950/80 text-white text-[9.5px] font-mono font-bold uppercase tracking-wider border border-white/20">
-                          Align barcode inside box
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Camera Control Overlays */}
-                    <div className="absolute top-3 right-3 flex items-center gap-2 z-10">
-                      {hasTorchCapability && (
-                        <button
-                          type="button"
-                          onClick={handleToggleTorch}
-                          className={`p-2 rounded-lg backdrop-blur-md transition-colors cursor-pointer ${
-                            isTorchOn ? 'bg-[#FFE600] text-slate-950' : 'bg-black/50 text-white hover:bg-black/70'
-                          }`}
-                          title="Toggle Flashlight"
-                        >
-                          {isTorchOn ? <Zap className="w-4 h-4" /> : <ZapOff className="w-4 h-4" />}
-                        </button>
-                      )}
-
-                      <button
-                        type="button"
-                        onClick={handleSwitchCamera}
-                        className="p-2 rounded-lg bg-black/50 hover:bg-black/70 text-white backdrop-blur-md transition-colors cursor-pointer"
-                        title="Switch Camera (Front/Back)"
-                      >
-                        <SwitchCamera className="w-4 h-4" />
-                      </button>
-                    </div>
-
-                    <div className="absolute bottom-3 left-3 z-10">
-                      <span className="px-2.5 py-1 rounded-full bg-emerald-950/80 border border-emerald-400/40 text-emerald-300 text-[9.5px] font-mono font-bold flex items-center gap-1.5">
-                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
-                        Live Optical Decoder
-                      </span>
-                    </div>
-                  </>
-                )}
-              </div>
-
-              {errorMessage && (
-                <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-900 flex items-center gap-2 font-medium">
-                  <AlertCircle className="w-4 h-4 text-amber-700 shrink-0" />
-                  <span>{errorMessage}</span>
+                    <span className="absolute -bottom-6 px-2.5 py-0.5 rounded-full bg-slate-950/90 text-white text-[9px] font-mono font-bold uppercase tracking-wider border border-white/20 flex items-center gap-1 shadow-md">
+                      <Scan className="w-2.5 h-2.5 text-[#FFE600]" />
+                      Align barcode inside frame
+                    </span>
+                  </div>
                 </div>
-              )}
 
-              {/* Manual Barcode Entry + Photo Upload row */}
-              <div className="flex items-center gap-2">
-                <div className="relative flex-1">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                  <input
-                    type="text"
-                    value={manualInput}
-                    onChange={(e) => setManualInput(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' && manualInput.trim()) {
-                        handleBarcodeDiscovered(manualInput);
-                      }
-                    }}
-                    placeholder="Or enter barcode digits (e.g. 6001299011113)..."
-                    className="w-full pl-9 pr-16 py-2.5 rounded-xl bg-slate-100 border border-slate-200 text-xs sm:text-sm font-mono font-bold text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-slate-950 focus:bg-white transition-all"
-                  />
-                  {manualInput && (
+                {/* Camera Top Controls */}
+                <div className="absolute top-3 right-3 flex items-center gap-2 z-20">
+                  {hasTorchCapability && (
                     <button
                       type="button"
-                      onClick={() => handleBarcodeDiscovered(manualInput)}
-                      className="absolute right-1.5 top-1/2 -translate-y-1/2 px-2.5 py-1 rounded-lg bg-slate-950 text-white text-[10px] font-mono font-bold uppercase cursor-pointer"
+                      onClick={handleToggleTorch}
+                      className={`p-2 rounded-xl backdrop-blur-md transition-all cursor-pointer shadow-md ${
+                        isTorchOn ? 'bg-[#FFE600] text-slate-950 font-bold' : 'bg-black/60 text-white hover:bg-black/80'
+                      }`}
+                      title="Toggle Torch / Flashlight"
+                      aria-label="Toggle Torch"
                     >
-                      Lookup
+                      {isTorchOn ? <Zap className="w-4 h-4" /> : <ZapOff className="w-4 h-4" />}
+                    </button>
+                  )}
+
+                  {videoDevices.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={handleSwitchCamera}
+                      className="p-2 rounded-xl bg-black/60 hover:bg-black/80 text-white backdrop-blur-md transition-all cursor-pointer shadow-md"
+                      title="Switch Camera Lens"
+                      aria-label="Switch Camera"
+                    >
+                      <SwitchCamera className="w-4 h-4" />
                     </button>
                   )}
                 </div>
 
-                {/* Upload Image Button */}
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/*"
-                  capture="environment"
-                  onChange={handleFileUpload}
-                  className="hidden"
-                />
-                <button
-                  type="button"
-                  onClick={() => fileInputRef.current?.click()}
-                  className="p-2.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 cursor-pointer transition-colors shrink-0 flex items-center gap-1.5 text-xs font-bold font-mono"
-                  title="Upload photo of barcode"
-                >
-                  <Upload className="w-4 h-4 text-slate-600" />
-                  <span className="hidden sm:inline">Photo</span>
-                </button>
-              </div>
-
-              {/* Instant Mzansi Staple Presets (1-Click Test Scan) */}
-              <div className="space-y-1.5 pt-1">
-                <div className="flex items-center justify-between text-[10.5px] font-mono font-bold uppercase tracking-wider text-slate-500">
-                  <span>Fast Demo Barcode Presets</span>
-                  <span className="text-amber-600">Tap to Simulate Scan</span>
-                </div>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
-                  {POPULAR_STAPLE_BARCODES.map((item) => (
-                    <button
-                      key={item.barcode}
-                      type="button"
-                      onClick={() => handleBarcodeDiscovered(item.barcode)}
-                      className="p-2 rounded-lg bg-white border border-slate-200 hover:border-slate-400 text-left transition-all hover:bg-slate-50 cursor-pointer shadow-2xs group flex items-center gap-1.5"
-                    >
-                      <span className="text-base">{item.emoji}</span>
-                      <div className="min-w-0">
-                        <span className="text-xs font-bold text-slate-900 block truncate group-hover:text-black">
-                          {item.name}
-                        </span>
-                        <span className="text-[9px] font-mono text-slate-400 block">
-                          #{item.barcode.slice(-4)}
-                        </span>
-                      </div>
-                    </button>
-                  ))}
+                {/* Bottom Left Live Status Pill */}
+                <div className="absolute bottom-3 left-3 z-20">
+                  <span className="px-2.5 py-1 rounded-full bg-emerald-950/90 border border-emerald-400/40 text-emerald-300 text-[9.5px] font-mono font-bold flex items-center gap-1.5 shadow-md">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
+                    ZXing Optical Engine Active
+                  </span>
                 </div>
               </div>
             </div>
           )}
 
-          {/* Loading / Checking State */}
+          {/* Photo Upload View */}
+          {scanStatus === 'scanning' && activeTab === 'upload' && (
+            <div className="p-8 border-2 border-dashed border-slate-300 rounded-2xl bg-slate-50 text-center space-y-3">
+              <div className="w-12 h-12 rounded-2xl bg-white border border-slate-200 shadow-xs flex items-center justify-center mx-auto text-slate-700">
+                <Upload className="w-6 h-6 text-slate-600" />
+              </div>
+              <div className="space-y-1">
+                <h4 className="text-sm font-bold text-slate-900 font-sans">
+                  Upload a photo of any grocery barcode
+                </h4>
+                <p className="text-xs text-slate-500 font-sans max-w-sm mx-auto">
+                  Take a photo with your phone camera or select an existing picture from your gallery
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="px-4 py-2 rounded-xl bg-slate-950 hover:bg-black text-white text-xs font-mono font-bold uppercase cursor-pointer transition-colors shadow-xs"
+              >
+                Choose Photo
+              </button>
+            </div>
+          )}
+
+          {/* Hidden File Input for Image Upload */}
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            capture="environment"
+            onChange={handleFileUpload}
+            className="hidden"
+          />
+
+          {/* Error Message Notice */}
+          {errorMessage && (
+            <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-900 flex items-start gap-2.5 font-medium">
+              <AlertCircle className="w-4 h-4 text-amber-700 shrink-0 mt-0.5" />
+              <div className="space-y-1 flex-1">
+                <span>{errorMessage}</span>
+                <div className="flex items-center gap-2 pt-1">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setErrorMessage(null);
+                      startScanningStream();
+                    }}
+                    className="text-[11px] font-bold text-amber-950 underline hover:text-black cursor-pointer"
+                  >
+                    Try Camera Again
+                  </button>
+                  <span className="text-amber-400">•</span>
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab('manual')}
+                    className="text-[11px] font-bold text-amber-950 underline hover:text-black cursor-pointer"
+                  >
+                    Enter Digits Manually
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Manual Barcode & Name Search Input */}
+          {scanStatus === 'scanning' && (
+            <div className="space-y-1.5">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <input
+                  type="text"
+                  value={manualInput}
+                  onChange={(e) => setManualInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && manualInput.trim()) {
+                      handleBarcodeDiscovered(manualInput);
+                    }
+                  }}
+                  placeholder="Type barcode digits (e.g. 6001299011113)..."
+                  className="w-full pl-9 pr-20 py-2.5 rounded-xl bg-slate-100 border border-slate-200 text-xs sm:text-sm font-mono font-bold text-slate-900 placeholder:text-slate-400 placeholder:font-sans focus:outline-none focus:border-slate-950 focus:bg-white transition-all shadow-2xs"
+                />
+                {manualInput.trim() && (
+                  <button
+                    type="button"
+                    onClick={() => handleBarcodeDiscovered(manualInput)}
+                    className="absolute right-1.5 top-1/2 -translate-y-1/2 px-2.5 py-1 rounded-lg bg-slate-950 hover:bg-black text-white text-[10.5px] font-mono font-bold uppercase cursor-pointer transition-colors shadow-xs"
+                  >
+                    Lookup
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Quick Demo Staple Presets (1-Tap Simulation) */}
+          {scanStatus === 'scanning' && (
+            <div className="space-y-2 pt-1 border-t border-slate-100">
+              <div className="flex items-center justify-between text-[10.5px] font-mono font-bold uppercase tracking-wider text-slate-500">
+                <span>Instant Demo Barcode Presets</span>
+                <span className="text-amber-700 font-bold">Tap to Simulate Scan</span>
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
+                {POPULAR_STAPLE_BARCODES.map((item) => (
+                  <button
+                    key={item.barcode}
+                    type="button"
+                    onClick={() => handleBarcodeDiscovered(item.barcode)}
+                    className="p-2 rounded-xl bg-white border border-slate-200 hover:border-slate-400 text-left transition-all hover:bg-slate-50 cursor-pointer shadow-2xs group flex items-center gap-2"
+                  >
+                    <span className="text-base shrink-0">{item.emoji}</span>
+                    <div className="min-w-0 flex-1">
+                      <span className="text-[11px] font-bold text-slate-900 block truncate group-hover:text-black">
+                        {item.name}
+                      </span>
+                      <span className="text-[9px] font-mono text-slate-400 block truncate">
+                        #{item.barcode.slice(-5)}
+                      </span>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Checking / Matching Loading State */}
           {scanStatus === 'checking' && (
             <div className="py-16 text-center space-y-3 bg-slate-50 rounded-2xl border border-slate-200">
               <RefreshCw className="w-10 h-10 text-[#FFE600] animate-spin mx-auto stroke-[2.5]" />
               <h4 className="text-sm font-black text-slate-900 font-sans">
-                Connecting to National Supermarket Index...
+                Querying National Supermarket Index...
               </h4>
               <p className="text-xs text-slate-500 font-mono">
-                Matching GTIN: <strong className="text-slate-900">{scannedBarcode}</strong>
+                Matching GTIN Barcode: <strong className="text-slate-900">{scannedBarcode}</strong>
               </p>
             </div>
           )}
@@ -559,21 +752,21 @@ export default function BarcodeScanner({
               className="space-y-4"
             >
               {/* Product Header Card */}
-              <div className="p-4 rounded-xl border border-emerald-300 bg-emerald-50/50 flex flex-col sm:flex-row items-center sm:items-start gap-4">
+              <div className="p-4 rounded-2xl border border-emerald-300 bg-emerald-50/60 flex flex-col sm:flex-row items-center sm:items-start gap-4">
                 <img
                   src={matchedProduct.imageUrl || 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=150'}
                   alt={matchedProduct.name}
-                  className="w-16 h-16 sm:w-20 sm:h-20 object-contain bg-white rounded-lg p-1.5 border border-slate-200 shadow-2xs shrink-0"
+                  className="w-18 h-18 sm:w-20 sm:h-20 object-contain bg-white rounded-xl p-1.5 border border-slate-200 shadow-2xs shrink-0"
                 />
 
                 <div className="flex-1 min-w-0 text-center sm:text-left space-y-1">
                   <div className="flex items-center justify-center sm:justify-start gap-2 flex-wrap">
                     <span className="px-2 py-0.5 rounded-full bg-emerald-700 text-white font-mono font-black text-[9.5px] uppercase tracking-wide flex items-center gap-1 shadow-2xs">
                       <CheckCircle2 className="w-3 h-3" />
-                      GTIN Match Confirmed
+                      GTIN Confirmed
                     </span>
-                    <span className="text-[10px] font-mono text-slate-500">
-                      Barcode: {scannedBarcode}
+                    <span className="text-[10px] font-mono text-slate-600 bg-white/80 px-2 py-0.5 rounded-md border border-slate-200">
+                      #{scannedBarcode}
                     </span>
                   </div>
 
@@ -587,7 +780,7 @@ export default function BarcodeScanner({
                 </div>
 
                 {cheapestPriceObj && (
-                  <div className="text-center sm:text-right shrink-0">
+                  <div className="text-center sm:text-right shrink-0 bg-white/90 p-2.5 rounded-xl border border-emerald-200">
                     <span className="text-[10px] font-mono font-bold uppercase text-emerald-800 block">
                       Lowest Shelf Price
                     </span>
@@ -595,8 +788,8 @@ export default function BarcodeScanner({
                       R{cheapestPriceObj.price.toFixed(2)}
                     </span>
                     {potentialSavings > 0 && (
-                      <span className="text-[10px] font-mono font-bold text-slate-500 block mt-0.5">
-                        Saves R{potentialSavings.toFixed(2)} vs highest
+                      <span className="text-[9.5px] font-mono font-bold text-slate-600 block mt-0.5">
+                        Save R{potentialSavings.toFixed(2)} vs highest
                       </span>
                     )}
                   </div>
@@ -606,8 +799,8 @@ export default function BarcodeScanner({
               {/* 7-Store Ranked Price Breakdown */}
               <div className="space-y-2">
                 <div className="flex items-center justify-between text-xs font-mono font-bold uppercase tracking-wider text-slate-500">
-                  <span>Live Supermarket Price Comparison</span>
-                  <span>Ranked</span>
+                  <span>Live Supermarket Price Ranking</span>
+                  <span className="text-emerald-700">{sortedPrices.length} Stores Tracked</span>
                 </div>
 
                 <div className="space-y-1.5 font-sans">
@@ -622,19 +815,19 @@ export default function BarcodeScanner({
                         key={pr.storeId}
                         className={`p-3 rounded-xl border flex items-center justify-between gap-3 transition-all ${
                           isLowest
-                            ? 'bg-emerald-50/80 border-emerald-300 ring-1 ring-emerald-300/30'
-                            : 'bg-white border-slate-200'
+                            ? 'bg-emerald-50/90 border-emerald-300 ring-1 ring-emerald-300/40 shadow-xs'
+                            : 'bg-white border-slate-200 hover:border-slate-300'
                         }`}
                       >
-                        <div className="flex items-center gap-2.5">
-                          <span className={`w-5 h-5 rounded-md flex items-center justify-center text-[10px] font-mono font-bold ${
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          <span className={`w-5 h-5 rounded-md flex items-center justify-center text-[10px] font-mono font-bold shrink-0 ${
                             isLowest ? 'bg-emerald-700 text-white' : 'bg-slate-200 text-slate-700'
                           }`}>
                             #{idx + 1}
                           </span>
-                          <div>
-                            <div className="flex items-center gap-1.5">
-                              <span className="text-xs font-bold text-slate-950 font-sans">
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              <span className="text-xs font-bold text-slate-950 font-sans truncate">
                                 {retailer?.name || pr.storeId}
                               </span>
                               {retailer && (
@@ -642,16 +835,21 @@ export default function BarcodeScanner({
                                   {retailer.loyaltyProgram}
                                 </span>
                               )}
+                              {pr.onSpecial && (
+                                <span className="text-[9px] px-1.5 py-0.2 rounded font-mono font-bold bg-amber-100 text-amber-800 border border-amber-300">
+                                  {pr.specialDetail || 'Special'}
+                                </span>
+                              )}
                             </div>
                             {nearestBranch && (
-                              <span className="text-[10px] text-slate-500 font-mono block">
+                              <span className="text-[10px] text-slate-500 font-mono block truncate">
                                 📍 {nearestBranch.distanceFormatted} away • {nearestBranch.mallOrCenter}
                               </span>
                             )}
                           </div>
                         </div>
 
-                        <div className="text-right">
+                        <div className="text-right shrink-0">
                           <span className={`text-sm font-black font-mono ${isLowest ? 'text-emerald-700' : 'text-slate-950'}`}>
                             R{pr.price.toFixed(2)}
                           </span>
@@ -660,7 +858,7 @@ export default function BarcodeScanner({
                               Cheapest
                             </span>
                           ) : (
-                            <span className="block text-[9.5px] font-mono text-slate-400">
+                            <span className="block text-[9.5px] font-mono text-slate-500 font-semibold">
                               +R{diff.toFixed(2)}
                             </span>
                           )}
@@ -676,7 +874,7 @@ export default function BarcodeScanner({
                 <button
                   type="button"
                   onClick={handleScanNext}
-                  className="py-3 px-4 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-800 font-bold text-xs uppercase font-mono cursor-pointer transition-colors text-center"
+                  className="py-3 px-4 rounded-xl border border-slate-300 bg-white hover:bg-slate-50 text-slate-800 font-bold text-xs uppercase font-mono cursor-pointer transition-colors text-center shadow-2xs"
                 >
                   Scan Next Item
                 </button>
@@ -704,27 +902,37 @@ export default function BarcodeScanner({
 
           {/* Barcode Not Found State */}
           {scanStatus === 'not-found' && (
-            <div className="py-12 text-center space-y-4 bg-slate-50 rounded-2xl border border-slate-200 p-6">
-              <div className="w-12 h-12 rounded-full bg-rose-50 text-rose-600 border border-rose-200 flex items-center justify-center mx-auto">
+            <div className="py-10 text-center space-y-4 bg-slate-50 rounded-2xl border border-slate-200 p-6">
+              <div className="w-12 h-12 rounded-2xl bg-rose-50 text-rose-600 border border-rose-200 flex items-center justify-center mx-auto">
                 <AlertCircle className="w-6 h-6" />
               </div>
 
               <div className="space-y-1">
                 <h4 className="text-base font-bold text-slate-900 font-sans">
-                  Barcode Not Found in Catalog
+                  Barcode Not Found in Index
                 </h4>
                 <p className="text-xs text-slate-500 max-w-sm mx-auto font-mono">
-                  Code: <strong className="text-slate-900">{scannedBarcode}</strong> is not indexed in the current South African national database yet.
+                  Code <strong className="text-slate-900">#{scannedBarcode}</strong> is not registered in our current South African supermarket database.
                 </p>
               </div>
 
-              <div className="flex items-center justify-center gap-2 pt-2">
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-2 pt-2">
                 <button
                   type="button"
                   onClick={handleScanNext}
-                  className="px-4 py-2 rounded-xl bg-slate-950 text-white font-bold text-xs font-mono cursor-pointer"
+                  className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-slate-950 hover:bg-black text-white font-bold text-xs font-mono cursor-pointer transition-colors shadow-xs"
                 >
                   Scan Another Code
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    handleScanNext();
+                    setActiveTab('upload');
+                  }}
+                  className="w-full sm:w-auto px-4 py-2.5 rounded-xl border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 font-bold text-xs font-mono cursor-pointer transition-colors"
+                >
+                  Upload Photo Instead
                 </button>
               </div>
             </div>
@@ -732,13 +940,15 @@ export default function BarcodeScanner({
 
         </div>
 
-        {/* Footer info */}
+        {/* Footer info bar */}
         <div className="p-3 border-t border-slate-200 bg-slate-50 flex items-center justify-between text-xs text-slate-500 font-sans shrink-0">
-          <span className="flex items-center gap-1.5">
+          <span className="flex items-center gap-1.5 text-[11px]">
             <Volume2 className="w-3.5 h-3.5 text-slate-400" />
-            Audio beep & haptic confirmation active
+            Audio chime & haptic feedback enabled
           </span>
-          <span className="font-mono text-[10px]">EAN-13 / UPC-A GS1 ZA</span>
+          <span className="font-mono text-[10px] text-slate-600">
+            Powered by ZXing WebAssembly
+          </span>
         </div>
       </motion.div>
     </div>

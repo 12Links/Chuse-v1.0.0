@@ -325,6 +325,53 @@ def get_product(product_id: str):
     raise HTTPException(status_code=404, detail="Product not found")
 
 
+@router.get("/barcode/{code}")
+def get_product_by_barcode(code: str):
+    """Lookup product and live multi-supermarket prices by GS1 barcode."""
+    clean_code = code.strip()
+    if not clean_code:
+        raise HTTPException(status_code=400, detail="Invalid barcode")
+    
+    # Try exact or partial barcode match
+    for product in MOCK_PRODUCTS:
+        prod_barcode = str(product.get("barcode", ""))
+        prod_id = str(product.get("id", ""))
+        if clean_code == prod_barcode or clean_code in prod_barcode or clean_code == prod_id:
+            return product
+            
+    # Try synced_products.json direct lookup
+    if os.path.exists(synced_file):
+        try:
+            with open(synced_file, "r", encoding="utf-8") as f:
+                cat = json.load(f)
+                for p in cat:
+                    p_barcode = str(p.get("barcode", ""))
+                    p_id = str(p.get("id", ""))
+                    if clean_code == p_barcode or clean_code in p_barcode or clean_code == p_id:
+                        return {
+                            "id": p.get("id"),
+                            "name": p.get("name"),
+                            "barcode": p.get("barcode"),
+                            "brand": p.get("name", "").split()[0],
+                            "category": p.get("category"),
+                            "unit": p.get("unit"),
+                            "imageUrl": p.get("imageUrl"),
+                            "prices": [
+                                {
+                                    "storeName": pr.get("storeId", "").capitalize(),
+                                    "price": pr.get("price"),
+                                    "onSpecial": pr.get("onSpecial", False),
+                                    "specialDetail": pr.get("specialDetail", "")
+                                }
+                                for pr in p.get("prices", [])
+                            ],
+                        }
+        except Exception:
+            pass
+            
+    raise HTTPException(status_code=404, detail=f"No product registered for barcode {clean_code}")
+
+
 @router.get("/stores/chains")
 def get_store_chains():
     return MOCK_STORE_CHAINS
