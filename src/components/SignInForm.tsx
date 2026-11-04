@@ -93,7 +93,7 @@ export function SignInForm({ onToggleForm, setUser }: SignInFormProps) {
   return (
     <div className="w-full max-w-sm px-6 py-8 font-sans">
       <div className="mb-6">
-        <h2 className="text-2xl font-black text-slate-900 dark:text-white uppercase font-mono tracking-tight">
+        <h2 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">
           Sign In
         </h2>
         <p className="text-xs text-slate-500 mt-1 leading-relaxed">
@@ -118,17 +118,17 @@ export function SignInForm({ onToggleForm, setUser }: SignInFormProps) {
           <div className="absolute inset-0 flex items-center">
             <div className="w-full border-t border-slate-200" />
           </div>
-          <div className="relative flex justify-center text-[10px]">
-            <span className="px-2 bg-white text-slate-400 font-mono uppercase tracking-wider">
+          <div className="relative flex justify-center text-xs">
+            <span className="px-2 bg-white text-slate-400 font-medium">
               or with email
             </span>
           </div>
         </div>
 
-        {error && <p className="text-rose-600 text-xs font-mono">{error}</p>}
+        {error && <p className="text-rose-600 text-xs font-medium">{error}</p>}
 
         <div className="space-y-1">
-          <Label htmlFor="email" className="text-[10px] font-mono uppercase tracking-wider text-slate-500">
+          <Label htmlFor="email" className="text-xs font-semibold text-slate-600">
             Email address
           </Label>
           <div className="relative">
@@ -146,7 +146,7 @@ export function SignInForm({ onToggleForm, setUser }: SignInFormProps) {
         </div>
 
         <div className="space-y-1">
-          <Label htmlFor="password" className="text-[10px] font-mono uppercase tracking-wider text-slate-500">
+          <Label htmlFor="password" className="text-xs font-semibold text-slate-600">
             Password
           </Label>
           <div className="relative">
@@ -165,7 +165,7 @@ export function SignInForm({ onToggleForm, setUser }: SignInFormProps) {
 
         <Button
           type="submit"
-          className="w-full h-10 bg-slate-950 text-white hover:bg-[#FFE600] hover:text-black text-xs font-black uppercase font-mono rounded-lg transition-colors cursor-pointer"
+          className="w-full h-10 bg-slate-950 text-white hover:bg-[#FFE600] hover:text-black text-xs font-bold rounded-lg transition-colors cursor-pointer"
           disabled={isLoading}
         >
           {isLoading ? 'Signing In...' : 'Sign In'}
@@ -185,7 +185,7 @@ export function SignInForm({ onToggleForm, setUser }: SignInFormProps) {
         <div>
           <button
             onClick={() => navigate('/')}
-            className="text-xs font-bold text-slate-600 dark:text-slate-400 hover:text-black dark:hover:text-white underline decoration-[#FFE600] decoration-2 underline-offset-4 cursor-pointer font-mono"
+            className="text-xs font-bold text-slate-600 dark:text-slate-400 hover:text-black dark:hover:text-white underline decoration-[#FFE600] decoration-2 underline-offset-4 cursor-pointer"
           >
             Just browsing? Continue to catalog →
           </button>

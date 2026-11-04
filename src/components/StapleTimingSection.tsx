@@ -8,7 +8,8 @@ import {
   TrendingUp, 
   Clock, 
   CheckCircle2, 
-  AlertTriangle 
+  AlertTriangle,
+  Lightbulb
 } from 'lucide-react';
 
 interface StapleTimingSectionProps {
@@ -47,8 +48,8 @@ export const StapleTimingSection: React.FC<StapleTimingSectionProps> = ({
         <div>
           <div className="flex items-center gap-1.5 mb-1">
             <Clock className="w-3.5 h-3.5 text-slate-700" />
-            <span className="text-[10px] font-mono font-black uppercase tracking-wider text-slate-500">
-              {isStaple ? 'Essential Staple Predictor' : 'Price Cycle Predictor'}
+            <span className="text-xs font-semibold text-slate-500 font-sans">
+              {isStaple ? 'Price Check & Buy Timing' : 'Price Cycle Predictor'}
             </span>
           </div>
           <h4 className="text-sm font-black text-slate-950 font-sans tracking-tight">
@@ -58,7 +59,7 @@ export const StapleTimingSection: React.FC<StapleTimingSectionProps> = ({
 
         {/* Status Pill */}
         <span
-          className={`shrink-0 inline-flex items-center gap-1.5 text-xs font-mono font-black uppercase px-2.5 py-1 rounded-[3px] border ${
+          className={`shrink-0 inline-flex items-center gap-1.5 text-xs font-bold px-2.5 py-1 rounded-md border font-sans ${
             status === 'buy'
               ? 'bg-emerald-50 text-emerald-800 border-emerald-300'
               : status === 'fair'
@@ -77,97 +78,98 @@ export const StapleTimingSection: React.FC<StapleTimingSectionProps> = ({
 
       {/* 3-Segment Tactile Timing Gauge */}
       <div>
-        <div className="flex items-center justify-between text-[9px] font-mono uppercase font-bold text-slate-400 mb-1">
+        <div className="flex items-center justify-between text-xs font-semibold text-slate-500 mb-1.5 font-sans">
           <span>Timing Gauge</span>
-          <span>
-            {status === 'buy' ? '🟢 Stock Up Zone' : status === 'fair' ? '🟡 Normal Range' : '🔴 Elevated Peak'}
+          <span className="flex items-center gap-1.5">
+            <span className={`w-2 h-2 rounded-full ${status === 'buy' ? 'bg-emerald-500' : status === 'fair' ? 'bg-amber-500' : 'bg-rose-500'}`} />
+            <span>{status === 'buy' ? 'Stock Up Zone' : status === 'fair' ? 'Normal Range' : 'Elevated Peak'}</span>
           </span>
         </div>
         <div className="grid grid-cols-3 gap-1.5">
           {/* Wait Segment */}
           <div
-            className={`py-1.5 px-2 rounded-[3px] text-center border transition-all ${
+            className={`py-1.5 px-2 rounded-md text-center border transition-all ${
               status === 'wait'
                 ? 'bg-rose-100 border-rose-400 text-rose-900 font-black ring-1 ring-rose-400'
                 : 'bg-slate-50 border-slate-200 text-slate-400 font-bold opacity-60'
             }`}
           >
-            <span className="text-[10px] font-mono uppercase tracking-wider block">1. Wait</span>
-            <span className="text-[8.5px] font-mono hidden sm:inline">Price Peak</span>
+            <span className="text-xs font-bold block font-sans">1. Wait</span>
+            <span className="text-[10px] font-sans text-slate-500 hidden sm:inline">Price Peak</span>
           </div>
 
           {/* Fair Segment */}
           <div
-            className={`py-1.5 px-2 rounded-[3px] text-center border transition-all ${
+            className={`py-1.5 px-2 rounded-md text-center border transition-all ${
               status === 'fair'
                 ? 'bg-amber-100 border-amber-400 text-amber-900 font-black ring-1 ring-amber-400'
                 : 'bg-slate-50 border-slate-200 text-slate-400 font-bold opacity-60'
             }`}
           >
-            <span className="text-[10px] font-mono uppercase tracking-wider block">2. Fair</span>
-            <span className="text-[8.5px] font-mono hidden sm:inline">Normal Shelf</span>
+            <span className="text-xs font-bold block font-sans">2. Fair</span>
+            <span className="text-[10px] font-sans text-slate-500 hidden sm:inline">Normal Shelf</span>
           </div>
 
           {/* Buy Now Segment */}
           <div
-            className={`py-1.5 px-2 rounded-[3px] text-center border transition-all ${
+            className={`py-1.5 px-2 rounded-md text-center border transition-all ${
               status === 'buy'
                 ? 'bg-emerald-100 border-emerald-400 text-emerald-950 font-black ring-1 ring-emerald-400'
                 : 'bg-slate-50 border-slate-200 text-slate-400 font-bold opacity-60'
             }`}
           >
-            <span className="text-[10px] font-mono uppercase tracking-wider block">3. Buy Now</span>
-            <span className="text-[8.5px] font-mono hidden sm:inline">30d Low / Sale</span>
+            <span className="text-xs font-bold block font-sans">3. Buy Now</span>
+            <span className="text-[10px] font-sans text-slate-500 hidden sm:inline">30d Low / Sale</span>
           </div>
         </div>
       </div>
 
       {/* 4-Metric Grid */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1 font-mono">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1 font-sans">
         <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-200">
-          <span className="text-[9px] uppercase tracking-wider text-slate-400 block font-bold">
+          <span className="text-[10px] text-slate-500 block font-semibold">
             Today's Best
           </span>
-          <span className="text-sm font-black text-slate-950 block">
+          <span className="text-sm font-black text-slate-950 block tabular-nums">
             R{currentBestPrice.toFixed(2)}
           </span>
-          <span className="text-[9px] text-slate-500 truncate block">
+          <span className="text-[10px] text-slate-500 truncate block">
             {bestStoreName}
           </span>
         </div>
 
         <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-200">
-          <span className="text-[9px] uppercase tracking-wider text-slate-400 block font-bold">
+          <span className="text-[10px] text-slate-500 block font-semibold">
             30-Day Low
           </span>
-          <span className="text-sm font-black text-emerald-700 block">
+          <span className="text-sm font-black text-emerald-700 block tabular-nums">
             R{thirtyDayMin.toFixed(2)}
           </span>
-          <span className="text-[9px] text-slate-500 block">
+          <span className="text-[10px] text-slate-500 block">
             Lowest seen
           </span>
         </div>
 
         <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-200">
-          <span className="text-[9px] uppercase tracking-wider text-slate-400 block font-bold">
+          <span className="text-[10px] text-slate-500 block font-semibold">
             30-Day Avg
           </span>
-          <span className="text-sm font-black text-slate-700 block">
+          <span className="text-sm font-black text-slate-700 block tabular-nums">
             R{thirtyDayAvg.toFixed(2)}
           </span>
-          <span className="text-[9px] text-slate-500 block">
+          <span className="text-[10px] text-slate-500 block">
             {diffFromAvgPercent < 0 ? `${diffFromAvgPercent}% below` : `+${diffFromAvgPercent}% above`}
           </span>
         </div>
 
         <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-200">
-          <span className="text-[9px] uppercase tracking-wider text-slate-400 block font-bold">
+          <span className="text-[10px] text-slate-500 block font-semibold">
             30-Day Peak
           </span>
-          <span className="text-sm font-black text-slate-800 block">
+          <span className="text-sm font-black text-slate-800 block tabular-nums">
             R{thirtyDayMax.toFixed(2)}
           </span>
-          <span className="text-[9px] text-slate-500 block">
+          <span className="text-[10px] text-slate-500 block">
             Worst price
           </span>
         </div>
@@ -175,19 +177,20 @@ export const StapleTimingSection: React.FC<StapleTimingSectionProps> = ({
 
       {/* Explanation & Retail Advice */}
       <div className="p-3 bg-slate-50 rounded-lg border border-slate-200 space-y-1.5 text-xs text-slate-700">
-        <p className="font-medium leading-relaxed">
+        <p className="font-medium leading-relaxed font-sans">
           {explanation}
         </p>
-        <p className="text-[11px] font-bold text-slate-900">
-          💡 Advice: {recommendedAction}
+        <p className="text-xs font-bold text-slate-900 flex items-center gap-1.5 font-sans">
+          <Lightbulb className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+          <span>Advice: {recommendedAction}</span>
         </p>
       </div>
 
       {/* South African Supermarket Flyer Cycle Note */}
-      <div className="flex items-start gap-2 p-2.5 bg-amber-50/70 border border-amber-200/80 rounded-lg text-xs text-amber-900">
+      <div className="flex items-start gap-2 p-2.5 bg-amber-50/70 border border-amber-200/80 rounded-lg text-xs text-amber-900 font-sans">
         <Calendar className="w-4 h-4 text-amber-700 shrink-0 mt-0.5" />
         <div className="text-[11px] leading-snug">
-          <span className="font-black uppercase tracking-wider text-[10px] block font-mono text-amber-800">
+          <span className="font-bold text-xs block font-sans text-amber-900">
             SA Supermarket Promo Cycle
           </span>
           <span>{flyerCycleNote}</span>

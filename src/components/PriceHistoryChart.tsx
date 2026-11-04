@@ -103,7 +103,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
                   />
                   {storeName}
                 </span>
-                <span className="font-mono font-black text-[#FFE600]">
+                <span className="font-sans font-black text-[#FFE600]">
                   R {p.value.toFixed(2)}
                 </span>
               </div>

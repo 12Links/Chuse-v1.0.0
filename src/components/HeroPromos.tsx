@@ -36,7 +36,7 @@ export default function HeroPromos({
       <div className="flex items-center justify-between gap-2.5 sm:gap-3 w-full min-w-0">
         {/* Left: Compare Stores label + Branded Retailer Chips */}
         <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto no-scrollbar py-0.5 flex-1 min-w-0">
-          <span className="text-[10px] sm:text-[10.5px] font-bold uppercase tracking-wider text-slate-400 shrink-0 font-mono flex items-center gap-1 sm:gap-1.5 mr-0.5 select-none">
+          <span className="text-xs font-bold text-slate-600 shrink-0 font-sans flex items-center gap-1.5 mr-0.5 select-none">
             <span className="w-1.5 h-1.5 rounded-full bg-slate-400" />
             Compare:
           </span>

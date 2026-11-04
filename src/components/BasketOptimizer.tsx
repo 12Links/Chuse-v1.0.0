@@ -170,13 +170,13 @@ export default function BasketOptimizer({
                   id={`basket-item-${item.product.id}`}
                 >
                   <div className="flex items-start gap-4">
-                    <div className="bg-slate-100 rounded-2xl w-14 h-14 flex items-center justify-center font-black text-slate-600 font-mono text-sm shrink-0 uppercase border border-slate-200">
+                    <div className="bg-slate-100 rounded-2xl w-14 h-14 flex items-center justify-center font-black text-slate-600 font-sans text-sm shrink-0 uppercase border border-slate-200">
                       {item.product.name.slice(0, 2).toUpperCase()}
                     </div>
                     <div>
                       <h4 className="font-extrabold text-slate-800 text-base leading-snug">{item.product.name}</h4>
                       <div className="flex items-center gap-2 mt-1.5">
-                        <span className="text-xs bg-slate-100 text-slate-600 rounded-full px-2.5 py-0.5 font-bold font-mono border border-slate-200">
+                        <span className="text-xs bg-slate-100 text-slate-600 rounded-full px-2.5 py-0.5 font-bold font-sans border border-slate-200">
                           {item.product.unit}
                         </span>
                         <span className="text-xs text-slate-500 font-bold uppercase tracking-wider">{item.product.category}</span>
@@ -203,7 +203,7 @@ export default function BasketOptimizer({
                         <Minus className="w-3.5 h-3.5" />
                       </button>
                       
-                      <span className="w-8 text-center font-bold text-slate-800 font-mono text-sm leading-none">
+                      <span className="w-8 text-center font-bold text-slate-800 font-sans text-sm leading-none">
                         {item.quantity}
                       </span>
                       
@@ -218,7 +218,7 @@ export default function BasketOptimizer({
 
                     <div className="flex flex-col items-end min-w-[80px]">
                       <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Est. Cost</span>
-                      <span className="font-black text-slate-800 text-base font-mono leading-tight mt-0.5">
+                      <span className="font-black text-slate-800 text-base font-sans leading-tight mt-0.5">
                         R {(cheapest ? cheapest.price * item.quantity : 0).toFixed(2)}
                       </span>
                       
@@ -256,7 +256,7 @@ export default function BasketOptimizer({
                   <tr key={item.product.id} className="text-sm">
                     <td className="py-4 font-bold text-slate-800">
                       <div>{item.product.name}</div>
-                      <span className="text-[10px] text-slate-400 font-mono block mt-0.5">Qty: {item.quantity}</span>
+                      <span className="text-[10px] text-slate-400 font-sans block mt-0.5">Qty: {item.quantity}</span>
                     </td>
                     
                     {STORES.map(s => {
@@ -268,7 +268,7 @@ export default function BasketOptimizer({
                         <td key={s.id} className="py-4 text-center">
                           {priceInfo && priceInfo.inStock && priceInfo.price > 0 ? (
                             <div className="flex flex-col items-center">
-                              <span className={`font-mono text-sm font-bold ${isCheapest ? 'text-emerald-600 font-black' : 'text-slate-650'}`}>
+                              <span className={`font-sans text-sm font-bold ${isCheapest ? 'text-emerald-600 font-black' : 'text-slate-650'}`}>
                                 R {(priceInfo.price * item.quantity).toFixed(2)}
                               </span>
                               {priceInfo.onSpecial && (
@@ -278,7 +278,7 @@ export default function BasketOptimizer({
                               )}
                             </div>
                           ) : (
-                            <span className="text-xs text-slate-300 font-semibold font-mono">Out of Stock</span>
+                            <span className="text-xs text-slate-300 font-semibold font-sans">Out of Stock</span>
                           )}
                         </td>
                       );
@@ -330,7 +330,7 @@ export default function BasketOptimizer({
                       <div className="text-[11px] text-slate-400 font-bold">
                         {item.availableCount} / {basketDetails.length} Items Filled
                         {item.missingCount > 0 && (
-                          <span className="text-amber-400 font-mono ml-1">
+                          <span className="text-amber-400 font-sans ml-1">
                             ({item.missingCount} OOS)
                           </span>
                         )}
@@ -339,7 +339,7 @@ export default function BasketOptimizer({
 
                     <div className="text-right">
                       <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest block">Total</span>
-                      <span className={`font-mono font-extrabold text-base ${isCheapestSingle ? 'text-emerald-400 text-lg' : 'text-slate-100'}`}>
+                      <span className={`font-sans font-extrabold text-base ${isCheapestSingle ? 'text-emerald-400 text-lg' : 'text-slate-100'}`}>
                         R {item.total.toFixed(2)}
                       </span>
                     </div>
@@ -356,7 +356,7 @@ export default function BasketOptimizer({
                   <TrendingDown className="w-4 h-4 text-emerald-400" />
                   Maximum Potential Savings:
                 </span>
-                <span className="text-emerald-400 font-extrabold font-mono text-lg">
+                <span className="text-emerald-400 font-extrabold font-sans text-lg">
                   R {maxSavings.toFixed(2)}
                 </span>
               </div>
@@ -387,17 +387,17 @@ export default function BasketOptimizer({
           <div className="bg-white rounded-2xl p-4 divide-y divide-slate-100 shadow-sm border border-amber-200">
             <div className="flex justify-between py-2 text-xs font-bold text-slate-400 uppercase tracking-wider">
               <span>Smart Split Total:</span>
-              <span className="font-mono text-amber-700 text-sm font-extrabold">R {idealSplitTotal.toFixed(2)}</span>
+              <span className="font-sans text-amber-700 text-sm font-extrabold">R {idealSplitTotal.toFixed(2)}</span>
             </div>
             <div className="flex justify-between py-2 text-xs font-bold text-slate-400 uppercase tracking-wider">
               <span>Single Store Best:</span>
-              <span className="font-mono text-slate-700">R {cheapestSingleStore ? cheapestSingleStore.total.toFixed(2) : '0.00'}</span>
+              <span className="font-sans text-slate-700">R {cheapestSingleStore ? cheapestSingleStore.total.toFixed(2) : '0.00'}</span>
             </div>
             <div className="flex justify-between py-2.5 pt-3 text-xs font-black text-amber-900 bg-amber-100/40 px-2 rounded-xl mt-2 select-none font-bold">
               <span className="flex items-center gap-1 text-[11px]">
                 <PiggyBank className="w-4 h-4 text-amber-600 animate-bounce" /> Additional Cash Saved:
               </span>
-              <span className="font-mono text-sm leading-none text-amber-700">R {splitSavings.toFixed(2)}</span>
+              <span className="font-sans text-sm leading-none text-amber-700">R {splitSavings.toFixed(2)}</span>
             </div>
           </div>
 
@@ -432,7 +432,7 @@ export default function BasketOptimizer({
                         <div className="text-[10px] text-slate-400 font-bold flex items-center gap-1.5 mt-0.5">
                           <span>Qty: {item.quantity}</span>
                           <span>•</span>
-                          <span className="text-emerald-600 font-black shrink-0 font-mono">
+                          <span className="text-emerald-600 font-black shrink-0 font-sans">
                             R {item.bestPrice.toFixed(2)} each
                           </span>
                         </div>

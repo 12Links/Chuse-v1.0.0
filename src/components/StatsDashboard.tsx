@@ -1,8 +1,22 @@
 import React, { useState } from 'react';
 import { Product, Store, StoreId } from '../types';
 import { STORES } from '../data/catalog';
-import { BarChart2, TrendingUp, DollarSign, Award, Target, Tag, Info, ThumbsUp } from 'lucide-react';
+import { BarChart2, TrendingUp, DollarSign, Award, Target, Tag, Info, ThumbsUp, Lightbulb, ShoppingBag, Package } from 'lucide-react';
 import { motion } from 'motion/react';
+
+const SHORT_STORE_NAMES: Record<string, string> = {
+  woolworths: 'Woolies',
+  checkers: 'Checkers',
+  pnp: 'PnP',
+  shoprite: 'Shoprite',
+  foodlovers: "Food Lover's",
+  boxer: 'Boxer',
+  spar: 'SPAR',
+};
+
+const getShortStoreName = (storeId: string, fallbackName: string): string => {
+  return SHORT_STORE_NAMES[storeId] || fallbackName;
+};
 
 interface StatsDashboardProps {
   products: Product[];
@@ -106,11 +120,11 @@ export default function StatsDashboard({ products }: StatsDashboardProps) {
             <Award className="w-5 h-5" />
           </div>
           <div>
-            <span className="text-[10px] text-slate-400 dark:text-slate-500 font-extrabold uppercase tracking-widest block">Cheapest Store Basket</span>
-            <span className="text-lg font-black text-slate-800 dark:text-white font-mono block mt-1">
+            <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 block font-sans">Cheapest Store Basket</span>
+            <span className="text-lg font-black text-slate-800 dark:text-white font-sans block mt-1 tabular-nums">
               {cheapestStoreName} (R {cheapestValue.toFixed(2)})
             </span>
-            <span className="text-xs text-emerald-600 dark:text-emerald-400 font-bold block mt-1">
+            <span className="text-xs text-emerald-600 dark:text-emerald-400 font-bold block mt-1 font-sans">
               Save up to 34% on basic staples
             </span>
           </div>
@@ -121,11 +135,11 @@ export default function StatsDashboard({ products }: StatsDashboardProps) {
             <Target className="w-5 h-5" />
           </div>
           <div>
-            <span className="text-[10px] text-slate-400 dark:text-slate-500 font-extrabold uppercase tracking-widest block">Average Essential Basket</span>
-            <span className="text-lg font-black text-slate-800 dark:text-white font-mono block mt-1">
+            <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 block font-sans">Average Essential Basket</span>
+            <span className="text-lg font-black text-slate-800 dark:text-white font-sans block mt-1 tabular-nums">
               R {averageValue.toFixed(2)}
             </span>
-            <span className="text-xs text-amber-600 dark:text-amber-400 font-bold block mt-1">
+            <span className="text-xs text-amber-600 dark:text-amber-400 font-bold block mt-1 font-sans">
               Includes 5 key grocery staples
             </span>
           </div>
@@ -136,11 +150,11 @@ export default function StatsDashboard({ products }: StatsDashboardProps) {
             <TrendingUp className="w-5 h-5 text-[#FFE600]" />
           </div>
           <div>
-            <span className="text-[10px] text-slate-400 dark:text-slate-500 font-extrabold uppercase tracking-widest block">Premium Retailer Index</span>
-            <span className="text-lg font-black text-slate-800 dark:text-white font-mono block mt-1">
+            <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 block font-sans">Premium Retailer Index</span>
+            <span className="text-lg font-black text-slate-800 dark:text-white font-sans block mt-1 tabular-nums">
               {premiumStoreName} (R {premiumValue.toFixed(2)})
             </span>
-            <span className="text-xs text-rose-500 dark:text-rose-400 font-bold block mt-1">
+            <span className="text-xs text-rose-500 dark:text-rose-400 font-bold block mt-1 font-sans">
               + R {(premiumValue - cheapestValue).toFixed(2)} difference on staples
             </span>
           </div>
@@ -210,7 +224,7 @@ export default function StatsDashboard({ products }: StatsDashboardProps) {
                         <text
                           x={paddingLeft - 10}
                           y={y + 4}
-                          className="text-[10px] font-mono font-bold fill-slate-400 dark:fill-slate-500 text-right"
+                          className="text-[10px] font-sans font-bold fill-slate-400 dark:fill-slate-500 text-right"
                           textAnchor="end"
                         >
                           R {priceLabel}
@@ -256,7 +270,7 @@ export default function StatsDashboard({ products }: StatsDashboardProps) {
                         <text
                           x={x + barWidth / 2}
                           y={y - 8}
-                          className="text-xs font-mono font-extrabold fill-slate-700 dark:fill-slate-300"
+                          className="text-xs font-sans font-bold fill-slate-700 dark:fill-slate-300"
                           textAnchor="middle"
                         >
                           R {data.total.toFixed(0)}
@@ -266,10 +280,10 @@ export default function StatsDashboard({ products }: StatsDashboardProps) {
                         <text
                           x={x + barWidth / 2}
                           y={svgHeight - paddingBottom + 18}
-                          className={`text-[10px] font-black ${isHovered ? 'fill-amber-600 dark:fill-amber-500 font-black' : 'fill-slate-500 dark:fill-slate-400'}`}
+                          className={`text-[10px] font-sans font-bold ${isHovered ? 'fill-amber-600 dark:fill-amber-500 font-black' : 'fill-slate-500 dark:fill-slate-400'}`}
                           textAnchor="middle"
                         >
-                          {data.store.name}
+                          {getShortStoreName(data.store.id, data.store.name)}
                         </text>
                       </g>
                     );
@@ -284,11 +298,11 @@ export default function StatsDashboard({ products }: StatsDashboardProps) {
                     const hData = storeBasketData.find(d => d.store.id === hoveredBar)!;
                     const diffPct = Math.round(((hData.total - cheapestValue) / cheapestValue) * 100);
                     return (
-                      <div className="space-y-1 text-center">
-                        <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">{hData.store.name}</span>
-                        <div className="text-lg font-black font-mono">R {hData.total.toFixed(2)}</div>
-                        <p className="text-xs leading-snug text-slate-300">
-                          {diffPct === 0 ? '✓ Baseline cheapest staples' : `+${diffPct}% premium markup compare to baseline`}
+                      <div className="space-y-1 text-center font-sans">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">{hData.store.name}</span>
+                        <div className="text-lg font-black font-sans">R {hData.total.toFixed(2)}</div>
+                        <p className="text-xs leading-snug text-slate-300 font-sans">
+                          {diffPct === 0 ? 'Baseline cheapest staples' : `+${diffPct}% premium markup compare to baseline`}
                         </p>
                       </div>
                     );
@@ -317,7 +331,7 @@ export default function StatsDashboard({ products }: StatsDashboardProps) {
                         <text
                           x={paddingLeft - 10}
                           y={y + 4}
-                          className="text-[10px] font-mono font-bold fill-slate-400 dark:fill-slate-500 text-right"
+                          className="text-[10px] font-sans font-bold fill-slate-400 dark:fill-slate-500 text-right"
                           textAnchor="end"
                         >
                           {priceLabel}%
@@ -356,7 +370,7 @@ export default function StatsDashboard({ products }: StatsDashboardProps) {
                         <text
                           x={x + barWidth / 2}
                           y={y - 8}
-                          className="text-[11px] font-mono font-extrabold fill-slate-700 dark:fill-slate-300"
+                          className="text-[11px] font-sans font-bold fill-slate-700 dark:fill-slate-300"
                           textAnchor="middle"
                         >
                           +{data.pct}%
@@ -364,10 +378,10 @@ export default function StatsDashboard({ products }: StatsDashboardProps) {
                         <text
                           x={x + barWidth / 2}
                           y={svgHeight - paddingBottom + 18}
-                          className="text-[10px] font-black fill-slate-500 dark:fill-slate-400"
+                          className="text-[10px] font-sans font-bold fill-slate-500 dark:fill-slate-400"
                           textAnchor="middle"
                         >
-                          {data.store.name}
+                          {getShortStoreName(data.store.id, data.store.name)}
                         </text>
                       </g>
                     );
@@ -386,35 +400,44 @@ export default function StatsDashboard({ products }: StatsDashboardProps) {
               SA Budgeting Insights
             </h4>
             
-            <div className="space-y-3.5 text-xs text-slate-300 leading-relaxed font-semibold">
+            <div className="space-y-3.5 text-xs text-slate-300 leading-relaxed font-semibold font-sans">
               <div className="bg-slate-850 p-4 rounded-2xl border border-slate-800">
-                <span className="text-white font-extrabold block mb-1">💡 Smart Shopper & Xtra Savings</span>
+                <span className="text-white font-extrabold flex items-center gap-1.5 mb-1.5 font-sans">
+                  <Lightbulb className="w-4 h-4 text-[#FFE600] shrink-0" />
+                  <span>Smart Shopper & Xtra Savings</span>
+                </span>
                 Checkers Xtra Savings and Pick n Pay Smart Shopper cards receive instant markdown discounts up to 20% on shelf price. Always link your loyalty profile!
               </div>
 
               <div className="bg-slate-850 p-4 rounded-2xl border border-slate-800">
-                <span className="text-white font-extrabold block mb-1">🥑 Fresh Produce Rule</span>
+                <span className="text-white font-extrabold flex items-center gap-1.5 mb-1.5 font-sans">
+                  <ShoppingBag className="w-4 h-4 text-emerald-400 shrink-0" />
+                  <span>Fresh Produce Rule</span>
+                </span>
                 Woolworths leads in produce quality and durability, while Food Lover's Market offers exceptional value and variety of hand-selected fresh fruits and veggies.
               </div>
 
               <div className="bg-slate-850 p-4 rounded-2xl border border-slate-800">
-                <span className="text-white font-extrabold block mb-1">📦 Bulk Staples Deals</span>
+                <span className="text-white font-extrabold flex items-center gap-1.5 mb-1.5 font-sans">
+                  <Package className="w-4 h-4 text-amber-400 shrink-0" />
+                  <span>Bulk Staples Deals</span>
+                </span>
                 Essential commodity items like maize meal, oil, flour, and sugar are significantly cheaper when bought in bulk from Boxer Superstores.
               </div>
             </div>
           </div>
 
-          <div id="bargain-meter-box" className="bg-amber-100/20 dark:bg-amber-950/10 border border-amber-200/30 dark:border-amber-900/20 rounded-3xl p-6 space-y-3">
-            <h4 className="font-extrabold text-slate-800 dark:text-amber-200 text-sm flex items-center gap-1.5">
+          <div id="bargain-meter-box" className="bg-amber-100/20 dark:bg-amber-950/10 border border-amber-200/30 dark:border-amber-900/20 rounded-3xl p-6 space-y-3 font-sans">
+            <h4 className="font-extrabold text-slate-800 dark:text-amber-200 text-sm flex items-center gap-1.5 font-sans">
               <ThumbsUp className="w-4 h-4 text-amber-600 dark:text-amber-400 animate-pulse" />
               Inflation Bargain Meter
             </h4>
-            <p className="text-xs text-slate-500 dark:text-slate-400 font-semibold leading-relaxed">
+            <p className="text-xs text-slate-500 dark:text-slate-400 font-semibold leading-relaxed font-sans">
               We monitor average prices of essential products daily relative to high inflation margins. Currently, basic grocery products have experienced moderate relative volatility.
             </p>
-            <div className="bg-white dark:bg-slate-950 rounded-xl p-3.5 border border-amber-150 dark:border-amber-900/30 flex items-center justify-between text-xs transition-colors duration-200">
-              <span className="font-extrabold text-slate-600 dark:text-slate-400 font-mono">Bargain Index:</span>
-              <span className="font-mono text-amber-630 dark:text-amber-400 font-black font-mono">7.8 / 10 Excellent Savings</span>
+            <div className="bg-white dark:bg-slate-950 rounded-xl p-3.5 border border-amber-150 dark:border-amber-900/30 flex items-center justify-between text-xs transition-colors duration-200 font-sans">
+              <span className="font-bold text-slate-600 dark:text-slate-400 font-sans">Bargain Index:</span>
+              <span className="text-amber-600 dark:text-amber-400 font-black font-sans">7.8 / 10 Excellent Savings</span>
             </div>
           </div>
         </div>

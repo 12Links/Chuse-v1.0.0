@@ -237,7 +237,7 @@ export function FulfillmentModal({
                   type="button"
                   onClick={handleDetectGPS}
                   disabled={isLocating}
-                  className="px-3 py-1.5 rounded-lg bg-slate-950 hover:bg-slate-900 text-[#FFE600] font-black text-xs font-mono flex items-center gap-1.5 cursor-pointer shadow-xs disabled:opacity-50"
+                  className="px-3 py-1.5 rounded-lg bg-slate-950 hover:bg-slate-900 text-[#FFE600] font-black text-xs font-sans flex items-center gap-1.5 cursor-pointer shadow-xs disabled:opacity-50"
                 >
                   <Navigation className={`w-3 h-3 ${isLocating ? 'animate-spin' : ''}`} />
                   <span>{isLocating ? 'Locating...' : 'Use My GPS'}</span>
@@ -253,7 +253,7 @@ export function FulfillmentModal({
               {/* Closest Supermarket Quick List */}
               {nearbyBranches.length > 0 && (
                 <div className="space-y-1.5 pt-1 border-t border-amber-200/60">
-                  <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-slate-500 block">
+                  <span className="text-xs font-bold text-slate-600 font-sans block">
                     Closest Supermarkets Around You:
                   </span>
                   <div className="grid grid-cols-1 gap-1.5">
@@ -266,20 +266,21 @@ export function FulfillmentModal({
                           className="p-2 bg-white rounded-lg border border-slate-200 hover:border-slate-400 flex items-center justify-between gap-2 cursor-pointer transition-all hover:bg-slate-50 shadow-2xs group"
                         >
                           <div className="flex items-center gap-2 min-w-0">
-                            <span className={`text-[9px] font-mono font-black uppercase px-1.5 py-0.2 rounded shrink-0 ${theme?.badgeBg || 'bg-slate-950'} ${theme?.badgeText || 'text-white'}`}>
+                            <span className={`text-[9px] font-sans font-bold uppercase px-1.5 py-0.2 rounded shrink-0 ${theme?.badgeBg || 'bg-slate-950'} ${theme?.badgeText || 'text-white'}`}>
                               {theme?.shortName || br.storeId}
                             </span>
                             <div className="min-w-0">
-                              <span className="text-xs font-bold text-slate-900 truncate block group-hover:text-black">
+                              <span className="text-xs font-bold text-slate-900 truncate block group-hover:text-black font-sans">
                                 {br.name}
                               </span>
-                              <span className="text-[10px] text-slate-500 font-mono">
-                                📍 {br.distanceFormatted} away • {br.suburb}
+                              <span className="text-[10px] text-slate-500 font-sans flex items-center gap-1">
+                                <MapPin className="w-3 h-3 text-slate-400 shrink-0" />
+                                <span>{br.distanceFormatted} away • {br.suburb}</span>
                               </span>
                             </div>
                           </div>
 
-                          <span className="text-[11px] font-mono font-bold text-slate-700 group-hover:text-black shrink-0 flex items-center gap-1">
+                          <span className="text-[11px] font-sans font-bold text-slate-700 group-hover:text-black shrink-0 flex items-center gap-1">
                             Select <ArrowRight className="w-3 h-3" />
                           </span>
                         </div>
@@ -294,10 +295,10 @@ export function FulfillmentModal({
                         onClose();
                         onOpenNearbyStores();
                       }}
-                      className="text-[11px] font-mono font-bold text-slate-800 hover:text-black hover:underline flex items-center gap-1 pt-1 cursor-pointer"
+                      className="text-xs font-semibold text-slate-800 hover:text-black hover:underline flex items-center gap-1 pt-1 cursor-pointer font-sans"
                     >
                       <span>Explore all 30+ supermarkets on live radar</span>
-                      <ArrowRight className="w-3 h-3" />
+                      <ArrowRight className="w-3.5 h-3.5" />
                     </button>
                   )}
                 </div>
@@ -306,7 +307,7 @@ export function FulfillmentModal({
 
             {/* 2. Mode Toggle: Delivery App vs In-Store */}
             <div className="space-y-2">
-              <label className="text-[11px] font-bold uppercase tracking-wider text-slate-500 font-mono block">
+              <label className="text-xs font-bold text-slate-700 font-sans block">
                 1. Select Pricing Model
               </label>
 
@@ -332,10 +333,10 @@ export function FulfillmentModal({
                       <Check className="w-3.5 h-3.5 text-[#004D40] stroke-[3]" />
                     )}
                   </div>
-                  <p className="text-[11px] text-slate-600 leading-tight">
+                  <p className="text-[11px] text-slate-600 leading-tight font-sans">
                     Checkers Sixty60 & PnP ASAP! prices & live app promos
                   </p>
-                  <span className="inline-block mt-2 px-1.5 py-0.5 rounded text-[9.5px] font-mono font-bold bg-[#FFE600] text-black">
+                  <span className="inline-block mt-2 px-1.5 py-0.5 rounded text-[10px] font-sans font-bold bg-[#FFE600] text-black">
                     60-Min Ready
                   </span>
                 </button>
@@ -353,7 +354,7 @@ export function FulfillmentModal({
                   <div className="flex items-center justify-between mb-1">
                     <div className="flex items-center gap-1.5">
                       <Store className="w-4 h-4 text-slate-700" />
-                      <span className="text-xs font-black text-slate-950">
+                      <span className="text-xs font-black text-slate-950 font-sans">
                         In-Store Shelf
                       </span>
                     </div>
@@ -361,10 +362,10 @@ export function FulfillmentModal({
                       <Check className="w-3.5 h-3.5 text-slate-950 stroke-[3]" />
                     )}
                   </div>
-                  <p className="text-[11px] text-slate-600 leading-tight">
+                  <p className="text-[11px] text-slate-600 leading-tight font-sans">
                     Hypermarket & Supermarket physical aisle prices
                   </p>
-                  <span className="inline-block mt-2 px-1.5 py-0.5 rounded text-[9.5px] font-mono font-bold bg-slate-100 text-slate-700 border border-slate-200">
+                  <span className="inline-block mt-2 px-1.5 py-0.5 rounded text-[10px] font-sans font-bold bg-slate-100 text-slate-700 border border-slate-200">
                     Walk-in Shelf
                   </span>
                 </button>
@@ -373,7 +374,7 @@ export function FulfillmentModal({
 
             {/* 3. Suburb Search & Quick Selection */}
             <div className="space-y-2">
-              <label className="text-[11px] font-bold uppercase tracking-wider text-slate-500 font-mono block">
+              <label className="text-xs font-bold text-slate-700 font-sans block">
                 2. Suburb / Delivery Destination
               </label>
 
@@ -403,9 +404,9 @@ export function FulfillmentModal({
                       <div className="flex items-center gap-2">
                         <MapPin className={`w-3.5 h-3.5 shrink-0 ${isCurrent ? 'text-rose-600' : 'text-slate-400'}`} />
                         <div>
-                          <div className="text-xs font-bold text-slate-900">
+                          <div className="text-xs font-bold text-slate-900 font-sans">
                             {item.suburb}{' '}
-                            <span className="text-[10px] font-mono font-normal text-slate-500">
+                            <span className="text-[10px] font-sans font-medium text-slate-500">
                               ({item.postalCode})
                             </span>
                           </div>
@@ -416,7 +417,7 @@ export function FulfillmentModal({
                       </div>
 
                       {isCurrent ? (
-                        <span className="text-xs font-mono font-bold text-[#004D40] flex items-center gap-1">
+                        <span className="text-xs font-sans font-bold text-[#004D40] flex items-center gap-1">
                           <Check className="w-3.5 h-3.5" />
                           Selected
                         </span>
@@ -442,7 +443,7 @@ export function FulfillmentModal({
             <div className="text-[11px] text-slate-600 font-sans">
               Currently: <strong className="text-slate-900">{tempSettings.suburb}</strong>{' '}
               {tempSettings.distanceFormatted && (
-                <span className="text-emerald-700 font-mono font-bold">
+                <span className="text-emerald-700 font-sans font-bold">
                   ({tempSettings.distanceFormatted})
                 </span>
               )}

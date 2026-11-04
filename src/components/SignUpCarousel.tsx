@@ -19,10 +19,10 @@ export function SignUpCarousel() {
       {/* Top Brand Banner */}
       <div>
         <div className="flex items-center gap-2 mb-2">
-          <span className="text-2xl font-black font-mono lowercase tracking-tight">
+          <span className="text-2xl font-black font-sans lowercase tracking-tight">
             chuse<span className="text-[#FFE600]">.</span>
           </span>
-          <span className="bg-[#FFE600] text-black font-extrabold text-[9px] px-2 py-0.5 rounded-[2px] font-mono uppercase tracking-wider">
+          <span className="bg-[#FFE600] text-black font-extrabold text-[9px] px-2 py-0.5 rounded-[2px] font-sans uppercase tracking-wider">
             Live Retail Audit
           </span>
         </div>
@@ -33,7 +33,7 @@ export function SignUpCarousel() {
 
       {/* Tactile Till Slip Comparison */}
       <div className="my-6 space-y-4">
-        <div className="bg-[#FAF9F5] text-slate-900 rounded-[4px] p-5 shadow-2xl border border-slate-300 font-mono relative overflow-hidden">
+        <div className="bg-[#FAF9F5] text-slate-900 rounded-[4px] p-5 shadow-2xl border border-slate-300 font-sans relative overflow-hidden">
           {/* Receipt Top Header */}
           <div className="text-center border-b border-dashed border-slate-400 pb-3 mb-3">
             <span className="text-[10px] tracking-widest uppercase font-bold text-slate-500 block">
@@ -81,14 +81,14 @@ export function SignUpCarousel() {
           </div>
 
           {/* Zigzag Receipt Bottom Edge */}
-          <div className="mt-3 text-center text-[9px] text-slate-400 font-mono tracking-widest uppercase">
-            *** VERIFIED SUPERMARKET SHELF PRICING ***
+          <div className="mt-3 text-center text-[10px] text-slate-500 font-sans font-semibold">
+            Verified Supermarket Shelf Pricing
           </div>
         </div>
       </div>
 
       {/* Footer Dispatch */}
-      <div className="text-[10.5px] text-slate-400 font-mono border-t border-slate-800 pt-3">
+      <div className="text-xs text-slate-400 font-sans border-t border-slate-800 pt-3">
         <span>Includes Checkers, Pick n Pay, Woolies, Shoprite, SPAR, Boxer & Food Lover's.</span>
       </div>
     </div>

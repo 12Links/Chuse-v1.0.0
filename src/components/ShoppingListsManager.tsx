@@ -17,7 +17,8 @@ import {
   PiggyBank,
   ChevronRight,
   Sparkles,
-  ArrowRight
+  ArrowRight,
+  AlertTriangle
 } from 'lucide-react';
 import { Product, BasketItem } from '../types';
 import { STORES } from '../data/catalog';
@@ -36,6 +37,44 @@ interface ShoppingListsManagerProps {
   onAddToBasket: (productId: string) => void;
   currentBasket: BasketItem[];
 }
+
+const STARTER_TEMPLATES = [
+  {
+    name: 'Monthly Staples',
+    budget: 650,
+    description: 'Maize meal, rice, sunflower oil, sugar, cake flour & fresh milk',
+    itemIds: [
+      'prod-maize-iwisa-5kg',
+      'prod-rice-tastic-2kg',
+      'prod-oil-sunfoil-2l',
+      'prod-sugar-huletts-25kg',
+      'prod-flour-snowflake-25kg',
+      'prod-milk-clover-2l',
+    ]
+  },
+  {
+    name: 'Weekend Braai',
+    budget: 450,
+    description: 'Traditional boerewors, mixed chicken, Sasko bread & Coca-Cola',
+    itemIds: [
+      'prod-meat-boerewors-championship',
+      'prod-meat-chicken-rainbow-2kg',
+      'prod-bread-sasko-white',
+      'prod-soda-coke-nosugar-2l',
+    ]
+  },
+  {
+    name: 'Quick Dairy & Bread Run',
+    budget: 220,
+    description: 'Clover milk 2L, Albany bread, 18 extra large eggs & butter',
+    itemIds: [
+      'prod-milk-clover-2l',
+      'prod-bread-albany-white',
+      'prod-eggs-nulaid-18',
+      'prod-butter-kerrygold',
+    ]
+  }
+];
 
 export default function ShoppingListsManager({ products, onAddToBasket, currentBasket }: ShoppingListsManagerProps) {
   const [lists, setLists] = useState<SavedList[]>([]);
@@ -127,7 +166,30 @@ export default function ShoppingListsManager({ products, onAddToBasket, currentB
     setSelectedListId(newList.id);
     setNewListName('');
     setNewListBudget(500);
-    triggerSuccess('New list container created successfully!');
+    triggerSuccess('New shopping list created successfully!');
+  };
+
+  const handleCreateFromTemplate = (tpl: typeof STARTER_TEMPLATES[0]) => {
+    const templateItems: BasketItem[] = tpl.itemIds
+      .filter(id => products.some(p => p.id === id))
+      .map(productId => ({ productId, quantity: 1 }));
+
+    const finalItems = templateItems.length > 0 
+      ? templateItems 
+      : products.slice(0, 4).map(p => ({ productId: p.id, quantity: 1 }));
+
+    const newList: SavedList = {
+      id: `list-${Date.now()}`,
+      name: tpl.name,
+      budget: tpl.budget,
+      items: finalItems,
+      createdAt: new Date().toISOString().split('T')[0]
+    };
+
+    const updated = [...lists, newList];
+    saveListsToStorage(updated);
+    setSelectedListId(newList.id);
+    triggerSuccess(`Created "${tpl.name}" list!`);
   };
 
   const handleDeleteList = (id: string, name: string) => {
@@ -314,15 +376,15 @@ export default function ShoppingListsManager({ products, onAddToBasket, currentB
     <div className="space-y-8 text-left">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 pb-6 border-b border-slate-200">
         <div>
-          <h2 className="text-2xl font-black text-slate-900 uppercase">Production Shopping Lists Manager</h2>
-          <p className="text-xs text-slate-500 font-medium mt-1">Design weekly staple lists, track local budgets, and compare final basket optimization scores</p>
+          <h2 className="text-2xl font-black text-slate-900 font-sans tracking-tight">My Shopping Lists</h2>
+          <p className="text-xs text-slate-600 font-medium mt-1 font-sans">Design staple lists, track local budgets, and compare supermarket basket totals</p>
         </div>
         
         <div className="flex flex-col sm:items-end gap-1.5">
           <button 
             onClick={handleImportCurrentBasket}
             disabled={currentBasket.length === 0}
-            className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-[4px] text-xs font-bold transition-all shadow-xs ${
+            className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-lg text-xs font-bold transition-all shadow-xs ${
               currentBasket.length === 0
                 ? 'bg-neutral-100 text-neutral-500 border border-neutral-300 cursor-not-allowed'
                 : 'bg-[#FFE600] border border-black text-black hover:bg-black hover:text-white transition-all cursor-pointer active:scale-95'
@@ -333,7 +395,7 @@ export default function ShoppingListsManager({ products, onAddToBasket, currentB
             <span>Import Live Basket</span>
           </button>
           {currentBasket.length === 0 && (
-            <span className="text-[10px] text-neutral-500 font-mono font-medium">
+            <span className="text-[11px] text-slate-500 font-sans font-medium">
               Basket empty • Add groceries first to import as list
             </span>
           )}
@@ -341,7 +403,7 @@ export default function ShoppingListsManager({ products, onAddToBasket, currentB
       </div>
 
       {successMsg && (
-        <div className="bg-emerald-50 border border-emerald-100 text-emerald-800 text-xs p-4 rounded-2xl flex items-center gap-2.5 font-bold">
+        <div className="bg-emerald-50 border border-emerald-100 text-emerald-800 text-xs p-4 rounded-2xl flex items-center gap-2.5 font-bold font-sans">
           <Check className="w-4 h-4 text-emerald-600 shrink-0" />
           <span>{successMsg}</span>
         </div>
@@ -351,8 +413,8 @@ export default function ShoppingListsManager({ products, onAddToBasket, currentB
         
         {/* Left Side: List Selectors & Creator */}
         <div className="lg:col-span-4 space-y-6">
-          <div className="bg-white border border-slate-200 rounded-[24px] p-5.5 space-y-5 shadow-xs">
-            <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 block">Your Saved Groceries Lists</span>
+          <div className="bg-white border border-slate-200 rounded-2xl p-5 space-y-4 shadow-xs">
+            <span className="text-xs font-bold text-slate-800 font-sans block">Saved Shopping Lists</span>
             
             <div className="space-y-2 max-h-[220px] overflow-y-auto pr-1 no-scrollbar">
               {lists.map(list => {
@@ -361,17 +423,17 @@ export default function ShoppingListsManager({ products, onAddToBasket, currentB
                   <div 
                     key={list.id}
                     onClick={() => setSelectedListId(list.id)}
-                    className={`p-3.5 rounded-xl border transition-all cursor-pointer flex items-center justify-between group ${
+                    className={`p-3 rounded-xl border transition-all cursor-pointer flex items-center justify-between group ${
                       isActive 
-                        ? 'bg-[#FFE600]/10 border-[#FFE600] ring-1 ring-[#FFE600]/30' 
-                        : 'bg-slate-50 hover:bg-slate-100/80 border-slate-200/80'
+                        ? 'bg-[#FFE600]/15 border-yellow-400 ring-1 ring-yellow-400/40' 
+                        : 'bg-slate-50 hover:bg-slate-100 border-slate-200'
                     }`}
                   >
                     <div className="flex items-center gap-2.5">
-                      <ClipboardList className={`w-4 h-4 ${isActive ? 'text-black' : 'text-slate-400'}`} />
+                      <ClipboardList className={`w-4 h-4 ${isActive ? 'text-black' : 'text-slate-500'}`} />
                       <div className="text-left leading-none">
                         <span className="text-xs font-bold text-slate-800 block truncate max-w-[130px]">{list.name}</span>
-                        <span className="text-[9px] text-slate-400 font-bold block mt-1 uppercase tracking-wide">
+                        <span className="text-[10px] text-slate-500 font-semibold block mt-1 font-sans">
                           {list.items.length} items • Budget: R{list.budget}
                         </span>
                       </div>
@@ -391,38 +453,59 @@ export default function ShoppingListsManager({ products, onAddToBasket, currentB
               })}
 
               {lists.length === 0 && (
-                <div className="text-center py-6 border border-dashed border-neutral-300 rounded-lg bg-slate-50">
-                  <span className="text-xs text-neutral-500 font-bold font-sans">No saved lists. Create one below!</span>
+                <div className="text-center py-6 border border-dashed border-slate-300 rounded-lg bg-slate-50">
+                  <span className="text-xs text-slate-600 font-semibold font-sans">No saved lists. Create one or pick a template below!</span>
                 </div>
               )}
             </div>
           </div>
 
+          {/* Quick Starter Templates Pill List */}
+          <div className="bg-white border border-slate-200 rounded-2xl p-4 space-y-2.5 shadow-xs">
+            <span className="text-xs font-bold text-slate-800 font-sans block">Starter Templates</span>
+            <div className="space-y-1.5">
+              {STARTER_TEMPLATES.map((tpl) => (
+                <button
+                  key={tpl.name}
+                  type="button"
+                  onClick={() => handleCreateFromTemplate(tpl)}
+                  className="w-full text-left px-3 py-2 rounded-lg border border-slate-200 hover:border-slate-300 bg-slate-50 hover:bg-slate-100 flex items-center justify-between transition-colors group cursor-pointer"
+                >
+                  <div className="min-w-0 pr-2">
+                    <span className="text-xs font-bold text-slate-800 font-sans block group-hover:text-black truncate">{tpl.name}</span>
+                    <span className="text-[10px] text-slate-500 font-sans block">Budget: R{tpl.budget}</span>
+                  </div>
+                  <Plus className="w-3.5 h-3.5 text-slate-500 group-hover:text-black shrink-0" />
+                </button>
+              ))}
+            </div>
+          </div>
+
           {/* Create New List */}
-          <div className="bg-white border border-slate-200 rounded-xl p-5 space-y-4 shadow-2xs">
-            <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-slate-400 block">Create List Container</span>
+          <div className="bg-white border border-slate-200 rounded-2xl p-5 space-y-4 shadow-xs">
+            <span className="text-xs font-bold text-slate-800 font-sans block">New Shopping List</span>
             
             <form onSubmit={handleCreateList} className="space-y-3.5">
               <div className="space-y-1.5">
-                <label className="text-[10px] font-mono font-bold text-slate-500 uppercase tracking-wide">List Name</label>
+                <label className="text-xs font-semibold text-slate-600 font-sans block">List Name</label>
                 <input 
                   type="text"
-                  placeholder="e.g. Monthly Pantry staples"
+                  placeholder="e.g. Monthly Pantry Staples"
                   value={newListName}
                   onChange={e => setNewListName(e.target.value)}
-                  className="w-full px-3 py-2 bg-slate-50 rounded-lg border border-slate-200 focus:outline-none focus:border-black text-xs font-semibold text-slate-900"
+                  className="w-full px-3 py-2 bg-white rounded-lg border border-slate-300 focus:outline-none focus:border-black text-xs font-semibold text-slate-800 font-sans shadow-2xs"
                   required
                 />
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-[10px] font-mono font-bold text-slate-500 uppercase tracking-wide">Allocated Budget (ZAR)</label>
+                <label className="text-xs font-semibold text-slate-600 font-sans block">Allocated Budget (ZAR)</label>
                 <input 
                   type="number"
                   placeholder="e.g. 500"
                   value={newListBudget}
                   onChange={e => setNewListBudget(Number(e.target.value))}
-                  className="w-full px-3 py-2 bg-slate-50 rounded-lg border border-slate-200 focus:outline-none focus:border-black text-xs font-semibold text-slate-900 font-mono"
+                  className="w-full px-3 py-2 bg-white rounded-lg border border-slate-300 focus:outline-none focus:border-black text-xs font-semibold text-slate-800 font-sans shadow-2xs"
                   min="50"
                   max="10000"
                   required
@@ -432,10 +515,10 @@ export default function ShoppingListsManager({ products, onAddToBasket, currentB
               <button 
                 type="submit"
                 disabled={!newListName.trim()}
-                className={`w-full py-2.5 transition-all rounded-[4px] text-xs font-bold uppercase tracking-wider font-mono ${
+                className={`w-full py-2.5 transition-all rounded-lg text-xs font-bold font-sans ${
                   !newListName.trim()
                     ? 'bg-neutral-100 text-neutral-500 border border-neutral-300 cursor-not-allowed'
-                    : 'bg-black text-white hover:bg-[#FFE600] hover:text-black cursor-pointer'
+                    : 'bg-black text-white hover:bg-[#FFE600] hover:text-black cursor-pointer shadow-xs'
                 }`}
               >
                 Create New List
@@ -505,8 +588,9 @@ export default function ShoppingListsManager({ products, onAddToBasket, currentB
 
                 {/* Budget alert */}
                 {cheapestStore && cheapestStore.total > activeList.budget && (
-                  <div className="bg-rose-500/15 border border-rose-500/30 text-rose-300 text-[10px] p-3 rounded-xl flex items-center gap-2 font-bold uppercase tracking-wider">
-                    ⚠️ Warning: Cheapest index pricing R{cheapestStore.total.toFixed(2)} exceeds your allocated list budget limit of R{activeList.budget}! Consider removing 1-2 non-staples.
+                  <div className="bg-rose-500/15 border border-rose-500/30 text-rose-300 text-xs p-3 rounded-xl flex items-center gap-2 font-semibold font-sans">
+                    <AlertTriangle className="w-4 h-4 text-rose-400 shrink-0" />
+                    <span>Warning: Cheapest index pricing R{cheapestStore.total.toFixed(2)} exceeds your allocated list budget limit of R{activeList.budget}! Consider removing 1-2 non-staples.</span>
                   </div>
                 )}
               </div>
@@ -699,13 +783,42 @@ export default function ShoppingListsManager({ products, onAddToBasket, currentB
 
             </div>
           ) : (
-            <div className="bg-white border-2 border-dashed border-neutral-300 rounded-[6px] p-12 text-center space-y-4">
-              <ClipboardList className="w-12 h-12 text-neutral-400 mx-auto" />
-              <div>
-                <h3 className="text-sm font-black uppercase tracking-wide text-slate-900 font-sans">No Grocery List Workspace Selected</h3>
-                <p className="text-xs text-neutral-600 mt-1 max-w-sm mx-auto font-sans leading-relaxed">
-                  Select a list from the side panel or create a brand new container to start planning your multi-supermarket comparative budget optimizations.
+            <div className="bg-white border border-slate-300 rounded-2xl p-8 sm:p-10 text-center space-y-6 shadow-xs">
+              <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center mx-auto text-slate-600">
+                <ClipboardList className="w-6 h-6" />
+              </div>
+              <div className="space-y-1.5">
+                <h3 className="text-base sm:text-lg font-bold text-slate-900 font-sans">
+                  Select a list or pick a template below to compare basket prices
+                </h3>
+                <p className="text-xs text-slate-600 max-w-md mx-auto font-sans leading-relaxed">
+                  Start planning your multi-supermarket basket optimization by selecting a saved list or picking one of our pre-built starter templates.
                 </p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5 pt-2 text-left">
+                {STARTER_TEMPLATES.map((tpl) => (
+                  <div 
+                    key={tpl.name}
+                    className="p-4 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100/90 hover:border-slate-300 transition-all flex flex-col justify-between space-y-3 shadow-2xs"
+                  >
+                    <div>
+                      <span className="text-xs font-bold text-slate-900 font-sans block">{tpl.name}</span>
+                      <span className="text-[11px] text-slate-600 font-sans block mt-1 leading-snug">{tpl.description}</span>
+                      <span className="inline-block mt-2 text-[10px] font-semibold text-slate-700 bg-white border border-slate-200 px-2 py-0.5 rounded-full">
+                        Budget: R{tpl.budget}
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => handleCreateFromTemplate(tpl)}
+                      className="w-full py-2 px-3 rounded-lg bg-black text-white hover:bg-[#FFE600] hover:text-black font-sans text-xs font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                    >
+                      <Sparkles className="w-3.5 h-3.5" />
+                      <span>Use Template</span>
+                    </button>
+                  </div>
+                ))}
               </div>
             </div>
           )}

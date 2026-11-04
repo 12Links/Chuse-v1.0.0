@@ -210,14 +210,14 @@ export default function AddCustomProduct({ onAddProduct }: AddCustomProductProps
                 )}
                 
                 <div className="relative mt-1.5 align-middle">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-black font-mono text-slate-400 leading-none">R</span>
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold font-sans text-slate-500 leading-none">R</span>
                   <input
                     id={`price-input-${store.id}`}
                     type="text"
                     placeholder="0.00"
                     value={prices[store.id]}
                     onChange={(e) => handlePriceChange(store.id, e.target.value)}
-                    className="w-full pl-7 pr-3 py-2.5 rounded-xl bg-white border border-slate-200 text-xs focus:outline-none focus:ring-4 focus:ring-amber-500/10 focus:border-[#FFE600] font-mono font-bold text-slate-800"
+                    className="w-full pl-7 pr-3 py-2.5 rounded-xl bg-white border border-slate-200 text-xs focus:outline-none focus:ring-4 focus:ring-amber-500/10 focus:border-[#FFE600] font-sans font-semibold text-slate-800"
                   />
                 </div>
               </div>

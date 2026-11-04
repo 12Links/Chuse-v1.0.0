@@ -13,7 +13,8 @@ import {
   Save, 
   Trash2, 
   Briefcase,
-  AlertTriangle
+  AlertTriangle,
+  X
 } from 'lucide-react';
 import { UserProfile, Product } from '../types';
 import { updateUserProfile } from '../lib/api';
@@ -293,7 +294,7 @@ export default function SettingsPage({
                   <div className={`w-4 h-4 rounded-full border flex items-center justify-center shrink-0 ${
                     loyaltyCards.checkers ? 'bg-teal-700 border-teal-700 text-white' : 'border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900'
                   }`}>
-                    {loyaltyCards.checkers && <span className="text-[9px] font-black">✓</span>}
+                    {loyaltyCards.checkers && <Check className="w-2.5 h-2.5 stroke-[3]" />}
                   </div>
                   <img 
                     src="/icons/checkers.png" 
@@ -316,7 +317,7 @@ export default function SettingsPage({
                   <div className={`w-4 h-4 rounded-full border flex items-center justify-center shrink-0 ${
                     loyaltyCards.pnp ? 'bg-zinc-950 dark:bg-slate-100 border-zinc-950 dark:border-slate-100 text-white dark:text-black' : 'border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900'
                   }`}>
-                    {loyaltyCards.pnp && <span className="text-[9px] font-black">✓</span>}
+                    {loyaltyCards.pnp && <Check className="w-2.5 h-2.5 stroke-[3]" />}
                   </div>
                   <img 
                     src="/icons/pnp.svg" 
@@ -339,7 +340,7 @@ export default function SettingsPage({
                   <div className={`w-4 h-4 rounded-full border flex items-center justify-center shrink-0 ${
                     loyaltyCards.woolworths ? 'bg-black dark:bg-white border-black dark:border-white text-white dark:text-black' : 'border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900'
                   }`}>
-                    {loyaltyCards.woolworths && <span className="text-[9px] font-black">✓</span>}
+                    {loyaltyCards.woolworths && <Check className="w-2.5 h-2.5 stroke-[3]" />}
                   </div>
                   <img 
                     src="/icons/woolworths.svg" 
@@ -362,7 +363,7 @@ export default function SettingsPage({
                   <div className={`w-4 h-4 rounded-full border flex items-center justify-center shrink-0 ${
                     loyaltyCards.shoprite ? 'bg-red-600 border-red-600 text-white' : 'border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900'
                   }`}>
-                    {loyaltyCards.shoprite && <span className="text-[9px] font-black">✓</span>}
+                    {loyaltyCards.shoprite && <Check className="w-2.5 h-2.5 stroke-[3]" />}
                   </div>
                   <img 
                     src="/icons/shoprite.png" 
@@ -385,7 +386,7 @@ export default function SettingsPage({
                   <div className={`w-4 h-4 rounded-full border flex items-center justify-center shrink-0 ${
                     loyaltyCards.spar ? 'bg-emerald-600 border-emerald-600 text-white' : 'border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900'
                   }`}>
-                    {loyaltyCards.spar && <span className="text-[9px] font-black">✓</span>}
+                    {loyaltyCards.spar && <Check className="w-2.5 h-2.5 stroke-[3]" />}
                   </div>
                   <img 
                     src="/icons/spar.jpg" 
@@ -411,13 +412,18 @@ export default function SettingsPage({
                     key={storeId}
                     type="button"
                     onClick={() => handleToggleStore(storeId)}
-                    className={`px-3 py-1.5 rounded-full text-[11px] font-extrabold border cursor-pointer uppercase tracking-wider transition-all duration-150 ${
+                    className={`px-3 py-1.5 rounded-full text-xs font-bold border cursor-pointer uppercase transition-all duration-150 flex items-center gap-1.5 font-sans ${
                       preferredStores[storeId] 
                         ? 'bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-950 border-transparent' 
                         : 'bg-slate-100 dark:bg-slate-950 text-slate-400 dark:text-slate-550 border-slate-200 dark:border-slate-850'
                     }`}
                   >
-                    {storeId} {preferredStores[storeId] ? '✓' : '✖'}
+                    <span>{storeId}</span>
+                    {preferredStores[storeId] ? (
+                      <Check className="w-3 h-3 stroke-[2.5]" />
+                    ) : (
+                      <X className="w-3 h-3 text-slate-400" />
+                    )}
                   </button>
                 ))}
               </div>

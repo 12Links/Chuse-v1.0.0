@@ -60,8 +60,8 @@ export function ReceiptModal({ receipt, isOpen, onClose }: ReceiptModalProps) {
         <div className="p-3.5 px-4 border-b border-slate-200 bg-slate-50 flex items-center justify-between shrink-0">
           <div className="flex items-center gap-2">
             <FileText className="w-4 h-4 text-slate-800" />
-            <h3 className="font-bold text-xs uppercase font-mono tracking-wider text-slate-900">
-              Till Slip Receipt & WhatsApp Share
+            <h3 className="font-bold text-xs text-slate-900 font-sans">
+              Estimated Till Slip & Share
             </h3>
           </div>
           <button
@@ -76,18 +76,15 @@ export function ReceiptModal({ receipt, isOpen, onClose }: ReceiptModalProps) {
         <div className="flex-1 overflow-y-auto p-4 sm:p-5 bg-slate-100 flex flex-col items-center">
           
           {/* Authentic Paper Till Slip */}
-          <div className="w-full max-w-sm bg-[#FAF9F5] text-slate-900 rounded-[2px] p-5 shadow-md border border-slate-300 font-mono text-xs relative">
+          <div className="w-full max-w-sm bg-[#FAF9F5] text-slate-900 rounded-[2px] p-5 shadow-md border border-slate-300 font-sans text-xs relative">
             
             {/* Till Slip Header */}
             <div className="text-center border-b border-dashed border-slate-400 pb-3 mb-3">
-              <span className="text-xl font-black font-display tracking-tight block">
+              <span className="text-xl font-black font-sans tracking-tight block">
                 chuse<span className="text-[#FFE600]">.</span>
               </span>
-              <span className="text-[9.5px] uppercase tracking-widest text-slate-500 font-bold block mt-0.5">
-                Mzansi Supermarket Price Audit
-              </span>
-              <span className="text-[9px] uppercase tracking-wider text-slate-400 block">
-                Tax Invoice Comparison Slip
+              <span className="text-xs text-slate-600 font-semibold block mt-0.5">
+                Estimated Till Slip & Price Comparison
               </span>
             </div>
 
@@ -191,9 +188,9 @@ export function ReceiptModal({ receipt, isOpen, onClose }: ReceiptModalProps) {
           </div>
 
           {/* Local Storage Indicator Banner */}
-          <div className="mt-4 flex items-center gap-1.5 text-[11px] text-slate-500 font-mono">
+          <div className="mt-4 flex items-center gap-1.5 text-[11px] text-slate-500 font-sans">
             <HardDrive className="w-3.5 h-3.5 text-slate-400" />
-            <span>Receipt automatically cached in local browser storage</span>
+            <span>Receipt automatically cached in local storage</span>
           </div>
         </div>
 

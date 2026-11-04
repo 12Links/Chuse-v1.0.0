@@ -394,11 +394,11 @@ function MainPage({ user, setUser }: MainPageProps) {
                     {fulfillmentSettings.activeStoreBranchName || fulfillmentSettings.suburb}
                   </span>
                   {fulfillmentSettings.distanceFormatted ? (
-                    <span className="hidden sm:inline-block text-[9.5px] font-mono font-bold text-emerald-800 bg-emerald-50 px-1 py-0.2 rounded border border-emerald-200">
+                    <span className="hidden sm:inline-block text-[10px] font-sans font-bold text-emerald-800 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">
                       {fulfillmentSettings.distanceFormatted}
                     </span>
                   ) : (
-                    <span className="hidden md:inline text-[10px] font-mono font-normal text-slate-400">
+                    <span className="hidden md:inline text-[11px] font-sans font-normal text-slate-400">
                       ({fulfillmentSettings.postalCode})
                     </span>
                   )}
@@ -511,11 +511,11 @@ function MainPage({ user, setUser }: MainPageProps) {
                 className="flex items-center gap-2 px-3.5 py-2 rounded-lg bg-[#FFE600] hover:bg-yellow-400 text-slate-950 font-black text-xs cursor-pointer transition-all border border-yellow-400 shadow-xs hover:shadow-sm"
               >
                 <ShoppingBag className="w-4 h-4 stroke-[2.5]" />
-                <span className="font-mono">
+                <span className="font-sans font-bold">
                   {basketItemCount === 0 ? 'Basket (0)' : `R${basketLowestTotal.toFixed(2)} (${basketItemCount})`}
                 </span>
                 {basketTotalSavings > 0 && (
-                  <span className="hidden lg:inline-flex bg-emerald-800 text-[#FFE600] text-[10px] font-mono px-1.5 py-0.5 rounded font-black tracking-tight">
+                  <span className="hidden lg:inline-flex bg-emerald-800 text-[#FFE600] text-[10px] font-sans px-1.5 py-0.5 rounded font-black tracking-tight">
                     Save R{basketTotalSavings.toFixed(0)}
                   </span>
                 )}

@@ -439,10 +439,10 @@ export default function BarcodeScanner({
             </div>
             <div className="min-w-0">
               <div className="flex items-center gap-2">
-                <h3 className="text-sm sm:text-base font-black text-slate-950 font-display uppercase tracking-tight truncate">
+                <h3 className="text-sm sm:text-base font-black text-slate-950 font-sans tracking-tight truncate">
                   Barcode Price Matcher
                 </h3>
-                <span className="hidden sm:inline-flex px-1.5 py-0.5 rounded text-[9.5px] font-mono font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">
+                <span className="hidden sm:inline-flex px-1.5 py-0.5 rounded text-[10px] font-sans font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">
                   GS1 EAN-13
                 </span>
               </div>
@@ -469,7 +469,7 @@ export default function BarcodeScanner({
           
           {/* Viewfinder Mode Selector (Camera vs Photo vs Manual) */}
           {scanStatus === 'scanning' && (
-            <div className="flex items-center p-1 bg-slate-100 rounded-xl border border-slate-200 text-xs font-mono font-bold">
+            <div className="flex items-center p-1 bg-slate-100 rounded-xl border border-slate-200 text-xs font-sans font-semibold">
               <button
                 type="button"
                 onClick={() => {
@@ -534,7 +534,7 @@ export default function BarcodeScanner({
                 {isInitializingCamera && (
                   <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-xs flex flex-col items-center justify-center text-white space-y-2 z-20">
                     <RefreshCw className="w-7 h-7 text-[#FFE600] animate-spin" />
-                    <span className="text-xs font-mono font-bold tracking-wide">Starting optical camera...</span>
+                    <span className="text-xs font-sans font-semibold tracking-wide">Starting optical camera...</span>
                   </div>
                 )}
 
@@ -551,7 +551,7 @@ export default function BarcodeScanner({
                     <div className="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-[#FFE600]" />
                     <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-[#FFE600]" />
 
-                    <span className="absolute -bottom-6 px-2.5 py-0.5 rounded-full bg-slate-950/90 text-white text-[9px] font-mono font-bold uppercase tracking-wider border border-white/20 flex items-center gap-1 shadow-md">
+                    <span className="absolute -bottom-6 px-2.5 py-0.5 rounded-full bg-slate-950/90 text-white text-[10px] font-sans font-semibold border border-white/20 flex items-center gap-1 shadow-md">
                       <Scan className="w-2.5 h-2.5 text-[#FFE600]" />
                       Align barcode inside frame
                     </span>
@@ -589,9 +589,9 @@ export default function BarcodeScanner({
 
                 {/* Bottom Left Live Status Pill */}
                 <div className="absolute bottom-3 left-3 z-20">
-                  <span className="px-2.5 py-1 rounded-full bg-emerald-950/90 border border-emerald-400/40 text-emerald-300 text-[9.5px] font-mono font-bold flex items-center gap-1.5 shadow-md">
+                  <span className="px-2.5 py-1 rounded-full bg-emerald-950/90 border border-emerald-400/40 text-emerald-300 text-[10px] font-sans font-semibold flex items-center gap-1.5 shadow-md">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
-                    ZXing Optical Engine Active
+                    Scanner Active
                   </span>
                 </div>
               </div>
@@ -615,7 +615,7 @@ export default function BarcodeScanner({
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                className="px-4 py-2 rounded-xl bg-slate-950 hover:bg-black text-white text-xs font-mono font-bold uppercase cursor-pointer transition-colors shadow-xs"
+                className="px-4 py-2 rounded-xl bg-slate-950 hover:bg-black text-white text-xs font-sans font-bold cursor-pointer transition-colors shadow-xs"
               >
                 Choose Photo
               </button>
@@ -650,19 +650,19 @@ export default function BarcodeScanner({
                   }}
                   autoFocus
                   placeholder="e.g. 6001299011113"
-                  className="w-full pl-10 pr-24 py-3 rounded-xl bg-white border-2 border-slate-200 text-sm font-mono font-bold text-slate-900 tracking-wider placeholder:text-slate-400 placeholder:tracking-normal focus:outline-none focus:border-slate-950 transition-all shadow-xs"
+                  className="w-full pl-10 pr-24 py-3 rounded-xl bg-white border-2 border-slate-200 text-sm font-sans font-bold text-slate-900 tracking-wider placeholder:text-slate-400 placeholder:tracking-normal focus:outline-none focus:border-slate-950 transition-all shadow-xs"
                 />
                 <button
                   type="button"
                   disabled={!manualInput.trim()}
                   onClick={() => handleBarcodeDiscovered(manualInput)}
-                  className="absolute right-1.5 top-1/2 -translate-y-1/2 px-3.5 py-1.5 rounded-lg bg-slate-950 hover:bg-black disabled:bg-slate-300 text-white text-xs font-mono font-bold uppercase cursor-pointer disabled:cursor-not-allowed transition-colors shadow-xs"
+                  className="absolute right-1.5 top-1/2 -translate-y-1/2 px-3.5 py-1.5 rounded-lg bg-slate-950 hover:bg-black disabled:bg-slate-300 text-white text-xs font-sans font-bold cursor-pointer disabled:cursor-not-allowed transition-colors shadow-xs"
                 >
                   Lookup
                 </button>
               </div>
 
-              <div className="flex items-center justify-center gap-1.5 text-[11px] text-slate-500 font-mono">
+              <div className="flex items-center justify-center gap-1.5 text-[11px] text-slate-500 font-sans">
                 <Info className="w-3.5 h-3.5 text-slate-400" />
                 <span>Compatible with South African GS1 EAN-13, EAN-8 & UPC</span>
               </div>
@@ -724,13 +724,13 @@ export default function BarcodeScanner({
                     }
                   }}
                   placeholder="Or enter barcode digits directly..."
-                  className="w-full pl-9 pr-20 py-2.5 rounded-xl bg-slate-100 border border-slate-200 text-xs sm:text-sm font-mono font-bold text-slate-900 placeholder:text-slate-400 placeholder:font-sans focus:outline-none focus:border-slate-950 focus:bg-white transition-all shadow-2xs"
+                  className="w-full pl-9 pr-20 py-2.5 rounded-xl bg-slate-100 border border-slate-200 text-xs sm:text-sm font-sans font-bold text-slate-900 placeholder:text-slate-400 placeholder:font-sans focus:outline-none focus:border-slate-950 focus:bg-white transition-all shadow-2xs"
                 />
                 {manualInput.trim() && (
                   <button
                     type="button"
                     onClick={() => handleBarcodeDiscovered(manualInput)}
-                    className="absolute right-1.5 top-1/2 -translate-y-1/2 px-2.5 py-1 rounded-lg bg-slate-950 hover:bg-black text-white text-[10.5px] font-mono font-bold uppercase cursor-pointer transition-colors shadow-xs"
+                    className="absolute right-1.5 top-1/2 -translate-y-1/2 px-2.5 py-1 rounded-lg bg-slate-950 hover:bg-black text-white text-[10.5px] font-sans font-bold cursor-pointer transition-colors shadow-xs"
                   >
                     Lookup
                   </button>
@@ -746,8 +746,8 @@ export default function BarcodeScanner({
               <h4 className="text-sm font-black text-slate-900 font-sans">
                 Querying National Supermarket Index...
               </h4>
-              <p className="text-xs text-slate-500 font-mono">
-                Matching GTIN Barcode: <strong className="text-slate-900">{scannedBarcode}</strong>
+              <p className="text-xs text-slate-500 font-sans">
+                Matching GTIN Barcode: <strong className="text-slate-900 font-bold">{scannedBarcode}</strong>
               </p>
             </div>
           )}
@@ -769,11 +769,11 @@ export default function BarcodeScanner({
 
                 <div className="flex-1 min-w-0 text-center sm:text-left space-y-1">
                   <div className="flex items-center justify-center sm:justify-start gap-2 flex-wrap">
-                    <span className="px-2 py-0.5 rounded-full bg-emerald-700 text-white font-mono font-black text-[9.5px] uppercase tracking-wide flex items-center gap-1 shadow-2xs">
+                    <span className="px-2 py-0.5 rounded-full bg-emerald-700 text-white font-sans font-bold text-[10px] flex items-center gap-1 shadow-2xs">
                       <CheckCircle2 className="w-3 h-3" />
                       GTIN Confirmed
                     </span>
-                    <span className="text-[10px] font-mono text-slate-600 bg-white/80 px-2 py-0.5 rounded-md border border-slate-200">
+                    <span className="text-[10px] font-sans font-semibold text-slate-600 bg-white/80 px-2 py-0.5 rounded-md border border-slate-200">
                       #{scannedBarcode}
                     </span>
                   </div>
@@ -782,21 +782,21 @@ export default function BarcodeScanner({
                     {matchedProduct.name}
                   </h4>
 
-                  <span className="text-xs font-mono font-bold text-slate-600 block">
+                  <span className="text-xs font-sans font-medium text-slate-600 block">
                     {matchedProduct.category} • Pack Size: {matchedProduct.unit}
                   </span>
                 </div>
 
                 {cheapestPriceObj && (
                   <div className="text-center sm:text-right shrink-0 bg-white/90 p-2.5 rounded-xl border border-emerald-200">
-                    <span className="text-[10px] font-mono font-bold uppercase text-emerald-800 block">
+                    <span className="text-[10px] font-sans font-bold text-emerald-800 block">
                       Lowest Shelf Price
                     </span>
-                    <span className="text-2xl font-black font-mono text-emerald-700 leading-none">
+                    <span className="text-2xl font-black font-sans text-emerald-700 leading-none">
                       R{cheapestPriceObj.price.toFixed(2)}
                     </span>
                     {potentialSavings > 0 && (
-                      <span className="text-[9.5px] font-mono font-bold text-slate-600 block mt-0.5">
+                      <span className="text-[10px] font-sans font-semibold text-slate-600 block mt-0.5">
                         Save R{potentialSavings.toFixed(2)} vs highest
                       </span>
                     )}
@@ -806,7 +806,7 @@ export default function BarcodeScanner({
 
               {/* 7-Store Ranked Price Breakdown */}
               <div className="space-y-2">
-                <div className="flex items-center justify-between text-xs font-mono font-bold uppercase tracking-wider text-slate-500">
+                <div className="flex items-center justify-between text-xs font-sans font-bold text-slate-600">
                   <span>Live Supermarket Price Ranking</span>
                   <span className="text-emerald-700">{sortedPrices.length} Stores Tracked</span>
                 </div>
@@ -828,7 +828,7 @@ export default function BarcodeScanner({
                         }`}
                       >
                         <div className="flex items-center gap-2.5 min-w-0">
-                          <span className={`w-5 h-5 rounded-md flex items-center justify-center text-[10px] font-mono font-bold shrink-0 ${
+                          <span className={`w-5 h-5 rounded-md flex items-center justify-center text-[10px] font-sans font-bold shrink-0 ${
                             isLowest ? 'bg-emerald-700 text-white' : 'bg-slate-200 text-slate-700'
                           }`}>
                             #{idx + 1}
@@ -839,34 +839,35 @@ export default function BarcodeScanner({
                                 {retailer?.name || pr.storeId}
                               </span>
                               {retailer && (
-                                <span className={`text-[9px] px-1.5 py-0.2 rounded font-mono font-bold ${retailer.badgeBg} ${retailer.badgeText}`}>
+                                <span className={`text-[9px] px-1.5 py-0.2 rounded font-sans font-bold ${retailer.badgeBg} ${retailer.badgeText}`}>
                                   {retailer.loyaltyProgram}
                                 </span>
                               )}
                               {pr.onSpecial && (
-                                <span className="text-[9px] px-1.5 py-0.2 rounded font-mono font-bold bg-amber-100 text-amber-800 border border-amber-300">
+                                <span className="text-[9px] px-1.5 py-0.2 rounded font-sans font-bold bg-amber-100 text-amber-800 border border-amber-300">
                                   {pr.specialDetail || 'Special'}
                                 </span>
                               )}
                             </div>
                             {nearestBranch && (
-                              <span className="text-[10px] text-slate-500 font-mono block truncate">
-                                📍 {nearestBranch.distanceFormatted} away • {nearestBranch.mallOrCenter}
+                              <span className="text-[10px] text-slate-500 font-sans flex items-center gap-1 mt-0.5 truncate">
+                                <MapPin className="w-3 h-3 text-slate-400 shrink-0" />
+                                <span>{nearestBranch.distanceFormatted} away • {nearestBranch.mallOrCenter}</span>
                               </span>
                             )}
                           </div>
                         </div>
 
                         <div className="text-right shrink-0">
-                          <span className={`text-sm font-black font-mono ${isLowest ? 'text-emerald-700' : 'text-slate-950'}`}>
+                          <span className={`text-sm font-black font-sans ${isLowest ? 'text-emerald-700' : 'text-slate-950'}`}>
                             R{pr.price.toFixed(2)}
                           </span>
                           {isLowest ? (
-                            <span className="block text-[9.5px] font-bold text-emerald-700 uppercase font-mono">
+                            <span className="block text-[9.5px] font-bold text-emerald-700 uppercase font-sans">
                               Cheapest
                             </span>
                           ) : (
-                            <span className="block text-[9.5px] font-mono text-slate-500 font-semibold">
+                            <span className="block text-[9.5px] font-sans text-slate-500 font-semibold">
                               +R{diff.toFixed(2)}
                             </span>
                           )}
@@ -882,7 +883,7 @@ export default function BarcodeScanner({
                 <button
                   type="button"
                   onClick={handleScanNext}
-                  className="py-3 px-4 rounded-xl border border-slate-300 bg-white hover:bg-slate-50 text-slate-800 font-bold text-xs uppercase font-mono cursor-pointer transition-colors text-center shadow-2xs"
+                  className="py-3 px-4 rounded-xl border border-slate-300 bg-white hover:bg-slate-50 text-slate-800 font-bold text-xs font-sans cursor-pointer transition-colors text-center shadow-2xs"
                 >
                   Scan Next Item
                 </button>
@@ -890,7 +891,7 @@ export default function BarcodeScanner({
                 <button
                   type="button"
                   onClick={handleAddToBasket}
-                  className="py-3 px-4 rounded-xl bg-[#FFE600] hover:bg-yellow-400 text-slate-950 font-black text-xs uppercase font-mono flex items-center justify-center gap-2 cursor-pointer shadow-xs border border-yellow-400 transition-colors"
+                  className="py-3 px-4 rounded-xl bg-[#FFE600] hover:bg-yellow-400 text-slate-950 font-black text-xs font-sans flex items-center justify-center gap-2 cursor-pointer shadow-xs border border-yellow-400 transition-colors"
                 >
                   {hasAddedSuccess ? (
                     <>
@@ -919,8 +920,8 @@ export default function BarcodeScanner({
                 <h4 className="text-base font-bold text-slate-900 font-sans">
                   Barcode Not Found in Index
                 </h4>
-                <p className="text-xs text-slate-500 max-w-sm mx-auto font-mono">
-                  Code <strong className="text-slate-900">#{scannedBarcode}</strong> is not registered in our current South African supermarket database.
+                <p className="text-xs text-slate-500 max-w-sm mx-auto font-sans">
+                  Code <strong className="text-slate-900 font-bold">#{scannedBarcode}</strong> is not registered in our current South African supermarket database.
                 </p>
               </div>
 
@@ -928,7 +929,7 @@ export default function BarcodeScanner({
                 <button
                   type="button"
                   onClick={handleScanNext}
-                  className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-slate-950 hover:bg-black text-white font-bold text-xs font-mono cursor-pointer transition-colors shadow-xs"
+                  className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-slate-950 hover:bg-black text-white font-bold text-xs font-sans cursor-pointer transition-colors shadow-xs"
                 >
                   Scan Another Code
                 </button>
@@ -938,7 +939,7 @@ export default function BarcodeScanner({
                     handleScanNext();
                     setActiveTab('upload');
                   }}
-                  className="w-full sm:w-auto px-4 py-2.5 rounded-xl border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 font-bold text-xs font-mono cursor-pointer transition-colors"
+                  className="w-full sm:w-auto px-4 py-2.5 rounded-xl border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 font-bold text-xs font-sans cursor-pointer transition-colors"
                 >
                   Upload Photo Instead
                 </button>
@@ -954,7 +955,7 @@ export default function BarcodeScanner({
             <Volume2 className="w-3.5 h-3.5 text-slate-400" />
             Audio chime & haptic feedback enabled
           </span>
-          <span className="font-mono text-[10px] text-slate-600">
+          <span className="font-sans text-[10px] text-slate-500">
             Powered by ZXing WebAssembly
           </span>
         </div>

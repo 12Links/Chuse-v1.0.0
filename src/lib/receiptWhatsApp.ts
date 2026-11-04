@@ -16,24 +16,24 @@ export function getWhatsAppReceiptText(receipt: ChuseReceipt): string {
         .map(it => `  • ${it.quantity}x ${it.productName} — R${it.lineTotal.toFixed(2)} (R${it.bestPrice.toFixed(2)} ea)`)
         .join('\n');
 
-      return `🏪 *${group.storeName.toUpperCase()}* (${group.items.length} items)\n${itemLines}\n  _Subtotal: R${group.subtotal.toFixed(2)}_`;
+      return `*${group.storeName.toUpperCase()}* (${group.items.length} items)\n${itemLines}\n  _Subtotal: R${group.subtotal.toFixed(2)}_`;
     })
     .join('\n\n');
 
-  return `🧾 *CHUSE. GROCERY AUDIT TILL SLIP*
-📅 ${dateFormatted}
-📍 Region: ${receipt.province}
-📄 Tax Ref: ${receipt.invoiceNumber}
+  return `*CHUSE. ESTIMATED TILL SLIP*
+Date: ${dateFormatted}
+Region: ${receipt.province}
+Ref: ${receipt.invoiceNumber}
 
 ${storeSections}
 
 ─────────────────────────
-💰 *OPTIMIZED SPLIT TOTAL: R${receipt.optimizedTotal.toFixed(2)}*
-🛍️ Items: ${receipt.totalItemCount} products across ${receipt.storeGroups.length} stores
-${receipt.totalSavings > 0 ? `🎉 *YOU SAVE: R${receipt.totalSavings.toFixed(2)} (${receipt.savingsPercentage}%)* vs single store` : ''}
+*OPTIMIZED SPLIT TOTAL: R${receipt.optimizedTotal.toFixed(2)}*
+Items: ${receipt.totalItemCount} products across ${receipt.storeGroups.length} stores
+${receipt.totalSavings > 0 ? `*YOU SAVE: R${receipt.totalSavings.toFixed(2)} (${receipt.savingsPercentage}%)* vs single store` : ''}
 ─────────────────────────
-📄 PDF receipt saved to local device storage.
-🔗 Audit shelf prices live: https://chuse-chi.vercel.app/`;
+PDF receipt saved to local device storage.
+Audit shelf prices live: https://chuse-chi.vercel.app/`;
 }
 
 // Generate the WhatsApp URL

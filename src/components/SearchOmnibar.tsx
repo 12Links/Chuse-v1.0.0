@@ -10,7 +10,8 @@ import {
   ArrowRight, 
   Plus, 
   Check, 
-  Sparkles 
+  Sparkles,
+  Tag
 } from 'lucide-react';
 import { Product } from '../types';
 import { RETAILER_THEMES } from '../lib/retailerTokens';
@@ -29,13 +30,13 @@ interface SearchOmnibarProps {
 }
 
 const POPULAR_STAPLE_CHIPS = [
-  { label: 'Milk 2L', query: 'milk 2l', emoji: '🥛' },
-  { label: 'White Bread', query: 'white bread', emoji: '🍞' },
-  { label: 'Cooking Oil', query: 'oil 2l', emoji: '🌻' },
-  { label: 'Large Eggs 18s', query: 'eggs 18', emoji: '🥚' },
-  { label: 'Spekko Rice 2kg', query: 'rice 2kg', emoji: '🍚' },
-  { label: 'White Sugar 2.5kg', query: 'sugar', emoji: '🍬' },
-  { label: 'Instant Coffee', query: 'coffee', emoji: '☕' },
+  { label: 'Milk 2L', query: 'milk 2l' },
+  { label: 'White Bread', query: 'white bread' },
+  { label: 'Cooking Oil', query: 'oil 2l' },
+  { label: 'Large Eggs 18s', query: 'eggs 18' },
+  { label: 'Spekko Rice 2kg', query: 'rice 2kg' },
+  { label: 'White Sugar 2.5kg', query: 'sugar' },
+  { label: 'Instant Coffee', query: 'coffee' },
 ];
 
 export function SearchOmnibar({
@@ -247,8 +248,8 @@ export function SearchOmnibar({
             {/* Live Product Previews matching the input */}
             {value.trim() && matchedProducts.length > 0 && (
               <div className="p-3 border-b border-slate-100 bg-slate-50/50">
-                <div className="flex items-center justify-between text-[10.5px] font-mono font-bold text-slate-500 uppercase tracking-wider mb-2">
-                  <span className="flex items-center gap-1">
+                <div className="flex items-center justify-between text-xs font-semibold text-slate-500 mb-2 font-sans">
+                  <span className="flex items-center gap-1 font-bold text-slate-700">
                     <Sparkles className="w-3 h-3 text-[#FFD200]" />
                     Instant Matches
                   </span>
@@ -278,19 +279,19 @@ export function SearchOmnibar({
                             className="w-9 h-9 object-contain bg-slate-50 rounded p-1 border border-slate-100 shrink-0"
                           />
                           <div className="min-w-0">
-                            <h5 className="text-xs font-bold text-slate-900 truncate group-hover:text-black">
+                            <h5 className="text-xs font-bold text-slate-900 truncate group-hover:text-black font-sans">
                               {p.name}
                             </h5>
-                            <div className="flex items-center gap-1.5 text-[10.5px]">
-                              <span className="font-mono font-black text-slate-950">
+                            <div className="flex items-center gap-1.5 text-[11px] font-sans">
+                              <span className="font-bold text-slate-950 tabular-nums">
                                 R{minPrice.toFixed(2)}
                               </span>
                               {retailer && (
-                                <span className={`text-[9.5px] px-1.5 py-0.2 rounded font-mono font-bold ${retailer.badgeBg} ${retailer.badgeText}`}>
+                                <span className={`text-[9.5px] px-1.5 py-0.2 rounded font-sans font-bold ${retailer.badgeBg} ${retailer.badgeText}`}>
                                   {retailer.shortName}
                                 </span>
                               )}
-                              <span className="text-[10px] text-slate-400 font-mono">
+                              <span className="text-[10px] text-slate-400 font-sans">
                                 • {p.unit}
                               </span>
                             </div>
@@ -319,7 +320,7 @@ export function SearchOmnibar({
 
             {/* Popular Staple Quick Chips */}
             <div className="p-3 border-b border-slate-100">
-              <span className="text-[10px] font-mono font-bold text-slate-500 uppercase tracking-wider block mb-2">
+              <span className="text-xs font-semibold text-slate-500 block mb-2 font-sans">
                 Popular Mzansi Staples
               </span>
               <div className="flex flex-wrap gap-1.5">
@@ -328,9 +329,9 @@ export function SearchOmnibar({
                     key={chip.label}
                     type="button"
                     onClick={() => handleSelectQuery(chip.query)}
-                    className="px-2.5 py-1 rounded-full text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-800 transition-colors flex items-center gap-1.5 cursor-pointer"
+                    className="px-2.5 py-1 rounded-full text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-800 transition-colors flex items-center gap-1.5 cursor-pointer font-sans"
                   >
-                    <span>{chip.emoji}</span>
+                    <Tag className="w-3 h-3 text-slate-500" />
                     <span>{chip.label}</span>
                   </button>
                 ))}
@@ -340,8 +341,8 @@ export function SearchOmnibar({
             {/* Recent Searches List */}
             {recentSearches.length > 0 && (
               <div className="p-3">
-                <div className="flex items-center justify-between text-[10px] font-mono font-bold text-slate-500 uppercase tracking-wider mb-2">
-                  <span className="flex items-center gap-1">
+                <div className="flex items-center justify-between text-xs font-semibold text-slate-500 mb-2 font-sans">
+                  <span className="flex items-center gap-1 font-bold text-slate-700">
                     <Clock className="w-3 h-3 text-slate-400" />
                     Recent Searches
                   </span>
@@ -351,7 +352,7 @@ export function SearchOmnibar({
                       setRecentSearches([]);
                       localStorage.removeItem('chuse_recent_searches');
                     }}
-                    className="text-slate-400 hover:text-slate-800 font-mono text-[9.5px] cursor-pointer"
+                    className="text-slate-400 hover:text-slate-800 font-sans text-xs cursor-pointer"
                   >
                     Clear All
                   </button>

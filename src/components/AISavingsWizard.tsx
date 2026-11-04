@@ -60,13 +60,13 @@ export default function AISavingsWizard({ products, basket, user, onAuthRequest 
         {
           id: 'welcome-msg',
           role: 'assistant',
-          text: `**Howzit! I am the chuse. Saving Wizard!** 🌟
+          text: `**Howzit! I am the chuse. Saving Wizard!**
 
 I am your personalized, Gemini-powered South African grocery budget coach and retail strategist. I scan woolies, checkers, pnp, shoprite, spar, and boxer to find you the sweetest household discounts!
 
 ${basketDetails.length > 0 
-  ? `I see you have **${basketDetails.length} item(s)** in your shopping basket right now! Click one of the quick optimization chips below, or ask me anything about making your ZAR Rands stretch further today! 🇿🇦` 
-  : "Your basket is currently empty! Try adding Sasko bread, Clover milk, or fresh produce from the directory, then ask me to optimize, split, or suggest budget meals! 🛒"
+  ? `I see you have **${basketDetails.length} item(s)** in your shopping basket right now! Click one of the quick optimization chips below, or ask me anything about making your ZAR Rands stretch further today!` 
+  : "Your basket is currently empty! Try adding Sasko bread, Clover milk, or fresh produce from the directory, then ask me to optimize, split, or suggest budget meals!"
 }`,
           timestamp: new Date()
         }
@@ -89,7 +89,7 @@ ${basketDetails.length > 0
         {
           id: `assistant-limit-${Date.now()}`,
           role: 'assistant',
-          text: `**You've reached your free message limit!** 🚀\n\nTo continue chatting with the chuse. Saving Wizard and unlock unlimited queries, please sign in or create a free account. It's quick, easy, and gives you access to all our powerful budgeting tools!`,
+          text: `**You've reached your free message limit!**\n\nTo continue chatting with the chuse. Saving Wizard and unlock unlimited queries, please sign in or create a free account. It's quick, easy, and gives you access to all our powerful budgeting tools!`,
           timestamp: new Date()
         }
       ]);
@@ -268,7 +268,7 @@ ${basketDetails.length > 0
         const numText = numMatch[2];
         return (
           <div key={idx} className="flex items-start gap-2.5 my-2 pl-1.5">
-            <span className="text-slate-500 font-bold shrink-0 text-[10px] font-mono leading-none bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200/50">{num}</span>
+            <span className="text-slate-500 font-bold shrink-0 text-[10px] font-sans leading-none bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200/50">{num}</span>
             <div className="text-xs text-slate-600 font-medium leading-relaxed">
               {parseBold(numText)}
             </div>
@@ -361,7 +361,7 @@ ${basketDetails.length > 0
                         {formatText(msg.text)}
                       </div>
                     )}
-                    <span className={`text-[8px] block mt-2 text-right font-black tracking-wider uppercase font-mono ${
+                    <span className={`text-[8px] block mt-2 text-right font-black tracking-wider uppercase font-sans ${
                       msg.role === 'user' ? 'text-[#FFE600]' : 'text-slate-400'
                     }`}>
                       {msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
@@ -369,7 +369,7 @@ ${basketDetails.length > 0
                   </div>
 
                   {msg.role === 'user' && (
-                    <div className="w-8 h-8 rounded-xl bg-[#FFE600] border border-yellow-400 flex items-center justify-center text-slate-950 shrink-0 shadow-xs mt-1 uppercase font-black text-[10px] font-mono">
+                    <div className="w-8 h-8 rounded-xl bg-[#FFE600] border border-yellow-400 flex items-center justify-center text-slate-950 shrink-0 shadow-xs mt-1 uppercase font-black text-[10px] font-sans">
                       {user ? <User className="w-4 h-4" /> : 'U'}
                     </div>
                   )}
@@ -499,7 +499,7 @@ ${basketDetails.length > 0
                     return (
                       <div key={idx} className="flex items-center justify-between bg-slate-900/60 p-2.5 rounded-xl border border-slate-850 text-[10px]">
                         <span className="truncate font-black text-slate-200">{item.name}</span>
-                        <span className="font-mono text-[9px] text-[#FFE600] px-2 py-0.5 rounded-md bg-white/5 font-bold shrink-0 ml-2 border border-white/5">
+                        <span className="font-sans text-[9px] text-[#FFE600] px-2 py-0.5 rounded-md bg-white/5 font-bold shrink-0 ml-2 border border-white/5">
                           {item.quantity}x {item.unit}
                         </span>
                       </div>

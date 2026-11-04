@@ -116,12 +116,12 @@ export function MobileBottomNav({
               <ShoppingBag className="w-4 h-4 stroke-[2.2]" />
             </div>
             {basketCount > 0 && (
-              <span className="absolute -top-1.5 -right-2 bg-slate-950 text-white text-[9px] font-mono font-black rounded-full h-4 min-w-[16px] px-1 flex items-center justify-center shadow-xs">
+              <span className="absolute -top-1.5 -right-2 bg-slate-950 text-white text-[9px] font-sans font-black rounded-full h-4 min-w-[16px] px-1 flex items-center justify-center shadow-xs">
                 {basketCount}
               </span>
             )}
           </div>
-          <span className="text-[10px] mt-0.5 font-mono font-bold text-slate-900 tracking-tight">
+          <span className="text-[10px] mt-0.5 font-sans font-bold text-slate-900 tracking-tight">
             {basketCount === 0 ? 'Basket' : `R${Math.round(basketTotal)}`}
           </span>
         </button>

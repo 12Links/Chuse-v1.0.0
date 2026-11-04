@@ -96,7 +96,7 @@ export default function InteractiveSpecialDeals({
                       {special.store.name}
                     </span>
                   )}
-                  <span className="text-[10px] text-slate-400 font-bold font-mono uppercase tracking-widest">{special.product.category}</span>
+                  <span className="text-[10px] text-slate-500 font-semibold font-sans">{special.product.category}</span>
                 </div>
 
                 {/* Product details side-by-side with Image Thumbnail (User Request feature) */}
@@ -112,16 +112,16 @@ export default function InteractiveSpecialDeals({
                       }}
                     />
                   ) : (
-                    <div className="w-16 h-16 rounded-2xl bg-amber-50/50 flex items-center justify-center text-amber-600 border border-amber-200/30 shrink-0 font-extrabold text-lg font-mono uppercase">
+                    <div className="w-16 h-16 rounded-2xl bg-amber-50/50 flex items-center justify-center text-amber-600 border border-amber-200/30 shrink-0 font-extrabold text-lg font-sans">
                       {special.product.name.charAt(0)}
                     </div>
                   )}
                   <div className="min-w-0 flex-1">
-                    <h3 className="font-extrabold text-slate-800 text-base sm:text-lg line-clamp-2 leading-snug group-hover:text-yellow-600 transition-colors">
+                    <h3 className="font-extrabold text-slate-800 text-base sm:text-lg line-clamp-2 leading-snug group-hover:text-yellow-600 transition-colors font-sans">
                       {special.product.name}
                     </h3>
-                    <p className="text-xs text-slate-400 font-bold mt-1">
-                      Unit Pack: <span className="font-mono text-slate-600 bg-slate-50 border border-slate-100 px-1.5 py-0.5 rounded-sm text-[10.5px]">{special.product.unit}</span>
+                    <p className="text-xs text-slate-500 font-medium mt-1 font-sans">
+                      Unit Pack: <span className="font-sans font-semibold text-slate-700 bg-slate-100 border border-slate-200 px-1.5 py-0.5 rounded-sm text-[10.5px]">{special.product.unit}</span>
                     </p>
                   </div>
                 </div>
@@ -131,7 +131,7 @@ export default function InteractiveSpecialDeals({
                   <div className="bg-[#FFE600] text-black rounded-full p-1 shrink-0 mt-0.5 border border-yellow-300 shadow-3xs">
                     <Percent className="w-3 h-3 text-black" />
                   </div>
-                  <div className="text-xs text-amber-950 font-semibold leading-normal">
+                  <div className="text-xs text-amber-950 font-semibold leading-normal font-sans">
                     {special.priceInfo.specialDetail}
                   </div>
                 </div>
@@ -145,12 +145,12 @@ export default function InteractiveSpecialDeals({
               {/* Pricing & CTA */}
               <div className="flex items-center justify-between pt-4 border-t border-dashed border-slate-100 mt-auto">
                 <div className="flex flex-col">
-                  <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Special Price</span>
+                  <span className="text-[10px] font-semibold text-slate-500 font-sans">Special Price</span>
                   <div className="flex items-baseline gap-1.5">
-                    <span className="font-black text-slate-900 text-2xl font-mono tracking-tight">
+                    <span className="font-black text-slate-900 text-2xl font-sans tracking-tight">
                       R {special.priceInfo.price.toFixed(2)}
                     </span>
-                    <span className="text-xs text-slate-400 line-through font-bold font-mono">
+                    <span className="text-xs text-slate-400 line-through font-semibold font-sans">
                       R {avgOtherPrice.toFixed(2)}
                     </span>
                   </div>
