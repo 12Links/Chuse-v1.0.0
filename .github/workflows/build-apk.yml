@@ -27,6 +27,9 @@ jobs:
           distribution: 'temurin'
           java-version: '21'
 
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
@@ -39,21 +42,21 @@ jobs:
       - name: Build Web Application
         run: npm run build
 
-      - name: Sync Web Build to Capacitor Android
-        run: npx cap sync android
-
       - name: Grant Execute Permission for Gradle Wrapper
         run: chmod +x android/gradlew
+
+      - name: Sync Web Build to Capacitor Android
+        run: npx cap sync android
 
       - name: Build Android Debug APK
         run: |
           cd android
-          ./gradlew assembleDebug --stacktrace
+          ./gradlew assembleDebug --no-daemon --stacktrace
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
           name: chuse-android-debug-apk
-          path: android/app/build/outputs/apk/debug/app-debug.apk
+          path: android/app/build/outputs/apk/debug/*.apk
           if-no-files-found: error
           retention-days: 14
