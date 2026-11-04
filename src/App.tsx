@@ -18,10 +18,19 @@ import { supabase } from './lib/supabase';
 import { getCurrentUserProfile, loginUser, syncBasket } from './lib/api';
 import { FulfillmentModal, FulfillmentSettings } from './components/FulfillmentModal';
 import { NearbyStoresModal } from './components/NearbyStoresModal';
-import { FirstTimeOnboardingModal } from './components/FirstTimeOnboardingModal';
 import { findNearestBranches } from './lib/locationService';
 import { SearchOmnibar } from './components/SearchOmnibar';
 import { MobileBottomNav } from './components/MobileBottomNav';
+import { 
+  fetchLatestBasket, 
+  pushBasketUpdate, 
+  subscribeToBasketUpdates, 
+  setupAutoSyncOnResume 
+} from './lib/syncService';
+import { 
+  initNotificationService, 
+  checkAndNotifyPriceDrops 
+} from './lib/notificationService';
 import initialProductsData from './data/initialProducts.json';
 import { 
   ShoppingBag, 
@@ -29,10 +38,11 @@ import {
   ChevronDown, 
   Scan, 
   X, 
-  Truck,
-  Store,
-  Sparkles,
-  Navigation
+  Truck, 
+  Store, 
+  Sparkles, 
+  Navigation,
+  Settings
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -87,15 +97,6 @@ function MainPage({ user, setUser }: MainPageProps) {
   });
   const [isFulfillmentModalOpen, setIsFulfillmentModalOpen] = useState(false);
   const [isNearbyStoresModalOpen, setIsNearbyStoresModalOpen] = useState(false);
-  // First-time onboarding walkthrough modal (shows only once on first install/open)
-  const [isOnboardingOpen, setIsOnboardingOpen] = useState(() => {
-    try {
-      const completed = localStorage.getItem('chuse_has_completed_onboarding');
-      return completed !== 'true';
-    } catch {
-      return false;
-    }
-  });
   
   const [isSearchingRealTime, setIsSearchingRealTime] = useState(false);
   const [searchError, setSearchError] = useState<string | null>(null);
@@ -226,15 +227,48 @@ function MainPage({ user, setUser }: MainPageProps) {
       );
     }
 
-    try {
-      const savedBasket = localStorage.getItem('sa_price_compare_basket');
-      if (savedBasket) {
-        setBasket(JSON.parse(savedBasket));
+    // Initialize notification channels
+    initNotificationService();
+
+    // Pull initial basket from Supabase Cloud or local cache
+    fetchLatestBasket().then((latest) => {
+      if (latest && latest.length > 0) {
+        setBasket(latest);
       }
-    } catch (e) {
-      console.error("Failed to load saved basket", e);
-    }
+    });
+
+    // Setup auto-sync when mobile app resumes or window gains focus
+    const cleanupResume = setupAutoSyncOnResume(() => {
+      fetchLatestBasket().then((refreshed) => {
+        if (refreshed) {
+          setBasket(refreshed);
+        }
+      });
+    });
+
+    return () => {
+      cleanupResume();
+    };
   }, []);
+
+  // Realtime multi-device cloud cart subscription
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user?.id) {
+        const unsubscribe = subscribeToBasketUpdates(session.user.id, (cloudBasket) => {
+          setBasket(cloudBasket);
+        });
+        return unsubscribe;
+      }
+    });
+  }, [user]);
+
+  // Check for price reductions and trigger alerts when catalog loads
+  useEffect(() => {
+    if (products && products.length > 0) {
+      checkAndNotifyPriceDrops(products);
+    }
+  }, [products]);
 
   const saveProducts = (updatedProducts: Product[]) => {
     setProducts(updatedProducts);
@@ -243,12 +277,13 @@ function MainPage({ user, setUser }: MainPageProps) {
 
   const saveBasket = async (updatedBasket: BasketItem[]) => {
     setBasket(updatedBasket);
-    localStorage.setItem('sa_price_compare_basket', JSON.stringify(updatedBasket));
+    // Instant multi-device sync to Supabase Cloud & localStorage
+    await pushBasketUpdate(updatedBasket);
 
     try {
       await syncBasket(updatedBasket);
     } catch (err) {
-      console.warn('Backend basket sync failed, keeping local basket:', err);
+      // Local and Supabase already updated
     }
   };
 
@@ -366,7 +401,7 @@ function MainPage({ user, setUser }: MainPageProps) {
             {/* Top Row on Mobile: Logo & Suburb Selector on Left, User & Cart on Right */}
             <div className="flex items-center justify-between w-full sm:w-auto shrink-0">
               
-              {/* Logo & Suburb Selector */}
+              {/* Logo on Left */}
               <div className="flex items-center gap-2 sm:gap-3 shrink-0">
                 <Link 
                   to="/" 
@@ -377,68 +412,31 @@ function MainPage({ user, setUser }: MainPageProps) {
                     chuse<span className="text-[#FFE600] text-2xl sm:text-3xl font-black">.</span>
                   </span>
                 </Link>
-
-                {/* Checkers/PnP Style Fulfillment & Suburb Selector Trigger */}
-                <button
-                  type="button"
-                  onClick={() => setIsFulfillmentModalOpen(true)}
-                  className="flex items-center gap-1.5 text-[11px] sm:text-xs font-bold text-slate-800 hover:text-black px-2.5 py-1.5 rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 cursor-pointer transition-colors shadow-2xs"
-                  title="Change delivery suburb or store pricing mode"
-                >
-                  {fulfillmentSettings.mode === 'deliveryApp' ? (
-                    <Truck className="w-3.5 h-3.5 text-[#008374] shrink-0" />
-                  ) : (
-                    <Store className="w-3.5 h-3.5 text-slate-700 shrink-0" />
-                  )}
-                  <span className="truncate max-w-[95px] sm:max-w-[130px]">
-                    {fulfillmentSettings.activeStoreBranchName || fulfillmentSettings.suburb}
-                  </span>
-                  {fulfillmentSettings.distanceFormatted ? (
-                    <span className="hidden sm:inline-block text-[10px] font-sans font-bold text-emerald-800 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">
-                      {fulfillmentSettings.distanceFormatted}
-                    </span>
-                  ) : (
-                    <span className="hidden md:inline text-[11px] font-sans font-normal text-slate-400">
-                      ({fulfillmentSettings.postalCode})
-                    </span>
-                  )}
-                  <ChevronDown className="w-3 h-3 text-slate-400 shrink-0" />
-                </button>
-
-                {/* Nearby Stores Radar Quick Button */}
-                <button
-                  type="button"
-                  onClick={() => setIsNearbyStoresModalOpen(true)}
-                  className="hidden lg:flex items-center gap-1 text-xs font-bold text-slate-700 hover:text-black px-2.5 py-1.5 rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 cursor-pointer transition-colors shadow-2xs shrink-0"
-                  title="Find closest supermarkets by GPS distance"
-                >
-                  <Navigation className="w-3.5 h-3.5 text-slate-900" />
-                  <span>Nearby Stores</span>
-                </button>
               </div>
 
-              {/* Mobile Right Actions: Sign In + Dynamic Cart Pill (Hidden on Desktop) */}
+              {/* Mobile Right Actions: Settings & Cart (Hidden on Desktop) */}
               <div className="flex sm:hidden items-center gap-2 shrink-0">
-                {user ? (
-                  <button
-                    type="button"
-                    onClick={() => setActiveTab('settings')}
-                    className="flex items-center cursor-pointer"
-                  >
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('settings')}
+                  className={`p-1.5 rounded-lg border transition-colors cursor-pointer ${
+                    activeTab === 'settings' 
+                      ? 'bg-slate-950 text-[#FFE600] border-slate-950' 
+                      : 'border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700'
+                  }`}
+                  title="Open Settings"
+                  aria-label="Settings"
+                >
+                  {user?.avatarUrl ? (
                     <img 
                       src={user.avatarUrl} 
                       alt="User" 
-                      className="w-6 h-6 rounded-full bg-slate-200 border border-slate-300 object-cover"
+                      className="w-5 h-5 rounded-full bg-slate-200 object-cover"
                     />
-                  </button>
-                ) : (
-                  <Link
-                    to="/auth"
-                    className="text-xs font-bold text-slate-700 hover:text-black underline decoration-slate-300 cursor-pointer px-1"
-                  >
-                    Sign In
-                  </Link>
-                )}
+                  ) : (
+                    <Settings className="w-5 h-5" />
+                  )}
+                </button>
 
                 {/* Mobile Cart Trigger Button */}
                 <button
@@ -448,7 +446,7 @@ function MainPage({ user, setUser }: MainPageProps) {
                   aria-label="Open Cart"
                 >
                   <ShoppingBag className="w-3.5 h-3.5 stroke-[2.5]" />
-                  <span className="font-mono">
+                  <span className="font-sans font-bold">
                     {basketItemCount === 0 ? 'Cart' : `R${Math.round(basketLowestTotal)} (${basketItemCount})`}
                   </span>
                 </button>
@@ -572,6 +570,18 @@ function MainPage({ user, setUser }: MainPageProps) {
             >
               Inflation Index
             </button>
+
+            <button
+              type="button"
+              onClick={() => setActiveTab('settings')}
+              className={`py-1.5 whitespace-nowrap transition-colors cursor-pointer ${
+                activeTab === 'settings'
+                  ? 'text-slate-950 border-b-2 border-slate-950 font-black'
+                  : 'text-slate-500 hover:text-slate-950'
+              }`}
+            >
+              Settings
+            </button>
           </nav>
         </div>
       </header>
@@ -665,6 +675,15 @@ function MainPage({ user, setUser }: MainPageProps) {
                 onClearBasket={clearBasket} 
                 products={products} 
                 onUpdateProducts={saveProducts}
+                fulfillmentSettings={fulfillmentSettings}
+                onOpenFulfillmentModal={() => setIsFulfillmentModalOpen(true)}
+                onOpenNearbyStoresModal={() => setIsNearbyStoresModalOpen(true)}
+                onManualSyncCart={async () => {
+                  const cloud = await fetchLatestBasket();
+                  if (cloud) {
+                    setBasket(cloud);
+                  }
+                }}
               />
             )}
           </motion.div>
@@ -778,20 +797,7 @@ function MainPage({ user, setUser }: MainPageProps) {
         }}
       />
 
-      {/* First-Time Installation Onboarding & Location Walkthrough (Shows Only Once) */}
-      <FirstTimeOnboardingModal
-        isOpen={isOnboardingOpen}
-        onComplete={() => {
-          setIsOnboardingOpen(false);
-          try {
-            localStorage.setItem('chuse_has_completed_onboarding', 'true');
-          } catch {}
-        }}
-        onLocationDetected={(newSettings) => {
-          handleSaveFulfillment(newSettings);
-        }}
-        currentSettings={fulfillmentSettings}
-      />
+
 
       {/* Mobile-First Fixed Bottom Navigation Bar (md:hidden) */}
       <MobileBottomNav

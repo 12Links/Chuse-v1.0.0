@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { 
   User, 
@@ -14,10 +14,25 @@ import {
   Trash2, 
   Briefcase,
   AlertTriangle,
-  X
+  X,
+  Truck,
+  Store,
+  Navigation,
+  RefreshCw,
+  Smartphone,
+  Cloud,
+  BellRing,
+  ArrowRight
 } from 'lucide-react';
 import { UserProfile, Product } from '../types';
 import { updateUserProfile } from '../lib/api';
+import { FulfillmentSettings } from './FulfillmentModal';
+import { 
+  sendTestNotification, 
+  getNotificationStatus, 
+  setNotificationPreference,
+  requestNotificationPermission 
+} from '../lib/notificationService';
 
 interface SettingsPageProps {
   user: UserProfile | null | undefined;
@@ -26,6 +41,10 @@ interface SettingsPageProps {
   onClearBasket: () => void;
   products: Product[];
   onUpdateProducts: (updatedProducts: Product[]) => void;
+  fulfillmentSettings: FulfillmentSettings;
+  onOpenFulfillmentModal: () => void;
+  onOpenNearbyStoresModal: () => void;
+  onManualSyncCart?: () => Promise<void> | void;
 }
 
 export default function SettingsPage({ 
@@ -34,7 +53,11 @@ export default function SettingsPage({
   onLogout, 
   onClearBasket, 
   products, 
-  onUpdateProducts
+  onUpdateProducts,
+  fulfillmentSettings,
+  onOpenFulfillmentModal,
+  onOpenNearbyStoresModal,
+  onManualSyncCart
 }: SettingsPageProps) {
   const [displayName, setDisplayName] = useState(user?.displayName || 'Guest User');
   const [email, setEmail] = useState(user?.email || 'guest@chuse.co.za');
@@ -61,6 +84,62 @@ export default function SettingsPage({
   const [notifications, setNotifications] = useState(true);
   const [showSavingSpecials, setShowSavingSpecials] = useState(true);
   const [successMsg, setSuccessMsg] = useState('');
+
+  // Push notifications state
+  const [pushAlertsEnabled, setPushAlertsEnabled] = useState(true);
+  const [isSendingTestNotif, setIsSendingTestNotif] = useState(false);
+  const [notifFeedback, setNotifFeedback] = useState('');
+
+  // Cloud sync state
+  const [isSyncingCart, setIsSyncingCart] = useState(false);
+  const [syncFeedback, setSyncFeedback] = useState('');
+
+  useEffect(() => {
+    getNotificationStatus().then(status => {
+      setPushAlertsEnabled(status.enabledByUser);
+    });
+  }, []);
+
+  const handleTogglePushAlerts = async (enabled: boolean) => {
+    setPushAlertsEnabled(enabled);
+    setNotificationPreference(enabled);
+    if (enabled) {
+      await requestNotificationPermission();
+    }
+  };
+
+  const handleTestNotification = async () => {
+    setIsSendingTestNotif(true);
+    setNotifFeedback('');
+    try {
+      const sent = await sendTestNotification();
+      if (sent) {
+        setNotifFeedback('Test alert dispatched! Check your notification bar.');
+      } else {
+        setNotifFeedback('Please grant notification permission in system settings.');
+      }
+    } catch (err: any) {
+      setNotifFeedback('Notification failed: ' + (err.message || 'error'));
+    } finally {
+      setIsSendingTestNotif(false);
+      setTimeout(() => setNotifFeedback(''), 5000);
+    }
+  };
+
+  const handleTriggerManualSync = async () => {
+    if (!onManualSyncCart) return;
+    setIsSyncingCart(true);
+    setSyncFeedback('');
+    try {
+      await onManualSyncCart();
+      setSyncFeedback('Cart synchronized with cloud successfully!');
+    } catch (err: any) {
+      setSyncFeedback('Sync error: ' + (err.message || 'Could not connect to cloud'));
+    } finally {
+      setIsSyncingCart(false);
+      setTimeout(() => setSyncFeedback(''), 4000);
+    }
+  };
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -221,6 +300,200 @@ export default function SettingsPage({
         {/* Main Settings Panel */}
         <div className="md:col-span-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-[28px] p-6 sm:p-8 shadow-xs space-y-6 text-left transition-colors duration-200">
           <form onSubmit={handleSave} className="space-y-8">
+
+            {/* 1. Location & Delivery Mode Settings (Moved from Header to Settings) */}
+            <div className="p-5 rounded-2xl border border-slate-200 bg-slate-50/70 space-y-4 font-sans">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="p-2 rounded-xl bg-amber-500/10 text-amber-700">
+                    <MapPin className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="font-black text-slate-900 text-base">Delivery Location & Store Pricing</h3>
+                    <p className="text-xs text-slate-500 font-medium">Set your active suburb and switch between Sixty60/ASAP delivery vs. in-store prices</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Current active location details */}
+              <div className="bg-white rounded-xl p-3.5 border border-slate-200 space-y-2">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-slate-500 font-semibold">Active Suburb:</span>
+                  <span className="font-bold text-slate-900 flex items-center gap-1">
+                    <MapPin className="w-3.5 h-3.5 text-rose-600" />
+                    {fulfillmentSettings.suburb}, {fulfillmentSettings.province} ({fulfillmentSettings.postalCode})
+                  </span>
+                </div>
+                <div className="flex items-center justify-between text-xs border-t border-slate-100 pt-2">
+                  <span className="text-slate-500 font-semibold">Pricing Model:</span>
+                  <span className="font-bold text-slate-900 flex items-center gap-1.5">
+                    {fulfillmentSettings.mode === 'deliveryApp' ? (
+                      <>
+                        <Truck className="w-3.5 h-3.5 text-[#008374]" />
+                        <span>Delivery Apps (Checkers Sixty60 & PnP ASAP!)</span>
+                      </>
+                    ) : (
+                      <>
+                        <Store className="w-3.5 h-3.5 text-slate-700" />
+                        <span>In-Store Walk-in Shelf Pricing</span>
+                      </>
+                    )}
+                  </span>
+                </div>
+                {fulfillmentSettings.activeStoreBranchName && (
+                  <div className="flex items-center justify-between text-xs border-t border-slate-100 pt-2">
+                    <span className="text-slate-500 font-semibold">Closest Branch:</span>
+                    <span className="font-bold text-slate-900">
+                      {fulfillmentSettings.activeStoreBranchName}{' '}
+                      {fulfillmentSettings.distanceFormatted && (
+                        <span className="text-emerald-700 font-bold">({fulfillmentSettings.distanceFormatted})</span>
+                      )}
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              {/* Action Buttons */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
+                <button
+                  type="button"
+                  onClick={onOpenFulfillmentModal}
+                  className="px-4 py-2.5 rounded-xl bg-slate-950 hover:bg-black text-white text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer shadow-xs transition-colors"
+                >
+                  <MapPin className="w-3.5 h-3.5 text-[#FFE600]" />
+                  <span>Change Suburb & Pricing</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={onOpenNearbyStoresModal}
+                  className="px-4 py-2.5 rounded-xl border border-slate-300 bg-white hover:bg-slate-50 text-slate-800 text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs transition-colors"
+                >
+                  <Navigation className="w-3.5 h-3.5 text-slate-700" />
+                  <span>Find Stores on GPS Radar</span>
+                </button>
+              </div>
+            </div>
+
+            {/* 2. Multi-Device Cloud Cart Sync */}
+            <div className="p-5 rounded-2xl border border-slate-200 bg-slate-50/70 space-y-4 font-sans">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="p-2 rounded-xl bg-blue-500/10 text-blue-700">
+                    <Cloud className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="font-black text-slate-900 text-base">Multi-Device Cart Cloud Sync</h3>
+                    <p className="text-xs text-slate-500 font-medium">Keep your shopping basket and price comparisons in sync between Web and Mobile</p>
+                  </div>
+                </div>
+
+                {user && (
+                  <span className="px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300 text-[10px] font-bold flex items-center gap-1">
+                    <Check className="w-3 h-3" />
+                    Live Sync Active
+                  </span>
+                )}
+              </div>
+
+              <div className="bg-white rounded-xl p-3.5 border border-slate-200 space-y-2 text-xs">
+                <div className="flex items-center justify-between">
+                  <span className="text-slate-500 font-semibold">Account Status:</span>
+                  <span className="font-bold text-slate-900">
+                    {user ? `Connected (${user.email})` : 'Guest Mode (Local Storage)'}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between border-t border-slate-100 pt-2">
+                  <span className="text-slate-500 font-semibold">Real-Time Sync:</span>
+                  <span className="font-bold text-emerald-700 flex items-center gap-1">
+                    <RefreshCw className="w-3 h-3 animate-spin" />
+                    Active via Supabase Cloud
+                  </span>
+                </div>
+              </div>
+
+              {syncFeedback && (
+                <div className="p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-xl text-xs font-semibold flex items-center gap-2">
+                  <Check className="w-4 h-4 text-emerald-600 shrink-0" />
+                  <span>{syncFeedback}</span>
+                </div>
+              )}
+
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 pt-1">
+                <button
+                  type="button"
+                  onClick={handleTriggerManualSync}
+                  disabled={isSyncingCart}
+                  className="px-4 py-2.5 rounded-xl bg-slate-950 hover:bg-black text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-xs disabled:opacity-50 transition-colors shrink-0"
+                >
+                  <RefreshCw className={`w-3.5 h-3.5 text-[#FFE600] ${isSyncingCart ? 'animate-spin' : ''}`} />
+                  <span>{isSyncingCart ? 'Syncing...' : 'Sync Cart Now'}</span>
+                </button>
+                <span className="text-[11px] text-slate-500">
+                  Any basket created on the web app will immediately reflect on your phone.
+                </span>
+              </div>
+            </div>
+
+            {/* 3. Push Notifications & Price Alerts */}
+            <div className="p-5 rounded-2xl border border-slate-200 bg-slate-50/70 space-y-4 font-sans">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="p-2 rounded-xl bg-amber-500/10 text-amber-700">
+                    <BellRing className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="font-black text-slate-900 text-base">Push Notifications & Price Alerts</h3>
+                    <p className="text-xs text-slate-500 font-medium">Get phone alerts when prices drop on your basket items or staple specials appear</p>
+                  </div>
+                </div>
+
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={pushAlertsEnabled}
+                    onChange={(e) => handleTogglePushAlerts(e.target.checked)}
+                    className="sr-only peer"
+                  />
+                  <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#FFE600]"></div>
+                </label>
+              </div>
+
+              <div className="bg-white rounded-xl p-3.5 border border-slate-200 space-y-2 text-xs">
+                <div className="flex items-center justify-between">
+                  <span className="text-slate-500 font-semibold">Device Notifications:</span>
+                  <span className={`font-bold ${pushAlertsEnabled ? 'text-emerald-700' : 'text-slate-400'}`}>
+                    {pushAlertsEnabled ? 'Enabled on this phone' : 'Muted'}
+                  </span>
+                </div>
+                <p className="text-slate-600 text-[11px] leading-relaxed border-t border-slate-100 pt-2">
+                  The app automatically checks prices across Woolies, Checkers, PnP, Shoprite, and SPAR and sends a push banner if items in your basket drop in price.
+                </p>
+              </div>
+
+              {notifFeedback && (
+                <div className="p-3 bg-amber-50 border border-amber-200 text-amber-900 rounded-xl text-xs font-semibold flex items-center gap-2">
+                  <Bell className="w-4 h-4 text-amber-600 shrink-0" />
+                  <span>{notifFeedback}</span>
+                </div>
+              )}
+
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 pt-1">
+                <button
+                  type="button"
+                  onClick={handleTestNotification}
+                  disabled={isSendingTestNotif}
+                  className="px-4 py-2.5 rounded-xl bg-[#FFE600] hover:bg-yellow-400 text-slate-950 text-xs font-black flex items-center gap-1.5 cursor-pointer shadow-xs disabled:opacity-50 transition-colors border border-yellow-400 shrink-0"
+                >
+                  <Smartphone className="w-3.5 h-3.5" />
+                  <span>{isSendingTestNotif ? 'Dispatching...' : 'Send Test Alert to Phone'}</span>
+                </button>
+                <span className="text-[11px] text-slate-500">
+                  Tap to verify notifications ring your phone's status bar.
+                </span>
+              </div>
+            </div>
+
             {/* Profile Inputs */}
             <div className="space-y-4">
               <h3 className="font-black text-slate-800 dark:text-white text-base flex items-center gap-2">

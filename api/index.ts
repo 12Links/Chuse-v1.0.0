@@ -621,6 +621,29 @@ app.put("/api/v1/users/me", async (req, res) => {
   res.json(profile);
 });
 
+// GET /api/v1/basket
+app.get("/api/v1/basket", async (req, res) => {
+  const uid = getUserIdFromRequest(req);
+  if (supabase) {
+    try {
+      const { data } = await supabase
+        .from("baskets")
+        .select("items, updated_at")
+        .eq("user_id", uid)
+        .maybeSingle();
+
+      if (data && Array.isArray(data.items)) {
+        return res.json({ items: data.items, updated_at: data.updated_at });
+      }
+    } catch (err: any) {
+      console.warn("[Supabase] Get basket failed:", err.message);
+    }
+  }
+
+  const items = basketsDb[uid] || [];
+  res.json({ items });
+});
+
 // POST /api/v1/basket/sync
 app.post("/api/v1/basket/sync", async (req, res) => {
   const uid = getUserIdFromRequest(req);
