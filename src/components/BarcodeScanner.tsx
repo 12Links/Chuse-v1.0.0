@@ -366,7 +366,10 @@ export default function BarcodeScanner({
 
     // 3. Fallback to server API barcode lookup
     try {
-      const res = await fetch(`/api/barcode/${encodeURIComponent(cleanCode)}`);
+      let res = await fetch(`/api/barcode/${encodeURIComponent(cleanCode)}`);
+      if (!res.ok || res.headers.get("content-type")?.includes("text/html")) {
+        res = await fetch(`https://chuse-chi.vercel.app/api/barcode/${encodeURIComponent(cleanCode)}`);
+      }
       if (res.ok) {
         const serverProduct: Product = await res.json();
         if (serverProduct && serverProduct.name) {

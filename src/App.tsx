@@ -20,6 +20,7 @@ import { FulfillmentModal, FulfillmentSettings } from './components/FulfillmentM
 import { NearbyStoresModal } from './components/NearbyStoresModal';
 import { SearchOmnibar } from './components/SearchOmnibar';
 import { MobileBottomNav } from './components/MobileBottomNav';
+import initialProductsData from './data/initialProducts.json';
 import { 
   ShoppingBag, 
   MapPin, 
@@ -41,7 +42,18 @@ interface MainPageProps {
 function MainPage({ user, setUser }: MainPageProps) {
   // 4 clean core views: Groceries, Specials, Shopping List, Inflation Index
   const [activeTab, setActiveTab] = useState<'catalog' | 'specials' | 'lists' | 'stats' | 'settings'>('catalog');
-  const [products, setProducts] = useState<Product[]>([]);
+  const [products, setProducts] = useState<Product[]>(() => {
+    try {
+      const savedProducts = localStorage.getItem('sa_price_compare_products');
+      if (savedProducts) {
+        const parsed = JSON.parse(savedProducts);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed;
+        }
+      }
+    } catch {}
+    return (initialProductsData as Product[]) || [];
+  });
   const [basket, setBasket] = useState<BasketItem[]>([]);
 
   // Cart Drawer & Filter state
@@ -82,13 +94,19 @@ function MainPage({ user, setUser }: MainPageProps) {
     setIsSearchingRealTime(true);
     setSearchError(null);
     try {
-      const res = await fetch("/api/products/search", {
+      let res = await fetch("/api/products/search", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ query })
       });
+      // Fallback to production endpoint if local returns non-JSON or fails
+      if (!res.ok || res.headers.get("content-type")?.includes("text/html")) {
+        res = await fetch("https://chuse-chi.vercel.app/api/products/search", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ query })
+        });
+      }
       if (!res.ok) {
         throw new Error("Server failed to query live South African retail indexes.");
       }
@@ -101,8 +119,20 @@ function MainPage({ user, setUser }: MainPageProps) {
         setSearchError("No products indexed for this term. Try staples like coffee, milk, or bread.");
       }
     } catch (err: any) {
-      console.error(err);
-      setSearchError(err.message || "Could not connect to live retail database indices.");
+      console.warn("Remote search failed, filtering bundled catalog:", err);
+      // Seamless offline fallback
+      const q = query.trim().toLowerCase();
+      const localMatches = (initialProductsData as Product[]).filter(p =>
+        p.name.toLowerCase().includes(q) ||
+        p.category.toLowerCase().includes(q)
+      );
+      if (localMatches.length > 0) {
+        const newIds = new Set(localMatches.map(p => p.id));
+        const filteredExisting = products.filter(p => !newIds.has(p.id));
+        saveProducts([...localMatches, ...filteredExisting]);
+      } else {
+        setSearchError(err.message || "Could not connect to live retail database indices.");
+      }
     } finally {
       setIsSearchingRealTime(false);
     }
@@ -112,26 +142,33 @@ function MainPage({ user, setUser }: MainPageProps) {
     try {
       const savedProducts = localStorage.getItem('sa_price_compare_products');
       if (savedProducts) {
-        setProducts(JSON.parse(savedProducts));
+        const parsed = JSON.parse(savedProducts);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setProducts(parsed);
+        }
       }
     } catch {
-      setProducts([]);
+      setProducts((initialProductsData as Product[]) || []);
     }
 
-    fetch("/api/products")
-      .then(res => {
-        if (!res.ok) throw new Error("Status code " + res.status);
-        return res.json();
-      })
-      .then((serverProds: Product[]) => {
-        if (serverProds && serverProds.length > 0) {
-          setProducts(serverProds);
-          localStorage.setItem('sa_price_compare_products', JSON.stringify(serverProds));
+    const fetchLiveProducts = async () => {
+      try {
+        let res = await fetch("/api/products");
+        if (!res.ok || res.headers.get("content-type")?.includes("text/html")) {
+          res = await fetch("https://chuse-chi.vercel.app/api/products");
         }
-      })
-      .catch(err => {
+        if (res.ok) {
+          const serverProds: Product[] = await res.json();
+          if (Array.isArray(serverProds) && serverProds.length > 0) {
+            setProducts(serverProds);
+            localStorage.setItem('sa_price_compare_products', JSON.stringify(serverProds));
+          }
+        }
+      } catch (err: any) {
         console.warn("[Auto-sync] Background prices re-alignment bypassed:", err.message);
-      });
+      }
+    };
+    fetchLiveProducts();
 
     try {
       const savedBasket = localStorage.getItem('sa_price_compare_basket');

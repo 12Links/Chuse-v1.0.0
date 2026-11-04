@@ -127,7 +127,7 @@ ${basketDetails.length > 0
           text: m.text
         }));
 
-      const response = await fetch('/api/ai/chat', {
+      let response = await fetch('/api/ai/chat', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -138,6 +138,20 @@ ${basketDetails.length > 0
           history
         })
       });
+
+      if (!response.ok || response.headers.get("content-type")?.includes("text/html")) {
+        response = await fetch('https://chuse-chi.vercel.app/api/ai/chat', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            message: textToSend,
+            basket: basketDetails,
+            history
+          })
+        });
+      }
 
       if (!response.ok) {
         throw new Error("Unable to communicate with the chuse. AI indexes.");
