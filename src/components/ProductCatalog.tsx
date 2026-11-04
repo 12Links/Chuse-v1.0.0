@@ -12,14 +12,15 @@ import {
   Bookmark, 
   BookmarkCheck, 
   ChevronLeft, 
-  ChevronRight,
-  ExternalLink,
-  Tag,
-  Flame,
-  Check,
-  TrendingDown,
-  Layers,
-  Sparkles
+  ChevronRight, 
+  ExternalLink, 
+  Tag, 
+  Flame, 
+  Check, 
+  TrendingDown, 
+  Layers, 
+  Sparkles,
+  Navigation
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { PriceHistoryChart } from './PriceHistoryChart';
@@ -30,6 +31,10 @@ import {
 } from '../lib/priceTiming';
 import { StapleTimingSection } from './StapleTimingSection';
 import { RETAILER_THEMES, calculateNormalizedUnitPrice } from '../lib/retailerTokens';
+import { 
+  getNearestBranchForStore, 
+  getSavedOrFallbackCoordinates 
+} from '../lib/locationService';
 
 interface ProductCatalogProps {
   products: Product[];
@@ -48,6 +53,7 @@ interface ProductCatalogProps {
   onSelectCategoryFilter?: (cat: string) => void;
   onOpenCart?: () => void;
   onReportDiscrepancy?: (product: Product) => void;
+  onOpenNearbyStores?: () => void;
 }
 
 // Canonical South African Supermarket Aisles
@@ -125,13 +131,17 @@ export default function ProductCatalog({
   selectedCategoryFilter = 'All',
   onSelectCategoryFilter,
   onOpenCart,
-  onReportDiscrepancy
+  onReportDiscrepancy,
+  onOpenNearbyStores
 }: ProductCatalogProps) {
   const [internalSearch, setInternalSearch] = useState('');
   const [sortBy, setSortBy] = useState<'popular' | 'bestTimeToBuy' | 'lowestPrice' | 'biggestSavings' | 'name'>('popular');
   const [activeSecondaryFilter, setActiveSecondaryFilter] = useState<'all' | 'specials' | 'multibuys' | 'drops' | 'tracked' | 'halaal' | 'vegan' | 'gluten_free'>('all');
   const [trackedIds, setTrackedIds] = useState<string[]>(() => getTrackedStapleIds());
   const [inspectProduct, setInspectProduct] = useState<Product | null>(null);
+
+  // Cached GPS coordinates for nearest branch distances
+  const userCoords = useMemo(() => getSavedOrFallbackCoordinates(), []);
 
   // Category horizontal scroll ref
   const categoryScrollRef = useRef<HTMLDivElement>(null);
@@ -870,15 +880,22 @@ export default function ProductCatalog({
                 );
               })()}
 
-              {/* 7-Store Comparison Table with Deep Links */}
+              {/* 7-Store Comparison Table with Deep Links & Proximity */}
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <h5 className="text-xs font-mono font-bold uppercase tracking-wider text-slate-500">
                     Live Supermarket Price Matrix
                   </h5>
-                  <span className="text-[10.5px] font-mono text-slate-400">
-                    Ranked Lowest to Highest
-                  </span>
+                  {onOpenNearbyStores && (
+                    <button
+                      type="button"
+                      onClick={() => onOpenNearbyStores()}
+                      className="text-[10.5px] font-mono text-slate-600 hover:text-black flex items-center gap-1 cursor-pointer underline"
+                    >
+                      <Navigation className="w-3 h-3 text-slate-500" />
+                      <span>Nearby Supermarket Branches</span>
+                    </button>
+                  )}
                 </div>
 
                 <div className="space-y-1.5 font-sans">
@@ -892,6 +909,7 @@ export default function ProductCatalog({
                       const diffFromLowest = pr.price - lowestPrice;
                       const diffPercent = lowestPrice > 0 ? (diffFromLowest / lowestPrice) * 100 : 0;
                       const storeDeepLink = retailer?.appDeepLinkPrefix ? `${retailer.appDeepLinkPrefix}${encodeURIComponent(inspectProduct.name)}` : null;
+                      const nearestBranch = getNearestBranchForStore(userCoords, pr.storeId);
 
                       return (
                         <div
@@ -923,6 +941,12 @@ export default function ProductCatalog({
                                 <span className="text-[10.5px] font-bold text-amber-700 font-mono flex items-center gap-1 mt-0.5">
                                   <Tag className="w-3 h-3" />
                                   {pr.specialDetail || 'Special Deal'}
+                                </span>
+                              )}
+                              {nearestBranch && (
+                                <span className="text-[10px] text-slate-500 font-mono flex items-center gap-1 mt-0.5">
+                                  <span>📍 {nearestBranch.distanceFormatted}</span>
+                                  <span className="text-slate-400">• {nearestBranch.mallOrCenter}</span>
                                 </span>
                               )}
                             </div>

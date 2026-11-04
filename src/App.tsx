@@ -17,6 +17,7 @@ import { ChuseReceipt } from './types';
 import { supabase } from './lib/supabase';
 import { getCurrentUserProfile, loginUser, syncBasket } from './lib/api';
 import { FulfillmentModal, FulfillmentSettings } from './components/FulfillmentModal';
+import { NearbyStoresModal } from './components/NearbyStoresModal';
 import { SearchOmnibar } from './components/SearchOmnibar';
 import { MobileBottomNav } from './components/MobileBottomNav';
 import { 
@@ -27,7 +28,8 @@ import {
   X, 
   Truck,
   Store,
-  Sparkles
+  Sparkles,
+  Navigation
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -70,6 +72,7 @@ function MainPage({ user, setUser }: MainPageProps) {
     };
   });
   const [isFulfillmentModalOpen, setIsFulfillmentModalOpen] = useState(false);
+  const [isNearbyStoresModalOpen, setIsNearbyStoresModalOpen] = useState(false);
   
   const [isSearchingRealTime, setIsSearchingRealTime] = useState(false);
   const [searchError, setSearchError] = useState<string | null>(null);
@@ -294,13 +297,30 @@ function MainPage({ user, setUser }: MainPageProps) {
                   ) : (
                     <Store className="w-3.5 h-3.5 text-slate-700 shrink-0" />
                   )}
-                  <span className="truncate max-w-[90px] sm:max-w-[130px]">
-                    {fulfillmentSettings.suburb}
+                  <span className="truncate max-w-[95px] sm:max-w-[130px]">
+                    {fulfillmentSettings.activeStoreBranchName || fulfillmentSettings.suburb}
                   </span>
-                  <span className="hidden md:inline text-[10px] font-mono font-normal text-slate-400">
-                    ({fulfillmentSettings.postalCode})
-                  </span>
+                  {fulfillmentSettings.distanceFormatted ? (
+                    <span className="hidden sm:inline-block text-[9.5px] font-mono font-bold text-emerald-800 bg-emerald-50 px-1 py-0.2 rounded border border-emerald-200">
+                      {fulfillmentSettings.distanceFormatted}
+                    </span>
+                  ) : (
+                    <span className="hidden md:inline text-[10px] font-mono font-normal text-slate-400">
+                      ({fulfillmentSettings.postalCode})
+                    </span>
+                  )}
                   <ChevronDown className="w-3 h-3 text-slate-400 shrink-0" />
+                </button>
+
+                {/* Nearby Stores Radar Quick Button */}
+                <button
+                  type="button"
+                  onClick={() => setIsNearbyStoresModalOpen(true)}
+                  className="hidden lg:flex items-center gap-1 text-xs font-bold text-slate-700 hover:text-black px-2.5 py-1.5 rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 cursor-pointer transition-colors shadow-2xs shrink-0"
+                  title="Find closest supermarkets by GPS distance"
+                >
+                  <Navigation className="w-3.5 h-3.5 text-slate-900" />
+                  <span>Nearby Stores</span>
                 </button>
               </div>
 
@@ -509,6 +529,7 @@ function MainPage({ user, setUser }: MainPageProps) {
                   setSelectedReportProduct(prod);
                   setIsReportModalOpen(true);
                 }}
+                onOpenNearbyStores={() => setIsNearbyStoresModalOpen(true)}
               />
             )}
             
@@ -658,6 +679,27 @@ function MainPage({ user, setUser }: MainPageProps) {
         onClose={() => setIsFulfillmentModalOpen(false)}
         settings={fulfillmentSettings}
         onSave={handleSaveFulfillment}
+        onOpenNearbyStores={() => setIsNearbyStoresModalOpen(true)}
+      />
+
+      {/* Supermarkets Close to You (GPS Location Service Modal) */}
+      <NearbyStoresModal
+        isOpen={isNearbyStoresModalOpen}
+        onClose={() => setIsNearbyStoresModalOpen(false)}
+        currentSelectedBranchId={fulfillmentSettings.activeStoreBranchId}
+        onSelectStoreBranch={(branch) => {
+          const updated: FulfillmentSettings = {
+            ...fulfillmentSettings,
+            suburb: branch.suburb,
+            postalCode: branch.postalCode,
+            province: branch.province,
+            hub: branch.city,
+            activeStoreBranchId: branch.id,
+            activeStoreBranchName: branch.name,
+            distanceFormatted: branch.distanceFormatted
+          };
+          handleSaveFulfillment(updated);
+        }}
       />
 
       {/* Mobile-First Fixed Bottom Navigation Bar (md:hidden) */}

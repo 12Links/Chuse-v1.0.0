@@ -8,9 +8,20 @@ import {
   Store, 
   Clock, 
   Sparkles,
-  ChevronRight
+  ChevronRight,
+  Navigation,
+  ExternalLink,
+  ArrowRight
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+import { 
+  requestUserLocation, 
+  findNearestBranches, 
+  getSavedOrFallbackCoordinates,
+  BranchWithDistance 
+} from '../lib/locationService';
+import { RETAILER_THEMES } from '../lib/retailerTokens';
+import { SupermarketBranch } from '../data/supermarketBranches';
 
 export interface FulfillmentSettings {
   suburb: string;
@@ -18,6 +29,9 @@ export interface FulfillmentSettings {
   province: string;
   hub: string;
   mode: 'deliveryApp' | 'inStore'; // Sixty60/ASAP! vs In-Store Shelf
+  activeStoreBranchId?: string;
+  activeStoreBranchName?: string;
+  distanceFormatted?: string;
 }
 
 interface FulfillmentModalProps {
@@ -25,6 +39,7 @@ interface FulfillmentModalProps {
   onClose: () => void;
   settings: FulfillmentSettings;
   onSave: (newSettings: FulfillmentSettings) => void;
+  onOpenNearbyStores?: () => void;
 }
 
 export const POPULAR_SUBURBS = [
@@ -62,11 +77,20 @@ export function FulfillmentModal({
   isOpen,
   onClose,
   settings,
-  onSave
+  onSave,
+  onOpenNearbyStores
 }: FulfillmentModalProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedMode, setSelectedMode] = useState<'deliveryApp' | 'inStore'>(settings.mode);
   const [tempSettings, setTempSettings] = useState<FulfillmentSettings>(settings);
+
+  // GPS State
+  const [isLocating, setIsLocating] = useState(false);
+  const [nearbyBranches, setNearbyBranches] = useState<BranchWithDistance[]>(() => {
+    const coords = getSavedOrFallbackCoordinates();
+    return findNearestBranches(coords, { maxDistanceKm: 25, limit: 3 });
+  });
+  const [gpsError, setGpsError] = useState<string | null>(null);
 
   if (!isOpen) return null;
 
@@ -77,22 +101,65 @@ export function FulfillmentModal({
     item.hub.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const handleApply = (suburbItem?: typeof POPULAR_SUBURBS[0]) => {
-    const final: FulfillmentSettings = suburbItem 
-      ? {
-          suburb: suburbItem.suburb,
-          postalCode: suburbItem.postalCode,
-          province: suburbItem.province,
-          hub: suburbItem.hub,
-          mode: selectedMode
-        }
-      : {
-          ...tempSettings,
-          mode: selectedMode
-        };
+  const handleApply = (suburbItem?: typeof POPULAR_SUBURBS[0], branch?: BranchWithDistance) => {
+    let final: FulfillmentSettings;
+
+    if (branch) {
+      final = {
+        suburb: branch.suburb,
+        postalCode: branch.postalCode,
+        province: branch.province,
+        hub: branch.city,
+        mode: selectedMode,
+        activeStoreBranchId: branch.id,
+        activeStoreBranchName: branch.name,
+        distanceFormatted: branch.distanceFormatted
+      };
+    } else if (suburbItem) {
+      final = {
+        suburb: suburbItem.suburb,
+        postalCode: suburbItem.postalCode,
+        province: suburbItem.province,
+        hub: suburbItem.hub,
+        mode: selectedMode
+      };
+    } else {
+      final = {
+        ...tempSettings,
+        mode: selectedMode
+      };
+    }
 
     onSave(final);
     onClose();
+  };
+
+  const handleDetectGPS = async () => {
+    setIsLocating(true);
+    setGpsError(null);
+    try {
+      const coords = await requestUserLocation();
+      const branches = findNearestBranches(coords, { maxDistanceKm: 25, limit: 3 });
+      setNearbyBranches(branches);
+
+      if (branches.length > 0) {
+        const closest = branches[0];
+        setTempSettings(prev => ({
+          ...prev,
+          suburb: closest.suburb,
+          postalCode: closest.postalCode,
+          province: closest.province,
+          hub: closest.city,
+          activeStoreBranchId: closest.id,
+          activeStoreBranchName: closest.name,
+          distanceFormatted: closest.distanceFormatted
+        }));
+      }
+    } catch (err: any) {
+      setGpsError(err.message || 'Could not access GPS location.');
+    } finally {
+      setIsLocating(false);
+    }
   };
 
   return (
@@ -112,12 +179,12 @@ export function FulfillmentModal({
           initial={{ scale: 0.96, opacity: 0, y: 10 }}
           animate={{ scale: 1, opacity: 1, y: 0 }}
           exit={{ scale: 0.96, opacity: 0, y: 10 }}
-          className="bg-white rounded-xl max-w-lg w-full max-h-[90vh] overflow-hidden shadow-2xl relative z-10 border border-slate-200 flex flex-col font-sans"
+          className="bg-white rounded-2xl max-w-lg w-full max-h-[90vh] overflow-hidden shadow-2xl relative z-10 border border-slate-200 flex flex-col font-sans"
         >
           {/* Header */}
           <div className="p-4 sm:p-5 border-b border-slate-200 flex items-center justify-between bg-slate-50/70">
             <div className="flex items-center gap-2.5">
-              <div className="w-9 h-9 rounded-lg bg-[#FFE600] flex items-center justify-center text-slate-950 font-bold shadow-xs">
+              <div className="w-9 h-9 rounded-xl bg-[#FFE600] flex items-center justify-center text-slate-950 font-bold shadow-xs">
                 <MapPin className="w-5 h-5 text-slate-900" />
               </div>
               <div>
@@ -130,6 +197,7 @@ export function FulfillmentModal({
               </div>
             </div>
             <button
+              type="button"
               onClick={onClose}
               className="w-8 h-8 rounded-lg bg-white border border-slate-200 hover:border-slate-300 flex items-center justify-center text-slate-500 hover:text-slate-950 cursor-pointer transition-colors"
               aria-label="Close"
@@ -139,7 +207,95 @@ export function FulfillmentModal({
           </div>
 
           <div className="p-4 sm:p-5 overflow-y-auto space-y-5">
-            {/* 1. Mode Toggle: Delivery App vs In-Store */}
+            {/* 1. GPS Auto-Locate Hero Card */}
+            <div className="p-3.5 bg-gradient-to-r from-amber-50/80 to-yellow-50 border border-amber-200/80 rounded-xl space-y-2.5">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="w-7 h-7 rounded-lg bg-slate-950 text-[#FFE600] flex items-center justify-center shadow-xs">
+                    <Navigation className="w-3.5 h-3.5" />
+                  </div>
+                  <div>
+                    <span className="text-xs font-black text-slate-950 block leading-tight">
+                      Find Closest Supermarkets
+                    </span>
+                    <span className="text-[10px] text-slate-500 font-sans">
+                      Uses browser GPS to calculate exact store distances
+                    </span>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={handleDetectGPS}
+                  disabled={isLocating}
+                  className="px-3 py-1.5 rounded-lg bg-slate-950 hover:bg-slate-900 text-[#FFE600] font-black text-xs font-mono flex items-center gap-1.5 cursor-pointer shadow-xs disabled:opacity-50"
+                >
+                  <Navigation className={`w-3 h-3 ${isLocating ? 'animate-spin' : ''}`} />
+                  <span>{isLocating ? 'Locating...' : 'Use My GPS'}</span>
+                </button>
+              </div>
+
+              {gpsError && (
+                <div className="text-[11px] text-rose-700 bg-rose-50 p-2 rounded border border-rose-200">
+                  {gpsError}
+                </div>
+              )}
+
+              {/* Closest Supermarket Quick List */}
+              {nearbyBranches.length > 0 && (
+                <div className="space-y-1.5 pt-1 border-t border-amber-200/60">
+                  <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-slate-500 block">
+                    Closest Supermarkets Around You:
+                  </span>
+                  <div className="grid grid-cols-1 gap-1.5">
+                    {nearbyBranches.map((br) => {
+                      const theme = RETAILER_THEMES[br.storeId];
+                      return (
+                        <div
+                          key={br.id}
+                          onClick={() => handleApply(undefined, br)}
+                          className="p-2 bg-white rounded-lg border border-slate-200 hover:border-slate-400 flex items-center justify-between gap-2 cursor-pointer transition-all hover:bg-slate-50 shadow-2xs group"
+                        >
+                          <div className="flex items-center gap-2 min-w-0">
+                            <span className={`text-[9px] font-mono font-black uppercase px-1.5 py-0.2 rounded shrink-0 ${theme?.badgeBg || 'bg-slate-950'} ${theme?.badgeText || 'text-white'}`}>
+                              {theme?.shortName || br.storeId}
+                            </span>
+                            <div className="min-w-0">
+                              <span className="text-xs font-bold text-slate-900 truncate block group-hover:text-black">
+                                {br.name}
+                              </span>
+                              <span className="text-[10px] text-slate-500 font-mono">
+                                📍 {br.distanceFormatted} away • {br.suburb}
+                              </span>
+                            </div>
+                          </div>
+
+                          <span className="text-[11px] font-mono font-bold text-slate-700 group-hover:text-black shrink-0 flex items-center gap-1">
+                            Select <ArrowRight className="w-3 h-3" />
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {onOpenNearbyStores && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        onClose();
+                        onOpenNearbyStores();
+                      }}
+                      className="text-[11px] font-mono font-bold text-slate-800 hover:text-black hover:underline flex items-center gap-1 pt-1 cursor-pointer"
+                    >
+                      <span>Explore all 30+ supermarkets on live radar</span>
+                      <ArrowRight className="w-3 h-3" />
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* 2. Mode Toggle: Delivery App vs In-Store */}
             <div className="space-y-2">
               <label className="text-[11px] font-bold uppercase tracking-wider text-slate-500 font-mono block">
                 1. Select Pricing Model
@@ -150,7 +306,7 @@ export function FulfillmentModal({
                 <button
                   type="button"
                   onClick={() => setSelectedMode('deliveryApp')}
-                  className={`p-3 rounded-lg border text-left transition-all cursor-pointer relative ${
+                  className={`p-3 rounded-xl border text-left transition-all cursor-pointer relative ${
                     selectedMode === 'deliveryApp'
                       ? 'border-[#004D40] bg-[#004D40]/5 ring-2 ring-[#004D40]/20'
                       : 'border-slate-200 bg-white hover:border-slate-300'
@@ -179,7 +335,7 @@ export function FulfillmentModal({
                 <button
                   type="button"
                   onClick={() => setSelectedMode('inStore')}
-                  className={`p-3 rounded-lg border text-left transition-all cursor-pointer relative ${
+                  className={`p-3 rounded-xl border text-left transition-all cursor-pointer relative ${
                     selectedMode === 'inStore'
                       ? 'border-slate-950 bg-slate-950/5 ring-2 ring-slate-950/20'
                       : 'border-slate-200 bg-white hover:border-slate-300'
@@ -206,7 +362,7 @@ export function FulfillmentModal({
               </div>
             </div>
 
-            {/* 2. Suburb Search & Quick Selection */}
+            {/* 3. Suburb Search & Quick Selection */}
             <div className="space-y-2">
               <label className="text-[11px] font-bold uppercase tracking-wider text-slate-500 font-mono block">
                 2. Suburb / Delivery Destination
@@ -224,7 +380,7 @@ export function FulfillmentModal({
               </div>
 
               {/* Suburb list */}
-              <div className="max-h-52 overflow-y-auto divide-y divide-slate-100 border border-slate-200 rounded-lg bg-white mt-2">
+              <div className="max-h-44 overflow-y-auto divide-y divide-slate-100 border border-slate-200 rounded-xl bg-white mt-2">
                 {filteredSuburbs.map((item) => {
                   const isCurrent = tempSettings.suburb === item.suburb;
                   return (
@@ -275,7 +431,12 @@ export function FulfillmentModal({
           {/* Footer */}
           <div className="p-4 border-t border-slate-200 bg-slate-50 flex items-center justify-between">
             <div className="text-[11px] text-slate-600 font-sans">
-              Currently: <strong className="text-slate-900">{tempSettings.suburb}</strong> ({selectedMode === 'deliveryApp' ? 'Sixty60 / ASAP!' : 'In-Store'})
+              Currently: <strong className="text-slate-900">{tempSettings.suburb}</strong>{' '}
+              {tempSettings.distanceFormatted && (
+                <span className="text-emerald-700 font-mono font-bold">
+                  ({tempSettings.distanceFormatted})
+                </span>
+              )}
             </div>
             <button
               type="button"
