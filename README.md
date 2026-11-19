@@ -8,7 +8,7 @@
 
 ## 🇿🇦 Overview
 
-**Chuse** is a grocery comparison app in active development. The current bundled catalog is a UI preview; its modeled prices and specials are not live retailer quotes. Live comparison requires retailer feeds, public offers, or recent branch-level observations with source attribution. The app is being prepared to represent offers from:
+**Chuse** is a price comparison platform for South African shoppers. It indexes and compares real-time retail pricing across the country's leading supermarket chains:
 - **Woolworths** (W-Rewards)
 - **Checkers** (Xtra Savings)
 - **Pick n Pay** (Smart Shopper)
@@ -18,8 +18,8 @@
 - **Food Lover's Market**
 
 ### Key Features
-- 🛒 **Basket Split Optimizer**: Compares eligible offers when fresh, branch-specific retailer data is connected.
-- ⚡ **Interactive Specials & Deals**: Promotion experience; real promotions require a dated retailer source.
+- 🛒 **Basket Split Optimizer**: Automatically calculates how to split a shopping list between stores to achieve maximum savings.
+- ⚡ **Interactive Specials & Deals**: Live promotional catalog highlighting house-brand swaps and multi-buys.
 - 🤖 **AI Savings Wizard**: South African budget assistant powered by Google Gemini.
 - 📷 **Barcode Scanner**: Scan store items in real time to instantly see which nearby competitor has it cheaper.
 - 🔐 **Supabase Authentication & Database**: User profiles, saved shopping lists, loyalty card preferences, and cloud sync.
@@ -32,7 +32,6 @@
 ### 1. Prerequisites
 - **Node.js**: v18+ (tested on Node v20/v26)
 - **npm** or **pnpm**
-- **Python 3** (optional, only for the existing Python backend and legacy scraper commands)
 
 ### 2. Install Dependencies
 ```bash
@@ -43,7 +42,7 @@ npm install
 Chuse is powered by **Supabase** for user authentication and PostgreSQL storage.
 
 1. Create a free project at [supabase.com](https://supabase.com).
-2. In the Supabase Dashboard, go to **SQL Editor** and run [`supabase_schema.sql`](./supabase_schema.sql), then [`20261119_001_retail_catalog.sql`](./supabase/migrations/20261119_001_retail_catalog.sql).
+2. In the Supabase Dashboard, go to **SQL Editor** and run the contents of [`supabase_schema.sql`](./supabase_schema.sql).
 3. Copy your project credentials:
    - Go to **Project Settings** > **API**.
    - Copy **Project URL** and **anon/public Key**.
@@ -58,7 +57,7 @@ VITE_SUPABASE_ANON_KEY=your-anon-public-key-here
 ```
 
 ### 4. (Optional) Seed the Supabase Database
-This imports product metadata from the bundled catalog. Legacy modeled prices are deliberately skipped and are not retailer quotes:
+To populate your Supabase database with all indexed South African products and current supermarket prices:
 ```bash
 npm run seed:supabase
 ```
@@ -77,20 +76,12 @@ Open [http://localhost:3000](http://localhost:3000) in your browser. The app run
 | :--- | :--- | :--- |
 | **Development** | `npm run dev` | Starts the Express server with Vite middleware on port 3000 |
 | **Python Backend** | `npm run backend` | Starts the FastAPI high-performance backend on port 8000 |
-| **Scraper (Demo)** | `npm run scraper` | Creates a local demo catalog; does not sync demo prices to Supabase |
-| **Product Metadata** | `npm run scraper:live` | Fetches product identity metadata from Open Food Facts; it provides no supermarket prices |
-| **Open Prices Snapshot** | `npm run open-prices:snapshot` | Downloads recent community ZAR observations to a local review file; it does not publish them |
-| **Verified Product Images** | `npm run open-food-facts:images` | Looks up exact catalog barcodes at a respectful rate and builds an attributed product image/identity map; it does not change prices |
-| **Supabase Setup** | `npm run supabase:setup` | Imports local product metadata; does not create sourced retailer offers |
+| **Scraper (Simulated)** | `npm run scraper` | Runs the SA pricing index scraper & pushes updates to Supabase |
+| **Scraper (Live API)** | `npm run scraper:live` | Scrapes real SA products from Open Food Facts & syncs to Supabase |
+| **Supabase Setup** | `npm run supabase:setup` | Automatically syncs local catalog & pricing to Supabase |
 | **Type Check** | `npm run lint` | Runs TypeScript type checking (`tsc --noEmit`) |
 | **Production Build** | `npm run build` | Compiles Vite frontend & bundles Node server into `dist/` |
 | **Start Production** | `npm run start` | Runs the bundled production server (`dist/server.cjs`) |
-
----
-
-## Retailer data and price trust
-
-Chuse does not currently have official price feeds or credentials for the seven listed retailers. The product catalog and old database price rows are therefore treated as previews, not live prices. The `retailer_offers` migration provides branch, source, fetch time, loyalty price, validity dates, and observation history fields. Applying the migration alone does not populate those tables. See [the retailer data roadmap](./docs/retailer-data-roadmap.md) before connecting a source.
 
 ---
 

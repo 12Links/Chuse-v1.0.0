@@ -14,24 +14,9 @@ export interface Store {
 export interface StorePrice {
   storeId: StoreId;
   price: number;
-  /** Previous/non-promotional price when the source provides it. */
-  regularPrice?: number;
-  /** Member-only price. Kept separate so comparisons respect the shopper's card. */
-  loyaltyPrice?: number;
-  loyaltyProgram?: string;
   onSpecial?: boolean;
   specialDetail?: string;
   inStock: boolean;
-  /** Branch/zone this quote belongs to. Empty means the source is not location-specific. */
-  branchId?: string;
-  branchName?: string;
-  source?: string;
-  sourceUrl?: string;
-  fetchedAt?: string;
-  validFrom?: string;
-  validUntil?: string;
-  /** True only for explicitly seeded or simulated offers. */
-  isDemoData?: boolean;
 }
 
 export interface Product {
@@ -41,67 +26,9 @@ export interface Product {
   unit: string; // e.g., "700g", "2L", "18 Pack", "1kg", "Each"
   image?: string; // We can use abstract icon names from Lucide or beautiful designs
   imageUrl?: string; // High-resolution supermarket packaging images
-  imageSource?: string;
-  imageSourceUrl?: string;
   prices: StorePrice[]; // Store specific prices
-  /** Real, dated observations supplied by the catalog API; never synthesized in the client. */
-  priceHistory?: PriceHistoryObservation[];
   isPopular?: boolean;
   barcode?: string;
-}
-
-export interface PriceHistoryObservation {
-  observedAt: string;
-  storeId: StoreId;
-  price: number;
-  branchId?: string;
-  source?: string;
-}
-
-export type RetailerMatchMethod = 'barcode' | 'reviewed' | 'name_size' | 'unmatched';
-
-export interface RetailerLocation {
-  id: string;
-  retailerId: StoreId;
-  externalLocationId: string;
-  name: string;
-  province?: string;
-  city?: string;
-  suburb?: string;
-  postalCode?: string;
-  fulfillmentModes: Array<'delivery' | 'collection' | 'in_store'>;
-}
-
-export interface RetailerCatalogProduct {
-  id: string;
-  retailerId: StoreId;
-  retailerSku: string;
-  canonicalProductId?: string | null;
-  barcode?: string | null;
-  name: string;
-  brand?: string | null;
-  packSize?: string | null;
-  variant?: string | null;
-  productUrl?: string | null;
-  matchMethod: RetailerMatchMethod;
-  matchConfidence?: number | null;
-}
-
-export interface RetailerPromotion {
-  id: string;
-  retailerId: StoreId;
-  locationId?: string | null;
-  title: string;
-  description?: string | null;
-  promotionType: string;
-  rewardValue?: number | null;
-  loyaltyProgram?: string | null;
-  conditions: Record<string, unknown>;
-  validFrom?: string | null;
-  validUntil?: string | null;
-  source: string;
-  sourceUrl?: string | null;
-  fetchedAt: string;
 }
 
 export interface BasketItem {
@@ -187,6 +114,5 @@ export interface StapleTimingAnalysis {
   isStaple: boolean;
   recommendedAction: string;
   flyerCycleNote: string;
-  historyAvailable: boolean;
 }
 

@@ -41,41 +41,6 @@ export const StapleTimingSection: React.FC<StapleTimingSectionProps> = ({
     isStaple
   } = analysis;
 
-  if (!analysis.historyAvailable) {
-    return (
-      <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-        <div className="flex items-start gap-3">
-          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-amber-50 text-amber-700">
-            <Clock className="h-4 w-4" />
-          </span>
-          <div className="min-w-0 flex-1">
-            <div className="flex flex-wrap items-center gap-2">
-              <h4 className="text-sm font-bold text-slate-900">Price insight</h4>
-              <span className="rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-[10px] font-semibold text-slate-600">
-                {badgeLabel}
-              </span>
-            </div>
-            <p className="mt-1 text-sm font-semibold text-slate-800">{headline}</p>
-            <p className="mt-1 text-xs leading-relaxed text-slate-600">{explanation}</p>
-            {currentBestPrice > 0 && (
-              <p className="mt-2 text-xs font-medium text-slate-700">
-                Current quote: <span className="font-bold">R{currentBestPrice.toFixed(2)}</span> at {bestStoreName}
-              </p>
-            )}
-          </div>
-        </div>
-        <button
-          type="button"
-          onClick={() => onToggleTrack(product.id)}
-          className="mt-3 inline-flex items-center gap-1.5 rounded-lg border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-50"
-        >
-          {isTracked ? <BookmarkCheck className="h-3.5 w-3.5" /> : <Bookmark className="h-3.5 w-3.5" />}
-          {isTracked ? 'Remove from watchlist' : 'Watch this product'}
-        </button>
-      </section>
-    );
-  }
-
   return (
     <div className="bg-white border border-slate-200 rounded-xl p-4 space-y-3.5 shadow-2xs font-sans">
       {/* Header & Status Pill */}

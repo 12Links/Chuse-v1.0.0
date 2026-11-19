@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { getOfferFreshness } from '../lib/offerPricing';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   Sparkles, 
@@ -51,9 +50,7 @@ export default function AISavingsWizard({ products, basket, user, onAuthRequest 
       unit: prod.unit,
       category: prod.category,
       quantity: item.quantity,
-      prices: prod.prices
-        .filter(pr => pr.inStock && getOfferFreshness(pr) === 'fresh')
-        .map(pr => ({ storeId: pr.storeId, price: pr.price, onSpecial: pr.onSpecial, inStock: pr.inStock, branchName: pr.branchName, source: pr.source, fetchedAt: pr.fetchedAt }))
+      prices: prod.prices.map(pr => ({ storeId: pr.storeId, price: pr.price, onSpecial: pr.onSpecial, inStock: pr.inStock }))
     };
   }).filter(Boolean);
 
@@ -65,7 +62,7 @@ export default function AISavingsWizard({ products, basket, user, onAuthRequest 
           role: 'assistant',
           text: `**Howzit! I am the chuse. Saving Wizard!**
 
-I can help with grocery planning, budget ideas and meal inspiration. Price comparisons only appear when Chuse has recent, sourced retailer offers for your area.
+I am your personalized, Gemini-powered South African grocery budget coach and retail strategist. I scan woolies, checkers, pnp, shoprite, spar, and boxer to find you the sweetest household discounts!
 
 ${basketDetails.length > 0 
   ? `I see you have **${basketDetails.length} item(s)** in your shopping basket right now! Click one of the quick optimization chips below, or ask me anything about making your ZAR Rands stretch further today!` 
@@ -142,8 +139,22 @@ ${basketDetails.length > 0
         })
       });
 
+      if (!response.ok || response.headers.get("content-type")?.includes("text/html")) {
+        response = await fetch('https://chuse-chi.vercel.app/api/ai/chat', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            message: textToSend,
+            basket: basketDetails,
+            history
+          })
+        });
+      }
+
       if (!response.ok) {
-        throw new Error("Unable to reach the Chuse planning assistant.");
+        throw new Error("Unable to communicate with the chuse. AI indexes.");
       }
 
       const data = await response.json();

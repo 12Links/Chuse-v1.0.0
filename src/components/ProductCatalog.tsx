@@ -35,9 +35,11 @@ import {
   toggleTrackStaple 
 } from '../lib/priceTiming';
 import { StapleTimingSection } from './StapleTimingSection';
-import { ProductPackshot } from './ProductPackshot';
 import { RETAILER_THEMES, calculateNormalizedUnitPrice } from '../lib/retailerTokens';
-import { getOfferFreshness } from '../lib/offerPricing';
+import { 
+  getNearestBranchForStore, 
+  getSavedOrFallbackCoordinates 
+} from '../lib/locationService';
 
 interface ProductCatalogProps {
   products: Product[];
@@ -173,6 +175,7 @@ export default function ProductCatalog({
   const [inspectProduct, setInspectProduct] = useState<Product | null>(null);
 
   // Cached GPS coordinates for nearest branch distances
+  const userCoords = useMemo(() => getSavedOrFallbackCoordinates(), []);
 
   // Category horizontal scroll ref
   const categoryScrollRef = useRef<HTMLDivElement>(null);
@@ -215,7 +218,7 @@ export default function ProductCatalog({
     let drops = 0;
 
     products.forEach(p => {
-      const hasSpecial = p.prices.some(pr => pr.inStock && pr.onSpecial && getOfferFreshness(pr) === 'fresh');
+      const hasSpecial = p.prices.some(pr => pr.inStock && pr.onSpecial);
       if (hasSpecial) specials++;
 
       const hasMulti = p.prices.some(pr => pr.inStock && pr.specialDetail && /buy\s*\d|for\s*r/i.test(pr.specialDetail));
@@ -285,10 +288,10 @@ export default function ProductCatalog({
 
         // Secondary Filters
         if (activeSecondaryFilter === 'specials') {
-          const hasSpecial = p.prices.some(pr => pr.inStock && pr.onSpecial && getOfferFreshness(pr) === 'fresh');
+          const hasSpecial = p.prices.some(pr => pr.inStock && pr.onSpecial);
           if (!hasSpecial) return false;
         } else if (activeSecondaryFilter === 'multibuys') {
-          const hasMulti = p.prices.some(pr => pr.inStock && getOfferFreshness(pr) === 'fresh' && pr.specialDetail && /buy\s*\d|for\s*r/i.test(pr.specialDetail));
+          const hasMulti = p.prices.some(pr => pr.inStock && pr.specialDetail && /buy\s*\d|for\s*r/i.test(pr.specialDetail));
           if (!hasMulti) return false;
         } else if (activeSecondaryFilter === 'drops') {
           const timing = timingAnalyses.get(p.id);
@@ -317,12 +320,12 @@ export default function ProductCatalog({
         }
 
         const getMinPrice = (p: Product) => {
-          const prices = p.prices.filter(pr => pr.inStock && pr.price > 0 && getOfferFreshness(pr) === 'fresh').map(pr => pr.price);
+          const prices = p.prices.filter(pr => pr.inStock && pr.price > 0).map(pr => pr.price);
           return prices.length > 0 ? Math.min(...prices) : 999999;
         };
 
         const getMaxSavings = (p: Product) => {
-          const prices = p.prices.filter(pr => pr.inStock && pr.price > 0 && getOfferFreshness(pr) === 'fresh').map(pr => pr.price);
+          const prices = p.prices.filter(pr => pr.inStock && pr.price > 0).map(pr => pr.price);
           if (prices.length < 2) return 0;
           return Math.max(...prices) - Math.min(...prices);
         };
@@ -343,7 +346,7 @@ export default function ProductCatalog({
   }, [products, activeSearch, selectedCategoryFilter, selectedStoreFilter, sortBy, activeSecondaryFilter, timingAnalyses, trackedIds]);
 
   return (
-    <div id="product-catalog" className="space-y-6">
+    <div id="product-catalog-view" className="space-y-4">
       {/* 1. Visual "Shop by Aisle" Strip (Checkers Sixty60 Style) */}
       <div className="relative py-1 w-full max-w-full overflow-hidden">
         {/* Left Arrow with Soft Gradient Fade */}
@@ -598,23 +601,21 @@ export default function ProductCatalog({
           const basketQty = getBasketQty(product.id);
 
           // Find cheapest price & other competitor prices
-          const validPrices = product.prices.filter(pr => pr.inStock && pr.price > 0 && getOfferFreshness(pr) === 'fresh');
+          const validPrices = product.prices.filter(pr => pr.inStock && pr.price > 0);
           const sortedPrices = [...validPrices].sort((a, b) => a.price - b.price);
           const cheapest = sortedPrices[0];
           const secondCheapest = sortedPrices[1];
           const highest = sortedPrices[sortedPrices.length - 1];
           const bestRetailer = cheapest ? RETAILER_THEMES[cheapest.storeId] : null;
-          const hasVerifiedCheapest = Boolean(cheapest && getOfferFreshness(cheapest) === 'fresh');
 
           // Normalized Unit Price (e.g. R14.95 / L or R39.20 / kg)
           const unitPriceInfo = calculateNormalizedUnitPrice(cheapest?.price || 0, product.unit);
 
           // Regular price calculation (for strikethrough if on special)
-          const highestIsVerified = Boolean(highest);
-          const hasPromo = hasVerifiedCheapest && Boolean(cheapest?.onSpecial);
-          const strikethroughPrice = hasPromo && cheapest?.regularPrice && cheapest.regularPrice > cheapest.price
-            ? cheapest.regularPrice
-            : null;
+          const hasPromo = cheapest?.onSpecial || (highest && highest.price > cheapest.price * 1.08);
+          const strikethroughPrice = cheapest?.onSpecial 
+            ? Math.round(cheapest.price * 1.18 * 100) / 100
+            : (highest && highest.price > cheapest.price * 1.05 ? highest.price : null);
 
           // Promotional Badge text - Authentic SA Loyalty tags that never truncate
           const promoBadgeText = hasPromo ? getShortDealBadge(cheapest?.storeId, cheapest?.specialDetail) : '';
@@ -673,10 +674,14 @@ export default function ProductCatalog({
                   </button>
 
                   {/* Packshot Image */}
-                  <ProductPackshot
-                    imageUrl={product.imageUrl}
-                    name={product.name}
+                  <img
+                    src={product.imageUrl || 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=300'}
+                    alt={product.name}
                     className="w-full h-full object-contain mix-blend-multiply group-hover:scale-105 transition-transform duration-200"
+                    loading="lazy"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = `https://placehold.co/200x200?text=${encodeURIComponent(product.name.charAt(0))}`;
+                    }}
                   />
 
                   {/* Bottom-Right Pack Size Pill */}
@@ -705,7 +710,7 @@ export default function ProductCatalog({
                   <div className="flex items-baseline justify-between gap-1 flex-wrap">
                     <div className="flex items-baseline gap-1.5">
                       <span className="text-xl font-black text-slate-950 font-sans tracking-tight tabular-nums">
-                        {cheapest ? `R${cheapest.price.toFixed(2)}` : 'Price pending'}
+                        R{cheapest ? cheapest.price.toFixed(2) : '--'}
                       </span>
                       {strikethroughPrice && strikethroughPrice > (cheapest?.price || 0) && (
                         <span className="text-xs text-slate-400 line-through font-sans font-semibold tabular-nums">
@@ -723,7 +728,7 @@ export default function ProductCatalog({
                   </div>
 
                   {/* Normalized Unit Price (R/L, R/kg, etc.) */}
-                  {unitPriceInfo && hasVerifiedCheapest && (
+                  {unitPriceInfo && (
                     <div className="text-[10px] font-sans font-semibold text-slate-500">
                       {unitPriceInfo.formatted}
                     </div>
@@ -746,7 +751,7 @@ export default function ProductCatalog({
                                 ? 'bg-emerald-500 ring-1 ring-emerald-600' 
                                 : 'bg-slate-200 hover:bg-slate-300'
                             }`}
-                            title={`${r?.shortName || pr.storeId}: verified price`}
+                            title={`${r?.shortName || pr.storeId}: R${pr.price.toFixed(2)}`}
                           />
                         );
                       })}
@@ -754,9 +759,9 @@ export default function ProductCatalog({
 
                     <div className="flex items-center justify-between text-[10px] font-sans font-medium text-slate-500 mt-1">
                       <span className="text-emerald-700 font-bold truncate">
-                        {hasVerifiedCheapest ? 'Lowest at' : 'Preview lowest at'} {bestRetailer?.shortName || cheapest?.storeId}
+                        Lowest at {bestRetailer?.shortName || cheapest?.storeId}
                       </span>
-                      {secondCheapest && highestIsVerified && hasVerifiedCheapest && (
+                      {secondCheapest && (
                         <span className="text-slate-400">
                           +R{(secondCheapest.price - (cheapest?.price || 0)).toFixed(2)} next
                         </span>
@@ -866,9 +871,9 @@ export default function ProductCatalog({
               {/* Header */}
               <div className="flex items-start justify-between border-b border-slate-200 pb-4">
                 <div className="flex items-center gap-3.5">
-                  <ProductPackshot
-                    imageUrl={inspectProduct.imageUrl}
-                    name={inspectProduct.name}
+                  <img
+                    src={inspectProduct.imageUrl || 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=120'}
+                    alt={inspectProduct.name}
                     className="w-14 h-14 rounded-lg object-contain bg-slate-50 p-2 border border-slate-200 shrink-0"
                   />
                   <div>
@@ -878,11 +883,6 @@ export default function ProductCatalog({
                     <h3 className="text-base font-bold text-slate-950 leading-tight font-sans">
                       {inspectProduct.name}
                     </h3>
-                    {inspectProduct.imageSource && inspectProduct.imageSourceUrl && (
-                      <a href={inspectProduct.imageSourceUrl} target="_blank" rel="noopener noreferrer" className="text-[9px] text-slate-500 underline hover:text-slate-900">
-                        Product image: {inspectProduct.imageSource}
-                      </a>
-                    )}
                   </div>
                 </div>
                 <button
@@ -932,10 +932,8 @@ export default function ProductCatalog({
 
                 <div className="space-y-1.5 font-sans">
                   {(() => {
-                    const sorted = [...inspectProduct.prices].filter(pr => pr.inStock && pr.price > 0 && getOfferFreshness(pr) === 'fresh').sort((a, b) => a.price - b.price);
+                    const sorted = [...inspectProduct.prices].sort((a, b) => a.price - b.price);
                     const lowestPrice = sorted[0]?.price || 0;
-
-                    if (sorted.length === 0) return <p className="rounded-lg border border-dashed border-slate-300 p-4 text-sm text-slate-600">No verified store prices for this product yet. Retailer prices will appear here once a source and branch are connected.</p>;
 
                     return sorted.map((pr, idx) => {
                       const retailer = RETAILER_THEMES[pr.storeId];
@@ -943,6 +941,7 @@ export default function ProductCatalog({
                       const diffFromLowest = pr.price - lowestPrice;
                       const diffPercent = lowestPrice > 0 ? (diffFromLowest / lowestPrice) * 100 : 0;
                       const storeDeepLink = retailer?.appDeepLinkPrefix ? `${retailer.appDeepLinkPrefix}${encodeURIComponent(inspectProduct.name)}` : null;
+                      const nearestBranch = getNearestBranchForStore(userCoords, pr.storeId);
 
                       return (
                         <div
@@ -969,26 +968,18 @@ export default function ProductCatalog({
                                     {retailer.loyaltyProgram}
                                   </span>
                                 )}
-                                {getOfferFreshness(pr) !== 'fresh' && (
-                                  <span className="text-[8px] px-1.5 py-0.2 rounded font-sans font-bold bg-amber-100 text-amber-800">Preview quote</span>
-                                )}
                               </div>
                               {pr.onSpecial && (
                                 <span className="text-[10.5px] font-bold text-amber-700 font-sans flex items-center gap-1 mt-0.5">
                                   <Tag className="w-3 h-3" />
-                                  {getOfferFreshness(pr) === 'fresh' ? (pr.specialDetail || 'Special Deal') : 'Unverified special preview'}
+                                  {pr.specialDetail || 'Special Deal'}
                                 </span>
                               )}
-                              {getOfferFreshness(pr) === 'fresh' && pr.branchName && (
+                              {nearestBranch && (
                                 <span className="text-[10px] text-slate-500 font-sans flex items-center gap-1 mt-0.5">
                                   <MapPin className="w-3 h-3 text-slate-400 shrink-0" />
-                                  <span>{pr.branchName}</span>
-                                </span>
-                              )}
-                              {getOfferFreshness(pr) === 'fresh' && pr.source && (
-                                <span className="text-[9px] text-slate-500 font-sans block mt-0.5">
-                                  {pr.source} · checked {new Date(pr.fetchedAt!).toLocaleString('en-ZA')}
-                                  {pr.sourceUrl && <> · <a href={pr.sourceUrl} target="_blank" rel="noopener noreferrer" className="underline hover:text-slate-900">View source</a></>}
+                                  <span>{nearestBranch.distanceFormatted}</span>
+                                  <span className="text-slate-400">• {nearestBranch.mallOrCenter}</span>
                                 </span>
                               )}
                             </div>
@@ -1001,7 +992,7 @@ export default function ProductCatalog({
                               </span>
                               {isLowest ? (
                                 <span className="block text-[9.5px] font-bold text-emerald-700 uppercase font-sans">
-                                  {getOfferFreshness(pr) === 'fresh' ? 'Cheapest' : 'Preview lowest'}
+                                  Cheapest
                                 </span>
                               ) : (
                                 <span className="block text-[9.5px] font-sans text-slate-400">

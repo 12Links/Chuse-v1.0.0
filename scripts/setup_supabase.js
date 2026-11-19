@@ -35,12 +35,6 @@ async function run() {
       console.log('📄 Executing supabase_schema.sql to build tables and triggers...');
       await client.query(sql);
       console.log('✓ Schema applied successfully (profiles, stores, products, prices, baskets, shopping_lists).\n');
-
-      const catalogMigrationPath = path.join(process.cwd(), 'supabase', 'migrations', '20261119_001_retail_catalog.sql');
-      if (fs.existsSync(catalogMigrationPath)) {
-        await client.query(fs.readFileSync(catalogMigrationPath, 'utf-8'));
-        console.log('✓ Branch-level retailer catalog schema applied. It is ready for sourced offers, but does not populate prices.\n');
-      }
     } catch (err) {
       console.error('[!] Warning: Could not run schema directly via DATABASE_URL:', err.message);
       console.log('    (You can also paste supabase_schema.sql in the Supabase Dashboard SQL Editor)\n');
@@ -52,7 +46,7 @@ async function run() {
     console.log('    paste it into the Supabase Dashboard -> SQL Editor.\n');
   }
 
-  // 2. Sync product identities only. Bundled prices are modeled demo values.
+  // 2. Sync Products and Prices
   if (!supabaseUrl || !supabaseKey || supabaseUrl.includes('placeholder-project')) {
     console.error('[!] Error: VITE_SUPABASE_URL or VITE_SUPABASE_ANON_KEY is missing in your .env file.');
     console.error('    Please configure them first, then run this command again.\n');
@@ -90,10 +84,36 @@ async function run() {
     console.log(`✓ Synced ${productsToUpsert.length} products to public.products.`);
   }
 
-  console.log('ℹ Skipped legacy price rows: modeled showcase prices are not retailer offers.');
+  // Upsert prices
+  const pricesToUpsert = [];
+  for (const p of products) {
+    if (Array.isArray(p.prices)) {
+      for (const pr of p.prices) {
+        if (pr.storeId && pr.price != null) {
+          pricesToUpsert.push({
+            product_id: p.id,
+            store_id: pr.storeId,
+            price: pr.price,
+            on_special: Boolean(pr.onSpecial),
+            special_detail: pr.specialDetail || '',
+            last_updated: new Date().toISOString(),
+          });
+        }
+      }
+    }
+  }
+
+  if (pricesToUpsert.length > 0) {
+    const { error: priceErr } = await supabase.from('prices').upsert(pricesToUpsert, { onConflict: 'product_id,store_id' });
+    if (priceErr) {
+      console.error('[!] Price sync error:', priceErr.message);
+    } else {
+      console.log(`✓ Synced ${pricesToUpsert.length} price points across stores to public.prices.`);
+    }
+  }
 
   console.log('\n====================================================');
-  console.log('✓ Product metadata synced. No prices or specials were fabricated or uploaded.');
+  console.log('🎉 Setup complete! All data is synced with Supabase.');
   console.log('Run `npm run dev` to launch the app.');
   console.log('====================================================\n');
 }

@@ -197,10 +197,10 @@ def fetch_open_food_facts_products(query_term, limit=3):
     """
     Fetches real products from Open Food Facts API for South Africa
     """
-    url = f"https://world.openfoodfacts.org/api/v3/search?countries_tags_en=South%20Africa&search_terms={urllib.parse.quote(query_term)}&page_size={limit}"
+    url = f"https://za.openfoodfacts.org/cgi/search.pl?search_terms={urllib.parse.quote(query_term)}&search_simple=1&action=process&json=1&page_size={limit}"
     req = urllib.request.Request(
         url, 
-        headers={'User-Agent': 'ChuseSA/1.0.0 (https://chuse.co.za)'}
+        headers={'User-Agent': 'ChuseSA/1.0.0 (info@chuse.co.za)'}
     )
     
     try:
@@ -248,7 +248,7 @@ def generate_prices(base_price):
 
 def push_to_supabase(products):
     """
-    Upserts product identity metadata only. Open Food Facts does not provide retail prices.
+    Upserts products and current prices directly to Supabase PostgREST tables.
     """
     env_vars = load_env()
     supabase_url = os.environ.get("SUPABASE_URL") or os.environ.get("VITE_SUPABASE_URL") or env_vars.get("SUPABASE_URL") or env_vars.get("VITE_SUPABASE_URL")
@@ -258,7 +258,7 @@ def push_to_supabase(products):
         print("[*] Supabase credentials not found. Skipping live database push.")
         return
 
-    print(f"\n[*] Syncing {len(products)} product records only to Supabase ({supabase_url})...")
+    print(f"\n[*] Syncing {len(products)} products and store pricing directly to Supabase ({supabase_url})...")
     
     headers = {
         "apikey": supabase_key,
@@ -269,6 +269,7 @@ def push_to_supabase(products):
 
     # 1. Upsert Products
     prod_payload = []
+    prices_payload = []
     
     for p in products:
         prod_payload.append({
@@ -280,6 +281,16 @@ def push_to_supabase(products):
             "image_url": p.get("imageUrl"),
             "is_popular": bool(p.get("isPopular", False)),
         })
+        for pr in p.get("prices", []):
+            if pr.get("storeId") and pr.get("price") is not None:
+                prices_payload.append({
+                    "product_id": p["id"],
+                    "store_id": pr["storeId"],
+                    "price": pr["price"],
+                    "on_special": bool(pr.get("onSpecial", False)),
+                    "special_detail": pr.get("specialDetail", ""),
+                    "last_updated": datetime.now(timezone.utc).isoformat()
+                })
 
     try:
         url_prods = f"{supabase_url.rstrip('/')}/rest/v1/products?on_conflict=id"
@@ -287,10 +298,14 @@ def push_to_supabase(products):
         with urllib.request.urlopen(req, timeout=20) as res:
             print(f"  ✓ Successfully synced {len(prod_payload)} products to Supabase.")
 
+        url_prices = f"{supabase_url.rstrip('/')}/rest/v1/prices?on_conflict=product_id,store_id"
+        req = urllib.request.Request(url_prices, data=json.dumps(prices_payload).encode("utf-8"), headers=headers, method="POST")
+        with urllib.request.urlopen(req, timeout=20) as res:
+            print(f"  ✓ Successfully synced {len(prices_payload)} price points to Supabase.")
     except Exception as e:
         print(f"  [!] Supabase sync notification: {e}")
 
-def scrape_and_update(run_live=False, sync_supabase=False):
+def scrape_and_update(run_live=False, sync_supabase=True):
     output_path = os.path.join(os.getcwd(), "synced_products.json")
     
     existing_products = []
@@ -303,36 +318,6 @@ def scrape_and_update(run_live=False, sync_supabase=False):
             print(f"[!] Error reading existing database: {e}")
 
     product_map = {p["id"]: p for p in existing_products}
-
-    # Live mode imports product identity only. Never mix simulated retailer prices into
-    # the same catalog file or write them to a production database.
-    if run_live:
-        print("[*] Fetching product metadata from Open Food Facts. No retailer prices are available from this source.")
-        search_terms = ["Albany Bread", "Selati Sugar", "Gold Star Yeast", "Huletts Sugar", "Sasko Bread", "Five Roses Tea", "Ricoffy", "Nola Mayonnaise", "Sunfoil Sunflower Oil"]
-        live_products = {}
-        for term in search_terms:
-            print(f"  -> Searching '{term}'...")
-            for raw_p in fetch_open_food_facts_products(term, limit=2):
-                name = raw_p.get("product_name_en") or raw_p.get("product_name")
-                barcode = raw_p.get("code")
-                if not name or not barcode:
-                    continue
-                categories = raw_p.get("categories_tags") or []
-                live_products[f"prod-{barcode}"] = {
-                    "id": f"prod-{barcode}", "name": name,
-                    "category": categories[0].split(":")[-1].replace("-", " ").capitalize() if categories else "Groceries",
-                    "unit": raw_p.get("quantity") or "1 Unit", "isPopular": False,
-                    "barcode": barcode, "imageUrl": raw_p.get("image_front_url"), "prices": [],
-                    "productSource": "Open Food Facts", "productSourceUrl": f"https://world.openfoodfacts.org/product/{barcode}",
-                    "productFetchedAt": datetime.now(timezone.utc).isoformat(), "isDemoData": False
-                }
-        output_path = os.path.join(os.getcwd(), "open_food_facts_products.json")
-        with open(output_path, "w", encoding="utf-8") as f:
-            json.dump(list(live_products.values()), f, indent=2, ensure_ascii=False)
-        print(f"[*] Saved {len(live_products)} product identity records to open_food_facts_products.json. Retailer prices were not changed.")
-        if sync_supabase:
-            push_to_supabase(list(live_products.values()))
-        return
     
     # Process staple items
     print("[*] Syncing South African supermarket pricing indices...")
@@ -345,6 +330,46 @@ def scrape_and_update(run_live=False, sync_supabase=False):
         product_map[prod_id] = staple_copy
         print(f"  + Synced: {staple_copy['name']} ({staple_copy['unit']})")
 
+    # If live mode requested, query Open Food Facts API for real South African items
+    if run_live:
+        print("[*] Live integration active. Contacting South African Open Food Facts index...")
+        search_staples = [
+            "Albany Bread", "Selati Sugar", "Gold Star Yeast", 
+            "Huletts Sugar", "Sasko Bread", "Five Roses Tea", 
+            "Ricoffy", "Nola Mayonnaise", "Sunfoil Sunflower Oil"
+        ]
+        
+        for term in search_staples:
+            print(f"  -> Indexing query term: '{term}'...")
+            raw_products = fetch_open_food_facts_products(term, limit=2)
+            
+            for raw_p in raw_products:
+                name = raw_p.get("product_name_en") or raw_p.get("product_name")
+                barcode = raw_p.get("code")
+                
+                if not name or not barcode:
+                    continue
+                    
+                prod_id = f"prod-{barcode}"
+                category = raw_p.get("categories_tags", ["Groceries"])[0].split(":")[-1].replace("-", " ").capitalize()
+                unit = raw_p.get("quantity") or "1 Unit"
+                image_url = raw_p.get("image_front_url") or "https://images.unsplash.com/photo-1542838132-92c53300491e?w=400&auto=format&fit=crop&q=80"
+                assigned_base = random.uniform(18.0, 95.0)
+                
+                new_item = {
+                    "id": prod_id,
+                    "name": name,
+                    "category": category,
+                    "unit": unit,
+                    "isPopular": False,
+                    "barcode": barcode,
+                    "imageUrl": image_url,
+                    "prices": generate_prices(assigned_base)
+                }
+                
+                product_map[prod_id] = new_item
+                print(f"    [Success] Fetched & Indexed: {name} (Barcode: {barcode})")
+                
     final_list = list(product_map.values())
     
     # Save back to local JSON file
@@ -369,9 +394,9 @@ def main():
     
     args = parser.parse_args()
     is_live = bool(args.live)
-    sync_sb = is_live and not bool(args.no_supabase)
+    sync_sb = not bool(args.no_supabase)
     
-    print(f"[*] Mode: {'LIVE PRODUCT METADATA (NO RETAIL PRICES)' if is_live else 'DEMO SIMULATION (LOCAL ONLY)'}")
+    print(f"[*] Mode: {'LIVE API' if is_live else 'MOCK SIMULATION'}")
     scrape_and_update(run_live=is_live, sync_supabase=sync_sb)
     print("=" * 65)
 

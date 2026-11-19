@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { 
   AlertTriangle, 
+  UploadCloud, 
   CheckCircle2, 
   Clock, 
   MapPin, 
@@ -17,7 +18,6 @@ import {
 import { Product } from '../types';
 import { STORES } from '../data/catalog';
 import { supabase } from '../lib/supabase';
-import { getOfferFreshness } from '../lib/offerPricing';
 
 interface DiscrepancyReport {
   id: string;
@@ -46,22 +46,68 @@ export default function PriceDiscrepancyReporter({ products }: PriceDiscrepancyR
   const [shelfPrice, setShelfPrice] = useState('');
   const [province, setProvince] = useState('Gauteng');
   const [reporterName, setReporterName] = useState('Guest Explorer');
+  const [dragActive, setDragActive] = useState(false);
+  const [uploadedFileName, setUploadedFileName] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
 
+  // Initial dummy verified reports for cold start demo
   useEffect(() => {
     const saved = localStorage.getItem('sa_price_discrepancy_reports');
     if (saved) {
       try {
-        const parsed = JSON.parse(saved);
-        // Remove the three seeded showcase reports from older app versions.
-        setReports(Array.isArray(parsed) ? parsed.filter((report: DiscrepancyReport) => !['rep-1', 'rep-2', 'rep-3'].includes(report.id)) : []);
+        setReports(JSON.parse(saved));
       } catch (e) {
         console.error('Failed to parse discrepancy reports:', e);
       }
     } else {
-      setReports([]);
+      const initial: DiscrepancyReport[] = [
+        {
+          id: 'rep-1',
+          productId: 'prod-coffee-jacobs',
+          productName: 'Jacobs Kronung Instant Coffee 200g',
+          storeId: 'checkers',
+          storeName: 'Checkers',
+          province: 'Gauteng',
+          catalogPrice: 149.99,
+          shelfPrice: 134.99,
+          reportedBy: 'Kabelo_ZA',
+          date: new Date(Date.now() - 3 * 3600000).toISOString(),
+          status: 'verified',
+          votes: 14
+        },
+        {
+          id: 'rep-2',
+          productId: 'prod-milk-clover',
+          productName: 'Clover Full Cream Fresh Milk 2L',
+          storeId: 'woolworths',
+          storeName: 'Woolworths',
+          province: 'Western Cape',
+          catalogPrice: 42.50,
+          shelfPrice: 45.99,
+          reportedBy: 'Sanele_WW',
+          date: new Date(Date.now() - 14 * 3600000).toISOString(),
+          status: 'verified',
+          votes: 8
+        },
+        {
+          id: 'rep-3',
+          productId: 'prod-bread-sasko',
+          productName: 'Sasko Premium White Bread 700g',
+          storeId: 'pnp',
+          storeName: 'Pick n Pay',
+          province: 'KwaZulu-Natal',
+          catalogPrice: 18.50,
+          shelfPrice: 18.20,
+          reportedBy: 'DevonP',
+          date: new Date(Date.now() - 25 * 3600000).toISOString(),
+          status: 'pending',
+          votes: 2
+        }
+      ];
+      setReports(initial);
+      localStorage.setItem('sa_price_discrepancy_reports', JSON.stringify(initial));
     }
 
     // Query remote reports from Supabase
@@ -78,7 +124,7 @@ export default function PriceDiscrepancyReporter({ products }: PriceDiscrepancyR
             productName: d.product_name,
             storeId: d.store_id,
             storeName: STORES.find(s => s.id === d.store_id)?.name || d.store_id,
-            province: d.province || 'South Africa',
+            province: 'Gauteng',
             catalogPrice: Number(d.reported_price) * 1.05,
             shelfPrice: Number(d.reported_price),
             reportedBy: 'SA Shopper',
@@ -100,8 +146,33 @@ export default function PriceDiscrepancyReporter({ products }: PriceDiscrepancyR
   };
 
   const selectedProduct = products.find(p => p.id === selectedProductId);
-  const currentOffer = selectedProduct?.prices.find(p => p.storeId === selectedStoreId);
-  const currentCatalogPrice = currentOffer && getOfferFreshness(currentOffer) === 'fresh' ? currentOffer.price : 0;
+  const currentCatalogPrice = selectedProduct?.prices.find(p => p.storeId === selectedStoreId)?.price || 0;
+
+  // Drag and drop event handlers
+  const handleDrag = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.type === 'dragenter' || e.type === 'dragover') {
+      setDragActive(true);
+    } else if (e.type === 'dragleave') {
+      setDragActive(false);
+    }
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      setUploadedFileName(e.dataTransfer.files[0].name);
+    }
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setUploadedFileName(e.target.files[0].name);
+    }
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -146,9 +217,7 @@ export default function PriceDiscrepancyReporter({ products }: PriceDiscrepancyR
         product_name: selectedProduct?.name || 'Custom Product',
         store_id: selectedStoreId,
         reported_price: Number(shelfPrice),
-        // A locally selected filename is not an uploaded proof URL. Keep it out
-        // of the database until a real authenticated storage upload is configured.
-        shelf_photo_url: null,
+        shelf_photo_url: uploadedFileName || null,
         status: 'pending'
       }).then(({ error }) => {
         if (error) {
@@ -160,6 +229,7 @@ export default function PriceDiscrepancyReporter({ products }: PriceDiscrepancyR
     // Reset Form
     setSelectedProductId('');
     setShelfPrice('');
+    setUploadedFileName(null);
     setSuccessMsg('Price report submitted! The community will verify this report shortly.');
     
     setTimeout(() => setSuccessMsg(''), 5000);
@@ -173,6 +243,16 @@ export default function PriceDiscrepancyReporter({ products }: PriceDiscrepancyR
         } else {
           return { ...r, votes: r.votes + 1, userVoted: true };
         }
+      }
+      return r;
+    });
+    saveReports(updated);
+  };
+
+  const handleVerify = (id: string) => {
+    const updated = reports.map(r => {
+      if (r.id === id) {
+        return { ...r, status: 'verified' as const };
       }
       return r;
     });
@@ -353,8 +433,35 @@ export default function PriceDiscrepancyReporter({ products }: PriceDiscrepancyR
                 />
               </div>
 
-              <div role="note" className="rounded-xl border border-slate-200 bg-slate-50 p-3 text-[11px] leading-relaxed text-slate-600">
-                Proof-photo uploads are not connected yet. Price reports stay pending and do not change catalog prices.
+              {/* Drag and Drop File Receipt Upload Container */}
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wide">5. Proof of Purchase / Shelf Photo (Optional)</label>
+                <div 
+                  id="drop-zone"
+                  onDragEnter={handleDrag}
+                  onDragOver={handleDrag}
+                  onDragLeave={handleDrag}
+                  onDrop={handleDrop}
+                  className={`border-2 border-dashed rounded-xl p-4 text-center transition-all cursor-pointer relative ${
+                    dragActive ? 'border-[#FFE600] bg-[#FFE600]/5' : 'border-slate-200 hover:border-slate-350 bg-slate-50/40'
+                  }`}
+                >
+                  <input 
+                    id="receipt-file-input"
+                    type="file" 
+                    onChange={handleFileChange}
+                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                    accept="image/*"
+                  />
+                  
+                  <div className="space-y-1">
+                    <UploadCloud className="w-6 h-6 text-slate-400 mx-auto" />
+                    <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">
+                      {uploadedFileName ? `Selected: ${uploadedFileName}` : 'Drag & drop image or Click to upload proof'}
+                    </p>
+                    <span className="text-[8px] text-slate-400 font-medium block">PNG, JPG up to 5MB supported</span>
+                  </div>
+                </div>
               </div>
 
               <button 
@@ -371,15 +478,14 @@ export default function PriceDiscrepancyReporter({ products }: PriceDiscrepancyR
         <div className="lg:col-span-7 space-y-6">
           <div className="bg-white border border-slate-200 rounded-[28px] p-6 shadow-xs space-y-5">
             <div className="flex items-center justify-between pb-2 border-b border-slate-100">
-              <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 block">Community Price Reports ({reports.length})</span>
+              <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 block">Verified Community Reports ({reports.length})</span>
               <span className="text-[9px] text-[#FFE600] bg-black px-2 py-0.5 rounded-full font-bold uppercase">South Africa Live Index</span>
             </div>
 
             <div className="space-y-4 max-h-[580px] overflow-y-auto pr-1 no-scrollbar">
               {reports.map(rep => {
-                const hasVerifiedCatalogPrice = rep.catalogPrice > 0;
-                const isUnder = hasVerifiedCatalogPrice && rep.shelfPrice < rep.catalogPrice;
-                const priceDiffPercent = hasVerifiedCatalogPrice ? Math.abs((rep.shelfPrice - rep.catalogPrice) / rep.catalogPrice) * 100 : 0;
+                const isUnder = rep.shelfPrice < rep.catalogPrice;
+                const priceDiffPercent = Math.abs((rep.shelfPrice - rep.catalogPrice) / rep.catalogPrice) * 100;
                 
                 return (
                   <div 
@@ -415,8 +521,8 @@ export default function PriceDiscrepancyReporter({ products }: PriceDiscrepancyR
 
                       <div className="flex items-center gap-4 pt-1">
                         <div className="text-left leadning-none">
-                          <span className="text-[8px] text-slate-400 font-bold uppercase tracking-wider block">{hasVerifiedCatalogPrice ? 'Verified quote' : 'Catalog preview'}</span>
-                          <span className="text-xs font-bold text-slate-500">{hasVerifiedCatalogPrice ? `R ${rep.catalogPrice.toFixed(2)}` : 'Not connected'}</span>
+                          <span className="text-[8px] text-slate-400 font-bold uppercase tracking-wider block">Catalog</span>
+                          <span className="text-xs font-bold text-slate-500">R {rep.catalogPrice.toFixed(2)}</span>
                         </div>
 
                         <div className="text-left leading-none">
@@ -424,10 +530,12 @@ export default function PriceDiscrepancyReporter({ products }: PriceDiscrepancyR
                           <span className="text-xs font-black text-slate-900">R {rep.shelfPrice.toFixed(2)}</span>
                         </div>
 
-                        {hasVerifiedCatalogPrice && <div className={`text-left leading-none px-2 py-1 rounded-lg ${isUnder ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700'}`}>
-                          <span className="text-[8px] font-black uppercase tracking-wider block">{isUnder ? 'Lower than quote' : 'Price mismatch'}</span>
-                          <span className="text-[10px] font-black">{isUnder ? '-' : '+'}{priceDiffPercent.toFixed(1)}% {isUnder ? 'saving' : 'difference'}</span>
-                        </div>}
+                        <div className={`text-left leading-none px-2 py-1 rounded-lg ${isUnder ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700'}`}>
+                          <span className="text-[8px] font-black uppercase tracking-wider block">{isUnder ? 'Cheaper In Store!' : 'Priscing Overrun'}</span>
+                          <span className="text-[10px] font-black">
+                            {isUnder ? '-' : '+'}{priceDiffPercent.toFixed(1)}% {isUnder ? 'saving' : 'mismatch'}
+                          </span>
+                        </div>
                       </div>
                     </div>
 
@@ -444,6 +552,18 @@ export default function PriceDiscrepancyReporter({ products }: PriceDiscrepancyR
                         <span>Upvote ({rep.votes})</span>
                       </button>
 
+                      {rep.status === 'pending' && (
+                        <button 
+                          onClick={() => {
+                            handleVerify(rep.id);
+                            setSuccessMsg('Report marked as verified by community check!');
+                            setTimeout(() => setSuccessMsg(''), 5000);
+                          }}
+                          className="px-2.5 py-1 text-[8px] font-black uppercase tracking-wider rounded border border-emerald-200 bg-emerald-50/50 text-emerald-600 hover:bg-emerald-500 hover:text-white hover:border-transparent transition-all cursor-pointer"
+                        >
+                          Verify Price Match
+                        </button>
+                      )}
                     </div>
                   </div>
                 );

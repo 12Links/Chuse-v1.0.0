@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import { Product, BasketItem, UserProfile, StoreId } from './types';
 import InteractiveSpecialDeals from './components/InteractiveSpecialDeals';
@@ -32,8 +32,6 @@ import {
   checkAndNotifyPriceDrops 
 } from './lib/notificationService';
 import initialProductsData from './data/initialProducts.json';
-import openFoodFactsProductImages from './data/openFoodFactsProductImages.json';
-import { getOfferFreshness } from './lib/offerPricing';
 import { 
   ShoppingBag, 
   MapPin, 
@@ -47,28 +45,6 @@ import {
   Settings
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-
-// Bundled and legacy localStorage offers are previews until they carry retailer
-// source, branch, and observation time metadata.
-const normalizeCatalogPreview = (items: Product[]): Product[] => items.map(product => ({
-  ...product,
-  name: (openFoodFactsProductImages.byBarcode as Record<string, { name?: string | null }>)[product.barcode || '']?.name || product.name,
-  unit: (openFoodFactsProductImages.byBarcode as Record<string, { quantity?: string | null }>)[product.barcode || '']?.quantity || product.unit,
-  imageUrl:
-    (openFoodFactsProductImages.byBarcode as Record<string, { imageUrl?: string; source?: string; sourceUrl?: string }>)[product.barcode || '']?.imageUrl
-    || (product.imageUrl && !product.imageUrl.includes('images.unsplash.com') ? product.imageUrl : undefined),
-  imageSource:
-    (openFoodFactsProductImages.byBarcode as Record<string, { source?: string }>)[product.barcode || '']?.source
-    || product.imageSource,
-  imageSourceUrl:
-    (openFoodFactsProductImages.byBarcode as Record<string, { sourceUrl?: string }>)[product.barcode || '']?.sourceUrl
-    || product.imageSourceUrl,
-  prices: (product.prices || []).map(price => ({
-    ...price,
-    isDemoData: price.isDemoData ?? !(price.source && price.fetchedAt && price.branchId),
-    source: price.source || 'Chuse demo catalog',
-  })),
-}));
 
 interface MainPageProps {
   user: UserProfile | null | undefined;
@@ -84,14 +60,13 @@ function MainPage({ user, setUser }: MainPageProps) {
       if (savedProducts) {
         const parsed = JSON.parse(savedProducts);
         if (Array.isArray(parsed) && parsed.length > 0) {
-          return normalizeCatalogPreview(parsed);
+          return parsed;
         }
       }
     } catch {}
-    return normalizeCatalogPreview((initialProductsData as Product[]) || []);
+    return (initialProductsData as Product[]) || [];
   });
   const [basket, setBasket] = useState<BasketItem[]>([]);
-  const lastCatalogLocationRef = useRef<string | null>(null);
 
   // Cart Drawer & Filter state
   const [isCartOpen, setIsCartOpen] = useState(false);
@@ -110,7 +85,7 @@ function MainPage({ user, setUser }: MainPageProps) {
   const [fulfillmentSettings, setFulfillmentSettings] = useState<FulfillmentSettings>(() => {
     try {
       const stored = localStorage.getItem('sa_fulfillment_settings');
-      if (stored) return normalizeCatalogPreview(JSON.parse(stored));
+      if (stored) return JSON.parse(stored);
     } catch {}
     return {
       suburb: 'Sandton City',
@@ -134,24 +109,24 @@ function MainPage({ user, setUser }: MainPageProps) {
       let res = await fetch("/api/products/search", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          query,
-          location: {
-            postalCode: fulfillmentSettings.postalCode,
-            suburb: fulfillmentSettings.suburb,
-            city: fulfillmentSettings.hub,
-            province: fulfillmentSettings.province,
-          },
-        })
+        body: JSON.stringify({ query })
       });
+      // Fallback to production endpoint if local returns non-JSON or fails
+      if (!res.ok || res.headers.get("content-type")?.includes("text/html")) {
+        res = await fetch("https://chuse-chi.vercel.app/api/products/search", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ query })
+        });
+      }
       if (!res.ok) {
-        throw new Error("Chuse could not reach its catalog service.");
+        throw new Error("Server failed to query live South African retail indexes.");
       }
       const newProducts: Product[] = await res.json();
       if (newProducts && newProducts.length > 0) {
         const newIds = new Set(newProducts.map(p => p.id));
         const filteredExisting = products.filter(p => !newIds.has(p.id));
-        saveProducts([...normalizeCatalogPreview(newProducts), ...filteredExisting]);
+        saveProducts([...newProducts, ...filteredExisting]);
       } else {
         setSearchError("No products indexed for this term. Try staples like coffee, milk, or bread.");
       }
@@ -159,7 +134,7 @@ function MainPage({ user, setUser }: MainPageProps) {
       console.warn("Remote search failed, filtering bundled catalog:", err);
       // Seamless offline fallback
       const q = query.trim().toLowerCase();
-      const localMatches = normalizeCatalogPreview(initialProductsData as Product[]).filter(p =>
+      const localMatches = (initialProductsData as Product[]).filter(p =>
         p.name.toLowerCase().includes(q) ||
         p.category.toLowerCase().includes(q)
       );
@@ -185,24 +160,20 @@ function MainPage({ user, setUser }: MainPageProps) {
         }
       }
     } catch {
-      setProducts(normalizeCatalogPreview((initialProductsData as Product[]) || []));
+      setProducts((initialProductsData as Product[]) || []);
     }
 
     const fetchLiveProducts = async () => {
       try {
-        const locationQuery = new URLSearchParams({
-          postalCode: fulfillmentSettings.postalCode || '',
-          suburb: fulfillmentSettings.suburb || '',
-          city: fulfillmentSettings.hub || '',
-          province: fulfillmentSettings.province || '',
-        });
-        let res = await fetch(`/api/products?${locationQuery.toString()}`);
+        let res = await fetch("/api/products");
+        if (!res.ok || res.headers.get("content-type")?.includes("text/html")) {
+          res = await fetch("https://chuse-chi.vercel.app/api/products");
+        }
         if (res.ok) {
           const serverProds: Product[] = await res.json();
           if (Array.isArray(serverProds) && serverProds.length > 0) {
-            const normalized = normalizeCatalogPreview(serverProds);
-            setProducts(normalized);
-            localStorage.setItem('sa_price_compare_products', JSON.stringify(normalized));
+            setProducts(serverProds);
+            localStorage.setItem('sa_price_compare_products', JSON.stringify(serverProds));
           }
         }
       } catch (err: any) {
@@ -280,34 +251,6 @@ function MainPage({ user, setUser }: MainPageProps) {
     };
   }, []);
 
-  useEffect(() => {
-    const location = {
-      postalCode: fulfillmentSettings.postalCode || '',
-      suburb: fulfillmentSettings.suburb || '',
-      city: fulfillmentSettings.hub || '',
-      province: fulfillmentSettings.province || '',
-    };
-    const locationKey = JSON.stringify(location);
-    if (lastCatalogLocationRef.current === null) {
-      lastCatalogLocationRef.current = locationKey;
-      return;
-    }
-    if (lastCatalogLocationRef.current === locationKey) return;
-    lastCatalogLocationRef.current = locationKey;
-
-    const params = new URLSearchParams(location);
-    fetch(`/api/products?${params.toString()}`)
-      .then(response => response.ok ? response.json() : Promise.reject(new Error('Catalog refresh failed')))
-      .then((catalog: Product[]) => {
-        if (Array.isArray(catalog) && catalog.length > 0) {
-          const normalized = normalizeCatalogPreview(catalog);
-          setProducts(normalized);
-          localStorage.setItem('sa_price_compare_products', JSON.stringify(normalized));
-        }
-      })
-      .catch(error => console.warn('[Catalog] Location refresh unavailable:', error.message));
-  }, [fulfillmentSettings.postalCode, fulfillmentSettings.suburb, fulfillmentSettings.hub, fulfillmentSettings.province]);
-
   // Realtime multi-device cloud cart subscription
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -322,13 +265,9 @@ function MainPage({ user, setUser }: MainPageProps) {
 
   // Check for price reductions and trigger alerts when catalog loads
   useEffect(() => {
-    const verifiedProducts = products
-      .map(product => ({
-        ...product,
-        prices: product.prices.filter(price => getOfferFreshness(price) === 'fresh'),
-      }))
-      .filter(product => product.prices.length > 0);
-    if (verifiedProducts.length > 0) checkAndNotifyPriceDrops(verifiedProducts);
+    if (products && products.length > 0) {
+      checkAndNotifyPriceDrops(products);
+    }
   }, [products]);
 
   const saveProducts = (updatedProducts: Product[]) => {
@@ -400,7 +339,7 @@ function MainPage({ user, setUser }: MainPageProps) {
     if (newProducts && newProducts.length > 0) {
       const newIds = new Set(newProducts.map(p => p.id));
       const filteredExisting = products.filter(p => !newIds.has(p.id));
-      saveProducts([...normalizeCatalogPreview(newProducts), ...filteredExisting]);
+      saveProducts([...newProducts, ...filteredExisting]);
     }
   };
 
@@ -412,40 +351,31 @@ function MainPage({ user, setUser }: MainPageProps) {
   const basketLowestTotal = useMemo(() => {
     if (basket.length === 0) return 0;
     let sum = 0;
-    let incomplete = false;
     basket.forEach(item => {
       const prod = products.find(p => p.id === item.productId);
-      if (!prod) { incomplete = true; return; }
-      const validPrices = prod.prices.filter(p => p.inStock && p.price > 0 && getOfferFreshness(p) === 'fresh');
+      if (!prod) return;
+      const validPrices = prod.prices.filter(p => p.inStock && p.price > 0);
       if (validPrices.length > 0) {
         const minPrice = Math.min(...validPrices.map(p => p.price));
         sum += minPrice * item.quantity;
-      } else incomplete = true;
+      }
     });
-    return incomplete ? 0 : sum;
+    return sum;
   }, [basket, products]);
 
   const basketTotalSavings = useMemo(() => {
     if (basket.length === 0) return 0;
     let savings = 0;
-    let incomplete = false;
     basket.forEach(item => {
       const prod = products.find(p => p.id === item.productId);
-      if (!prod) { incomplete = true; return; }
-      const validPrices = prod.prices.filter(p => p.inStock && p.price > 0 && getOfferFreshness(p) === 'fresh').map(p => p.price);
+      if (!prod) return;
+      const validPrices = prod.prices.filter(p => p.inStock && p.price > 0).map(p => p.price);
       if (validPrices.length > 1) {
         savings += (Math.max(...validPrices) - Math.min(...validPrices)) * item.quantity;
-      } else incomplete = true;
+      }
     });
-    return incomplete ? 0 : savings;
+    return savings;
   }, [basket, products]);
-
-  const catalogSourceStatus = useMemo(() => {
-    const offers = products.flatMap(product => product.prices);
-    const verified = offers.filter(offer => getOfferFreshness(offer) === 'fresh').length;
-    const demo = offers.filter(offer => getOfferFreshness(offer) === 'demo').length;
-    return { total: offers.length, verified, demo };
-  }, [products]);
 
   const handleSaveFulfillment = (newSettings: FulfillmentSettings) => {
     setFulfillmentSettings(newSettings);
@@ -459,10 +389,10 @@ function MainPage({ user, setUser }: MainPageProps) {
   };
 
   return (
-    <div id="chuse-container" className="min-h-screen bg-[#F5F6F2] text-slate-900 font-sans selection:bg-[#E8F45A] selection:text-black overflow-x-hidden w-full max-w-full">
+    <div id="chuse-container" className="min-h-screen bg-[#F8FAFC] text-slate-900 font-sans selection:bg-[#FFE600] selection:text-black overflow-x-hidden w-full max-w-full">
       
       {/* Sticky Checkers/PnP Style Utility Header */}
-      <header className="bg-white/90 backdrop-blur-xl border-b border-slate-200/70 sticky top-0 z-30 w-full overflow-hidden shadow-[0_8px_30px_-24px_rgba(15,23,42,0.32)]">
+      <header className="bg-white border-b border-slate-200 sticky top-0 z-30 w-full overflow-hidden shadow-2xs">
         <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-2.5 sm:py-3">
           
           {/* Main Header Container: 2-row on mobile, 1-row on tablet/desktop */}
@@ -478,8 +408,8 @@ function MainPage({ user, setUser }: MainPageProps) {
                   onClick={() => { setActiveTab('catalog'); setSelectedStoreFilter('all'); setSelectedCategoryFilter('All'); }}
                   className="flex items-center gap-1 cursor-pointer group"
                 >
-                  <span className="text-xl sm:text-2xl font-black lowercase tracking-[-0.09em] text-slate-950 leading-none">
-                    chuse<span className="text-[#9CAA1A] text-2xl sm:text-3xl font-black">.</span>
+                  <span className="text-xl sm:text-2xl font-black font-display lowercase tracking-tight text-slate-950 leading-none">
+                    chuse<span className="text-[#FFE600] text-2xl sm:text-3xl font-black">.</span>
                   </span>
                 </Link>
               </div>
@@ -517,7 +447,7 @@ function MainPage({ user, setUser }: MainPageProps) {
                 >
                   <ShoppingBag className="w-3.5 h-3.5 stroke-[2.5]" />
                   <span className="font-sans font-bold">
-                    {basketItemCount === 0 ? 'Cart' : basketLowestTotal > 0 ? `R${Math.round(basketLowestTotal)} (${basketItemCount})` : `Basket (${basketItemCount})`}
+                    {basketItemCount === 0 ? 'Cart' : `R${Math.round(basketLowestTotal)} (${basketItemCount})`}
                   </span>
                 </button>
               </div>
@@ -580,7 +510,7 @@ function MainPage({ user, setUser }: MainPageProps) {
               >
                 <ShoppingBag className="w-4 h-4 stroke-[2.5]" />
                 <span className="font-sans font-bold">
-                  {basketItemCount === 0 ? 'Basket (0)' : basketLowestTotal > 0 ? `R${basketLowestTotal.toFixed(2)} (${basketItemCount})` : `Basket (${basketItemCount})`}
+                  {basketItemCount === 0 ? 'Basket (0)' : `R${basketLowestTotal.toFixed(2)} (${basketItemCount})`}
                 </span>
                 {basketTotalSavings > 0 && (
                   <span className="hidden lg:inline-flex bg-emerald-800 text-[#FFE600] text-[10px] font-sans px-1.5 py-0.5 rounded font-black tracking-tight">
@@ -592,14 +522,14 @@ function MainPage({ user, setUser }: MainPageProps) {
           </div>
 
           {/* 4 Clean Text-Only Navigation Links */}
-          <nav className="flex items-center gap-1.5 border-t border-slate-200/70 mt-3 pt-2.5 text-xs sm:text-sm font-semibold tracking-wide overflow-x-auto no-scrollbar">
+          <nav className="flex items-center gap-6 sm:gap-8 border-t border-slate-200 mt-2.5 sm:mt-3 pt-2 text-xs sm:text-sm font-semibold tracking-wide overflow-x-auto no-scrollbar">
             <button
               type="button"
               onClick={() => setActiveTab('catalog')}
               className={`py-1.5 whitespace-nowrap transition-colors cursor-pointer ${
                 activeTab === 'catalog'
-                  ? 'bg-[#173B2F] text-[#E8F45A] rounded-xl font-black shadow-sm'
-                  : 'text-slate-500 hover:text-slate-950 hover:bg-slate-100 rounded-xl'
+                  ? 'text-slate-950 border-b-2 border-slate-950 font-black'
+                  : 'text-slate-500 hover:text-slate-950'
               }`}
             >
               Groceries
@@ -610,8 +540,8 @@ function MainPage({ user, setUser }: MainPageProps) {
               onClick={() => setActiveTab('specials')}
               className={`py-1.5 whitespace-nowrap transition-colors cursor-pointer ${
                 activeTab === 'specials'
-                  ? 'bg-[#173B2F] text-[#E8F45A] rounded-xl font-black shadow-sm'
-                  : 'text-slate-500 hover:text-slate-950 hover:bg-slate-100 rounded-xl'
+                  ? 'text-slate-950 border-b-2 border-slate-950 font-black'
+                  : 'text-slate-500 hover:text-slate-950'
               }`}
             >
               Specials
@@ -622,8 +552,8 @@ function MainPage({ user, setUser }: MainPageProps) {
               onClick={() => setActiveTab('lists')}
               className={`py-1.5 whitespace-nowrap transition-colors cursor-pointer ${
                 activeTab === 'lists'
-                  ? 'bg-[#173B2F] text-[#E8F45A] rounded-xl font-black shadow-sm'
-                  : 'text-slate-500 hover:text-slate-950 hover:bg-slate-100 rounded-xl'
+                  ? 'text-slate-950 border-b-2 border-slate-950 font-black'
+                  : 'text-slate-500 hover:text-slate-950'
               }`}
             >
               Shopping List
@@ -634,8 +564,8 @@ function MainPage({ user, setUser }: MainPageProps) {
               onClick={() => setActiveTab('stats')}
               className={`py-1.5 whitespace-nowrap transition-colors cursor-pointer ${
                 activeTab === 'stats'
-                  ? 'bg-[#173B2F] text-[#E8F45A] rounded-xl font-black shadow-sm'
-                  : 'text-slate-500 hover:text-slate-950 hover:bg-slate-100 rounded-xl'
+                  ? 'text-slate-950 border-b-2 border-slate-950 font-black'
+                  : 'text-slate-500 hover:text-slate-950'
               }`}
             >
               Inflation Index
@@ -646,8 +576,8 @@ function MainPage({ user, setUser }: MainPageProps) {
               onClick={() => setActiveTab('settings')}
               className={`py-1.5 whitespace-nowrap transition-colors cursor-pointer ${
                 activeTab === 'settings'
-                  ? 'bg-[#173B2F] text-[#E8F45A] rounded-xl font-black shadow-sm'
-                  : 'text-slate-500 hover:text-slate-950 hover:bg-slate-100 rounded-xl'
+                  ? 'text-slate-950 border-b-2 border-slate-950 font-black'
+                  : 'text-slate-500 hover:text-slate-950'
               }`}
             >
               Settings
@@ -658,54 +588,6 @@ function MainPage({ user, setUser }: MainPageProps) {
 
       {/* Main Container */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 pb-32 sm:pb-24">
-
-        {activeTab === 'catalog' && (
-          <section className="chuse-hero mb-6 sm:mb-8" aria-labelledby="chuse-hero-title">
-            <div className="chuse-hero-copy">
-              <span className="chuse-hero-kicker"><Sparkles className="h-3.5 w-3.5" /> Your smarter grocery companion</span>
-              <h1 id="chuse-hero-title">Make every<br /><span>rand count.</span></h1>
-              <p>Build a list, explore products across South Africa’s leading grocers, and keep your shop organised in one place.</p>
-              <div className="mt-6 flex flex-wrap gap-3">
-                <button type="button" onClick={() => document.getElementById('product-catalog')?.scrollIntoView({ behavior: 'smooth' })} className="chuse-hero-primary">
-                  Start your basket <span aria-hidden="true">↗</span>
-                </button>
-                <button type="button" onClick={() => setIsBarcodeModalOpen(true)} className="chuse-hero-secondary">
-                  <Scan className="h-4 w-4" /> Scan a product
-                </button>
-              </div>
-            </div>
-            <div className="chuse-hero-panel">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold text-white/65">Built for your weekly shop</span>
-                <span className="chuse-live-dot" aria-hidden="true" />
-              </div>
-              <div className="chuse-hero-stat"><strong>7</strong><span>South African<br />retailers in view</span></div>
-              <div className="chuse-retailer-list" aria-label="Retailers in the catalog">
-                {['Checkers', 'Pick n Pay', 'Woolworths', 'Shoprite', 'SPAR', 'Boxer', "Food Lover’s"].map((store) => (
-                  <span key={store}>{store}</span>
-                ))}
-              </div>
-              <p className="chuse-hero-footnote">Price accuracy depends on current retailer data for your area.</p>
-            </div>
-          </section>
-        )}
-
-        {catalogSourceStatus.total > catalogSourceStatus.verified && (
-          <div
-            role="status"
-            className="mb-5 flex flex-col gap-2 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950 sm:flex-row sm:items-center sm:justify-between"
-          >
-            <div>
-              <p className="font-bold">{catalogSourceStatus.verified ? 'Some prices are unverified' : 'Demo prices · no live retailer feeds connected'}</p>
-              <p className="mt-0.5 text-xs leading-relaxed text-amber-900/80">
-                {catalogSourceStatus.verified} of {catalogSourceStatus.total} offers have a recent source, location, and check time. {catalogSourceStatus.demo} sample prices are for interface preview only; do not use them to plan a real shop.
-              </p>
-            </div>
-            <span className="shrink-0 rounded-full border border-amber-300 bg-white/70 px-2.5 py-1 text-[11px] font-semibold">
-              {catalogSourceStatus.verified}/{catalogSourceStatus.total} verified
-            </span>
-          </div>
-        )}
         
         {/* Retailer Brand Filter Strip */}
         {(activeTab === 'catalog' || activeTab === 'specials') && (

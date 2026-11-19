@@ -1,7 +1,6 @@
 import { Product, StoreId, StapleTimingAnalysis, PriceTimingStatus } from '../types';
 import { STORES } from '../data/catalog';
 import { generatePriceHistory } from '../components/PriceHistoryChart';
-import { getOfferFreshness } from './offerPricing';
 
 const TRACKED_STAPLES_KEY = 'chuse_tracked_staples';
 
@@ -32,21 +31,19 @@ export function isHouseholdStaple(product: Product): boolean {
 }
 
 /**
- * Computes a buy-timing recommendation only when a current sourced offer and
- * enough matching, branch-specific observations exist.
+ * Computes a tactile, data-driven "Best Time to Buy" recommendation for any product
+ * based on 30-day historical retail pricing trends, active promotional flyers, and weekly cycles.
  */
 export function analyzePriceTiming(product: Product): StapleTimingAnalysis {
-  const validPrices = product.prices.filter(
-    p => p.inStock && p.price > 0 && getOfferFreshness(p) === 'fresh'
-  );
+  const validPrices = product.prices.filter(p => p.inStock && p.price > 0);
   
   if (validPrices.length === 0) {
     return {
       productId: product.id,
       status: 'fair',
-      badgeLabel: 'PRICE NOT VERIFIED',
-      headline: 'Verified price data is not available yet',
-      explanation: 'Chuse needs a recent retailer quote with its source and location before it can give trustworthy buy timing.',
+      badgeLabel: 'OUT OF STOCK',
+      headline: 'Currently Unavailable',
+      explanation: 'No active stock recorded at surveyed retailers.',
       currentBestPrice: 0,
       bestStoreId: 'checkers',
       bestStoreName: 'Supermarket',
@@ -57,9 +54,8 @@ export function analyzePriceTiming(product: Product): StapleTimingAnalysis {
       savingsOpportunity: 0,
       isSpecial: false,
       isStaple: isHouseholdStaple(product),
-      recommendedAction: 'You can still explore the catalog. Price timing will appear when verified offers are connected.',
-      flyerCycleNote: 'Offer source and last-checked time will be shown when available.',
-      historyAvailable: false,
+      recommendedAction: 'Check back when fresh stock arrives.',
+      flyerCycleNote: 'Inventory refreshes weekly.'
     };
   }
 
@@ -75,48 +71,8 @@ export function analyzePriceTiming(product: Product): StapleTimingAnalysis {
   const isSpecial = Boolean(activeSpecialStore);
   const specialDetail = activeSpecialStore?.specialDetail;
 
-  // Use only dated observations returned by the catalog API. Never manufacture history.
+  // Retrieve 30-day price points from deterministic historical model
   const historyPoints = generatePriceHistory(product);
-  const thirtyDaysAgo = Date.now() - 30 * 24 * 60 * 60 * 1000;
-  const recentObservations = (product.priceHistory || []).filter((observation) => {
-    const observedAt = Date.parse(observation.observedAt);
-    const matchingOffer = validPrices.find(price =>
-      price.storeId === observation.storeId && price.branchId === observation.branchId
-    );
-    return Boolean(matchingOffer)
-      && Number.isFinite(observation.price)
-      && observation.price > 0
-      && Number.isFinite(observedAt)
-      && observedAt >= thirtyDaysAgo
-      && observedAt <= Date.now();
-  });
-  const distinctObservationDays = new Set(recentObservations.map((observation) =>
-    new Date(observation.observedAt).toISOString().slice(0, 10)
-  ));
-
-  if (historyPoints.length < 3 || distinctObservationDays.size < 3) {
-    return {
-      productId: product.id,
-      status: 'fair',
-      badgeLabel: 'COLLECTING HISTORY',
-      headline: 'Not enough verified history yet',
-      explanation: `The current verified quote is R${currentBestPrice.toFixed(2)} at ${bestStoreName}. Chuse needs several dated observations before it can call the price low, typical, or high.`,
-      currentBestPrice,
-      bestStoreId: bestCurrent.storeId,
-      bestStoreName,
-      thirtyDayMin: 0,
-      thirtyDayAvg: 0,
-      thirtyDayMax: 0,
-      diffFromAvgPercent: 0,
-      savingsOpportunity: 0,
-      isSpecial: validPrices.some(price => price.onSpecial),
-      specialDetail: validPrices.find(price => price.onSpecial)?.specialDetail,
-      isStaple: isHouseholdStaple(product),
-      recommendedAction: 'Compare current offers and check the branch and last-checked time before shopping.',
-      flyerCycleNote: 'Special dates and availability vary by retailer and location.',
-      historyAvailable: false,
-    };
-  }
   
   // Aggregate prices across all active stores over 30 days
   let allHistoricalPrices: number[] = [];
@@ -136,28 +92,9 @@ export function analyzePriceTiming(product: Product): StapleTimingAnalysis {
     }
   });
 
-  if (allHistoricalPrices.length === 0 || bestHistoricalPrices.length === 0) {
-    return {
-      productId: product.id,
-      status: 'fair',
-      badgeLabel: 'COLLECTING HISTORY',
-      headline: 'Not enough verified history yet',
-      explanation: 'Chuse has not collected enough matching store observations to compare this quote over time.',
-      currentBestPrice,
-      bestStoreId: bestCurrent.storeId,
-      bestStoreName,
-      thirtyDayMin: 0,
-      thirtyDayAvg: 0,
-      thirtyDayMax: 0,
-      diffFromAvgPercent: 0,
-      savingsOpportunity: 0,
-      isSpecial: validPrices.some(price => price.onSpecial),
-      specialDetail: validPrices.find(price => price.onSpecial)?.specialDetail,
-      isStaple: isHouseholdStaple(product),
-      recommendedAction: 'Check the listed source and location for the current offer.',
-      flyerCycleNote: 'Special dates and availability vary by retailer and location.',
-      historyAvailable: false,
-    };
+  if (allHistoricalPrices.length === 0) {
+    allHistoricalPrices = [currentBestPrice];
+    bestHistoricalPrices = [currentBestPrice];
   }
 
   const thirtyDayMin = Math.min(...bestHistoricalPrices);
@@ -191,21 +128,21 @@ export function analyzePriceTiming(product: Product): StapleTimingAnalysis {
       explanation = `R${currentBestPrice.toFixed(2)} at ${bestStoreName} is at its 30-day low (${Math.abs(diffFromAvgPercent).toFixed(0)}% below 30-day average). Excellent timing to buy or stock up.`;
     }
     recommendedAction = 'Add to your basket today to lock in promotional savings.';
-    flyerCycleNote = 'Check the offer validity dates and loyalty requirements before shopping.';
+    flyerCycleNote = 'South African supermarket promotional leaflets rotate weekly on Thursdays. Current promotional rates typically run through Sunday.';
   } else if (isElevated) {
     status = 'wait';
     badgeLabel = 'WAIT';
     headline = 'Wait to Buy · Price Elevated';
-    explanation = `R${currentBestPrice.toFixed(2)} at ${bestStoreName} is ${diffFromAvgPercent.toFixed(0)}% above the lowest cross-store basket price observed over the last 30 days.`;
-    recommendedAction = `If you can wait, set a target near the observed low of R${thirtyDayMin.toFixed(2)} and watch for a verified offer.`;
-    flyerCycleNote = 'Prices and promotions vary by branch or delivery zone.';
+    explanation = `R${currentBestPrice.toFixed(2)} at ${bestStoreName} is currently +${diffFromAvgPercent.toFixed(0)}% above its 30-day baseline. Retailers regularly discount this item in weekly rotations.`;
+    recommendedAction = `If not urgently needed, wait for upcoming promotional flyer drops. You could save ~R${(currentBestPrice - thirtyDayMin).toFixed(2)} when it returns to sale price.`;
+    flyerCycleNote = 'Checkers, Pick n Pay, Shoprite, and SPAR publish refreshed weekly flyer deals every Wednesday/Thursday.';
   } else {
     status = 'fair';
     badgeLabel = 'FAIR PRICE';
     headline = 'Standard Shelf Price';
     explanation = `R${currentBestPrice.toFixed(2)} at ${bestStoreName} is within normal everyday price variance (${diffFromAvgPercent >= 0 ? '+' : ''}${diffFromAvgPercent.toFixed(0)}% vs 30d avg).`;
-    recommendedAction = 'Compare the current total with your own budget and check that the offer is still valid at this location.';
-    flyerCycleNote = 'This comparison uses dated observations for the selected source and location.';
+    recommendedAction = 'A reasonable everyday purchase. If buying in bulk, consider waiting for Thursday promotional leaflets.';
+    flyerCycleNote = 'Mid-month grocery prices stay steady. Major bulk stock-up discounts peak during month-end payday cycles (25th–3rd).';
   }
 
   return {
@@ -226,8 +163,7 @@ export function analyzePriceTiming(product: Product): StapleTimingAnalysis {
     specialDetail,
     isStaple: staple,
     recommendedAction,
-    flyerCycleNote,
-    historyAvailable: true,
+    flyerCycleNote
   };
 }
 

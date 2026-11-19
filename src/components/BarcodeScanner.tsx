@@ -30,7 +30,6 @@ import {
   DecodeHintType 
 } from '@zxing/library';
 import { Product, StoreId } from '../types';
-import { ProductPackshot } from './ProductPackshot';
 import { RETAILER_THEMES } from '../lib/retailerTokens';
 import { getNearestBranchForStore, getSavedOrFallbackCoordinates } from '../lib/locationService';
 
@@ -762,9 +761,9 @@ export default function BarcodeScanner({
             >
               {/* Product Header Card */}
               <div className="p-4 rounded-2xl border border-emerald-300 bg-emerald-50/60 flex flex-col sm:flex-row items-center sm:items-start gap-4">
-                <ProductPackshot
-                  imageUrl={matchedProduct.imageUrl}
-                  name={matchedProduct.name}
+                <img
+                  src={matchedProduct.imageUrl || 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=150'}
+                  alt={matchedProduct.name}
                   className="w-18 h-18 sm:w-20 sm:h-20 object-contain bg-white rounded-xl p-1.5 border border-slate-200 shadow-2xs shrink-0"
                 />
 
@@ -772,7 +771,7 @@ export default function BarcodeScanner({
                   <div className="flex items-center justify-center sm:justify-start gap-2 flex-wrap">
                     <span className="px-2 py-0.5 rounded-full bg-emerald-700 text-white font-sans font-bold text-[10px] flex items-center gap-1 shadow-2xs">
                       <CheckCircle2 className="w-3 h-3" />
-                      Catalog Match
+                      GTIN Confirmed
                     </span>
                     <span className="text-[10px] font-sans font-semibold text-slate-600 bg-white/80 px-2 py-0.5 rounded-md border border-slate-200">
                       #{scannedBarcode}
