@@ -1,6 +1,7 @@
 import React from 'react';
 import { StoreId } from '../types';
 import { RETAILER_THEMES } from '../lib/retailerTokens';
+import { STORES } from '../data/catalog';
 import { Sparkles, ArrowRight } from 'lucide-react';
 
 interface HeroPromosProps {
@@ -44,6 +45,7 @@ export default function HeroPromos({
           <div className="flex items-center gap-1.5 shrink-0">
             {STORE_PILLS.map((st) => {
               const isSelected = selectedStore === st.id;
+              const storeLogo = st.id === 'all' ? undefined : STORES.find(store => store.id === st.id)?.logoUrl;
               return (
                 <button
                   key={st.id}
@@ -60,6 +62,15 @@ export default function HeroPromos({
                       isSelected && st.id !== 'all' ? 'ring-1 ring-white' : ''
                     }`}
                   />
+                  {storeLogo && (
+                    <img
+                      src={storeLogo}
+                      alt=""
+                      aria-hidden="true"
+                      className="-ml-3 h-4 w-4 rounded-sm bg-white object-contain p-0.5"
+                      onError={(event) => event.currentTarget.remove()}
+                    />
+                  )}
                   <span>{st.name}</span>
                 </button>
               );

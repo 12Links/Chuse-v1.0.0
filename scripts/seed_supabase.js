@@ -48,33 +48,9 @@ async function seed() {
     console.log(`✓ Successfully seeded ${productsToUpsert.length} products into public.products table.`);
   }
 
-  // 2. Upsert Prices
-  const pricesToUpsert = [];
-  for (const p of products) {
-    if (Array.isArray(p.prices)) {
-      for (const pr of p.prices) {
-        if (pr.storeId && pr.price != null) {
-          pricesToUpsert.push({
-            product_id: p.id,
-            store_id: pr.storeId,
-            price: pr.price,
-            on_special: Boolean(pr.onSpecial),
-            special_detail: pr.specialDetail || '',
-            last_updated: new Date().toISOString(),
-          });
-        }
-      }
-    }
-  }
-
-  if (pricesToUpsert.length > 0) {
-    const { error: priceErr } = await supabase.from('prices').upsert(pricesToUpsert, { onConflict: 'product_id,store_id' });
-    if (priceErr) {
-      console.error('[!] Failed to upsert prices:', priceErr.message);
-    } else {
-      console.log(`✓ Successfully seeded ${pricesToUpsert.length} store price records into public.prices table.`);
-    }
-  }
+  // Price rows in the bundled legacy catalog are modeled demo values. Do not
+  // write them as retailer quotes; sourced offers use retailer_offers ingestion.
+  console.log('ℹ Skipped legacy price rows: this file contains demo/modelled prices, not sourced retailer offers.');
 
   console.log('🎉 Supabase database seeding complete!');
 }

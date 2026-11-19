@@ -7,6 +7,8 @@ import {
 } from 'lucide-react';
 import { motion } from 'motion/react';
 import { PriceHistoryChart } from './PriceHistoryChart';
+import { ProductPackshot } from './ProductPackshot';
+import { getOfferFreshness } from '../lib/offerPricing';
 
 interface InteractiveSpecialDealsProps {
   products: Product[];
@@ -26,7 +28,7 @@ export default function InteractiveSpecialDeals({
   // Filter products for active specials
   const specials = products.flatMap(p => 
     p.prices
-      .filter(pr => pr.onSpecial)
+      .filter(pr => pr.onSpecial && pr.inStock && getOfferFreshness(pr) === 'fresh')
       .map(pr => ({
         product: p,
         store: STORES.find(s => s.id === pr.storeId)!,
@@ -40,18 +42,31 @@ export default function InteractiveSpecialDeals({
 
   return (
     <div id="specials-section" className="space-y-6">
+      {specials.length === 0 && (
+        <div className="rounded-3xl border border-slate-200 bg-white px-6 py-12 text-center shadow-sm">
+          <div className="mx-auto grid h-12 w-12 place-items-center rounded-2xl bg-[#edf2cf] text-[#355a35]">
+            <Percent className="h-5 w-5" />
+          </div>
+          <h2 className="mt-4 text-xl font-extrabold tracking-tight text-slate-950">Verified specials are on the way</h2>
+          <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-slate-500">
+            Chuse will show a deal here when it has a current retailer source, branch, and validity details. Sample promotions are hidden so they are not mistaken for live offers.
+          </p>
+        </div>
+      )}
       {/* Specials Cards styled like Bento Boxes */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {specials.map((special, index) => {
           const qtyInBasket = getBasketQty(special.product.id);
           // Find normal price to show discount
           const otherStorePrices = special.product.prices
-            .filter(pr => pr.inStock && pr.storeId !== special.store.id)
+            .filter(pr => pr.inStock && pr.storeId !== special.store.id && getOfferFreshness(pr) === 'fresh')
             .map(pr => pr.price);
           const avgOtherPrice = otherStorePrices.length > 0 
             ? otherStorePrices.reduce((a, b) => a + b, 0) / otherStorePrices.length 
             : special.priceInfo.price * 1.25;
-          const diffPct = Math.max(5, Math.round(((avgOtherPrice - special.priceInfo.price) / avgOtherPrice) * 105));
+          const diffPct = otherStorePrices.length > 0 && avgOtherPrice > 0
+            ? Math.round(((avgOtherPrice - special.priceInfo.price) / avgOtherPrice) * 100)
+            : null;
 
           return (
             <motion.div
@@ -65,7 +80,7 @@ export default function InteractiveSpecialDeals({
               {/* Corner Ribbon for discount % */}
               <div className="absolute top-0 right-0 bg-[#FFE600] text-black text-[10px] font-black px-4 py-2 rounded-tr-3xl shadow-xs flex items-center gap-1 border-l border-b border-yellow-300">
                 <Percent className="w-3 h-3 stroke-[2.5]" />
-                {diffPct}% CHEAPER
+                {diffPct == null ? 'VERIFIED SPECIAL' : `${diffPct}% VS OTHER STORES`}
               </div>
 
               <div className="pt-2">
@@ -101,21 +116,11 @@ export default function InteractiveSpecialDeals({
 
                 {/* Product details side-by-side with Image Thumbnail (User Request feature) */}
                 <div className="flex items-center gap-4 mb-4">
-                  {special.product.imageUrl ? (
-                    <img 
-                      src={special.product.imageUrl} 
-                      alt={special.product.name} 
-                      referrerPolicy="no-referrer"
-                      className="w-16 h-16 rounded-2xl object-cover shrink-0 bg-slate-50 border border-slate-100 shadow-2xs group-hover:scale-105 transition-transform duration-300"
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).src = `https://placehold.co/100x100?text=${encodeURIComponent(special.product.name.charAt(0))}`;
-                      }}
-                    />
-                  ) : (
-                    <div className="w-16 h-16 rounded-2xl bg-amber-50/50 flex items-center justify-center text-amber-600 border border-amber-200/30 shrink-0 font-extrabold text-lg font-sans">
-                      {special.product.name.charAt(0)}
-                    </div>
-                  )}
+                  <ProductPackshot
+                    imageUrl={special.product.imageUrl}
+                    name={special.product.name}
+                    className="w-16 h-16 rounded-2xl object-contain shrink-0 bg-slate-50 border border-slate-100 shadow-2xs group-hover:scale-105 transition-transform duration-300"
+                  />
                   <div className="min-w-0 flex-1">
                     <h3 className="font-extrabold text-slate-800 text-base sm:text-lg line-clamp-2 leading-snug group-hover:text-yellow-600 transition-colors font-sans">
                       {special.product.name}

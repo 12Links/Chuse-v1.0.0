@@ -131,18 +131,174 @@ const FALLBACK_PRODUCTS = [
 ];
 
 // Product catalog database loading
+function markPreviewCatalog(products: any[]) {
+  return products.map((product: any) => ({
+    ...product,
+    prices: (product.prices || []).map((price: any) => ({
+      ...price,
+      isDemoData: true,
+      source: price.source || "Chuse demo catalog",
+    })),
+  }));
+}
+
 const productsFilePath = path.join(process.cwd(), "synced_products.json");
-let productsList: any[] = FALLBACK_PRODUCTS;
+let productsList: any[] = markPreviewCatalog(FALLBACK_PRODUCTS);
 try {
   if (fs.existsSync(productsFilePath)) {
     const data = fs.readFileSync(productsFilePath, "utf-8");
     const parsed = JSON.parse(data);
     if (Array.isArray(parsed) && parsed.length > 0) {
-      productsList = parsed;
+      // This JSON is generated with modeled showcase prices. Keep it usable for
+      // UI previews, but never present its values as verified retailer quotes.
+      productsList = markPreviewCatalog(parsed);
     }
   }
 } catch (err: any) {
   // Use FALLBACK_PRODUCTS
+}
+
+const STORE_IDS = new Set(["checkers", "woolworths", "pnp", "shoprite", "spar", "boxer", "foodlovers"]);
+const openFoodFactsBarcodeCache = new Map<string, { value: any | null; expiresAt: number }>();
+let openFoodFactsReadQueue = Promise.resolve();
+let lastOpenFoodFactsReadAt = 0;
+
+/** Barcode lookup uses Open Food Facts identity data only, never retailer pricing. */
+function getOpenFoodFactsProductByBarcode(barcode: string): Promise<any | null> {
+  const cached = openFoodFactsBarcodeCache.get(barcode);
+  if (cached && cached.expiresAt > Date.now()) return Promise.resolve(cached.value);
+
+  const read = openFoodFactsReadQueue.then(async () => {
+    const secondCacheCheck = openFoodFactsBarcodeCache.get(barcode);
+    if (secondCacheCheck && secondCacheCheck.expiresAt > Date.now()) return secondCacheCheck.value;
+
+    const delay = Math.max(0, 4200 - (Date.now() - lastOpenFoodFactsReadAt));
+    if (delay > 0) await new Promise((resolve) => setTimeout(resolve, delay));
+    lastOpenFoodFactsReadAt = Date.now();
+    const fields = "code,product_name,product_name_en,quantity,image_front_url,image_front_thumb_url,categories_tags";
+    const url = `https://world.openfoodfacts.org/api/v3/product/${encodeURIComponent(barcode)}.json?fields=${encodeURIComponent(fields)}`;
+    const response = await fetch(url, {
+      headers: { "User-Agent": "ChuseSA/1.0.0 (https://chuse.co.za; contact: info@chuse.co.za)", Accept: "application/json" },
+      signal: AbortSignal.timeout(7000),
+    });
+    if (!response.ok) throw new Error(`Open Food Facts returned HTTP ${response.status}`);
+    const payload: any = await response.json();
+    const raw = payload.product;
+    if (payload.status !== 1 || String(raw?.code || "") !== barcode) {
+      openFoodFactsBarcodeCache.set(barcode, { value: null, expiresAt: Date.now() + 24 * 60 * 60_000 });
+      return null;
+    }
+    const name = raw.product_name_en || raw.product_name;
+    if (!name) return null;
+    const categoryTag = (raw.categories_tags || []).find((tag: string) => tag.startsWith("en:"));
+    const product = {
+      id: `off-${barcode}`,
+      name,
+      category: categoryTag ? categoryTag.slice(3).replace(/-/g, " ") : "Groceries",
+      unit: raw.quantity || "1 Unit",
+      isPopular: false,
+      barcode,
+      imageUrl: raw.image_front_url || raw.image_front_thumb_url || undefined,
+      imageSource: "Open Food Facts",
+      imageSourceUrl: `https://world.openfoodfacts.org/product/${barcode}`,
+      productSource: "Open Food Facts",
+      productSourceUrl: `https://world.openfoodfacts.org/product/${barcode}`,
+      prices: [],
+    };
+    openFoodFactsBarcodeCache.set(barcode, { value: product, expiresAt: Date.now() + 7 * 24 * 60 * 60_000 });
+    return product;
+  });
+  openFoodFactsReadQueue = read.then(() => undefined, () => undefined);
+  return read;
+}
+
+/** Add branch-scoped, timestamped retailer offers when catalog v2 has been installed.
+ * Legacy `prices` rows remain preview-only; they are never mixed into sourced comparisons.
+ */
+async function attachSourcedOffers(products: any[], requestedLocation?: { postalCode?: string; suburb?: string; city?: string; province?: string }) {
+  if (!supabase || products.length === 0) return products;
+  const locationFilter = requestedLocation && Object.values(requestedLocation).some(Boolean) ? requestedLocation : null;
+  if (!locationFilter) return products;
+  const productIds = products.map((product) => product.id).filter(Boolean);
+  try {
+    const { data: retailerProducts, error } = await supabase
+      .from("retailer_products")
+      .select("id,retailer_id,canonical_product_id,retailer_offers(id,source,source_url,current_price,regular_price,loyalty_price,loyalty_program,in_stock,valid_from,valid_until,fetched_at,location_id,retailer_locations(id,name,province,city,suburb,postal_code),retailer_offer_history(regular_price,current_price,observed_at,source))")
+      .in("canonical_product_id", productIds);
+    if (error) {
+      // The migration is optional until the deployment is ready for sourced feeds.
+      if (!/does not exist|schema cache/i.test(error.message || "")) {
+        console.warn("[Catalog v2] Sourced offers query failed:", error.message);
+      }
+      return products;
+    }
+
+    const byProduct = new Map<string, { prices: any[]; history: any[] }>();
+    for (const retailerProduct of retailerProducts || []) {
+      if (!STORE_IDS.has(retailerProduct.retailer_id)) continue;
+      const target = byProduct.get(retailerProduct.canonical_product_id) || { prices: [], history: [] };
+      for (const offer of retailerProduct.retailer_offers || []) {
+        const rawLocation = offer.retailer_locations;
+        const location = Array.isArray(rawLocation) ? rawLocation[0] : rawLocation;
+        if (!location || !offer.source || !offer.fetched_at) continue;
+        const matchesRequestedLocation = locationFilter.postalCode
+          ? String(location.postal_code || "").trim() === String(locationFilter.postalCode).trim()
+          : locationFilter.suburb
+            ? String(location.suburb || "").toLowerCase().includes(String(locationFilter.suburb).trim().toLowerCase())
+            : locationFilter.city
+              ? String(location.city || "").toLowerCase().includes(String(locationFilter.city).trim().toLowerCase())
+              : locationFilter.province
+                ? String(location.province || "").toLowerCase() === String(locationFilter.province).trim().toLowerCase()
+                : false;
+        if (!matchesRequestedLocation) continue;
+        const currentOffer = {
+          storeId: retailerProduct.retailer_id,
+          price: Number(offer.current_price),
+          regularPrice: offer.regular_price == null ? undefined : Number(offer.regular_price),
+          loyaltyPrice: offer.loyalty_price == null ? undefined : Number(offer.loyalty_price),
+          loyaltyProgram: offer.loyalty_program || undefined,
+          onSpecial: offer.regular_price != null && Number(offer.current_price) < Number(offer.regular_price),
+          specialDetail: offer.loyalty_program || "",
+          // Unknown availability is not equivalent to in stock.
+          inStock: offer.in_stock === true,
+          branchId: location.id || offer.location_id,
+          branchName: [location.name, location.suburb || location.city].filter(Boolean).join(" · "),
+          source: offer.source,
+          sourceUrl: offer.source_url || undefined,
+          fetchedAt: offer.fetched_at,
+          validFrom: offer.valid_from || undefined,
+          validUntil: offer.valid_until || undefined,
+          isDemoData: false,
+        };
+        const existingIndex = target.prices.findIndex(price => price.storeId === retailerProduct.retailer_id);
+        if (existingIndex === -1) {
+          target.prices.push(currentOffer);
+        } else if (Date.parse(currentOffer.fetchedAt) > Date.parse(target.prices[existingIndex].fetchedAt)) {
+          target.prices[existingIndex] = currentOffer;
+        }
+        for (const observation of offer.retailer_offer_history || []) {
+          target.history.push({
+            observedAt: observation.observed_at,
+            storeId: retailerProduct.retailer_id,
+            price: Number(observation.current_price),
+            branchId: location.id || offer.location_id,
+            source: observation.source,
+          });
+        }
+      }
+      byProduct.set(retailerProduct.canonical_product_id, target);
+    }
+
+    return products.map((product) => {
+      const sourced = byProduct.get(product.id);
+      return sourced?.prices.length
+        ? { ...product, prices: sourced.prices, priceHistory: sourced.history }
+        : product;
+    });
+  } catch (err: any) {
+    console.warn("[Catalog v2] Sourced offers unavailable:", err.message);
+    return products;
+  }
 }
 
 // Token helper to extract UID from Supabase / JWT token
@@ -204,9 +360,16 @@ app.get("/api/products", async (req, res) => {
             onSpecial: Boolean(pr.on_special),
             specialDetail: pr.special_detail || "",
             inStock: true,
+            isDemoData: true,
+            source: "Legacy catalog without retailer provenance",
           })),
         }));
-        return res.json(formatted);
+        return res.json(await attachSourcedOffers(formatted, {
+          postalCode: String(req.query.postalCode || ""),
+          suburb: String(req.query.suburb || ""),
+          city: String(req.query.city || ""),
+          province: String(req.query.province || ""),
+        }));
       }
     } catch (err: any) {
       console.warn("[Supabase] Products query error, fallback to memory cache:", err.message);
@@ -246,9 +409,17 @@ app.post("/api/products/search", async (req, res) => {
             onSpecial: Boolean(pr.on_special),
             specialDetail: pr.special_detail || "",
             inStock: true,
+            isDemoData: true,
+            source: "Legacy catalog without retailer provenance",
           })),
         }));
-        return res.json(formatted);
+        const requestedLocation = req.body.location || {};
+        return res.json(await attachSourcedOffers(formatted, {
+          postalCode: String(requestedLocation.postalCode || ""),
+          suburb: String(requestedLocation.suburb || ""),
+          city: String(requestedLocation.city || ""),
+          province: String(requestedLocation.province || ""),
+        }));
       }
     } catch (err: any) {
       console.warn("[Search] Supabase live search error:", err.message);
@@ -322,7 +493,7 @@ app.get(
   }
 );
 
-// GET /api/barcode/:code & /api/v1/barcode/:code (National GS1 EAN-13 South Africa lookup)
+// GET /api/barcode/:code & /api/v1/barcode/:code (exact Open Food Facts product lookup)
 app.get(
   ["/api/barcode/:code", "/api/v1/barcode/:code"],
   async (req, res) => {
@@ -331,62 +502,14 @@ app.get(
       return res.status(400).json({ error: "Barcode parameter required" });
     }
 
-    // 1. Query Supabase if active
-    if (supabase) {
-      try {
-        const { data, error } = await supabase
-          .from("products")
-          .select("*, prices(*)")
-          .eq("barcode", rawCode)
-          .maybeSingle();
-
-        if (!error && data) {
-          const formatted = {
-            id: data.id,
-            name: data.name,
-            category: data.category || "Groceries",
-            unit: data.unit || "1 Unit",
-            isPopular: Boolean(data.is_popular),
-            barcode: data.barcode || rawCode,
-            imageUrl:
-              data.image_url ||
-              "https://images.unsplash.com/photo-1542838132-92c53300491e?w=400&auto=format&fit=crop&q=80",
-            prices: (data.prices || []).map((pr: any) => ({
-              storeId: pr.store_id,
-              price: Number(pr.price),
-              onSpecial: Boolean(pr.on_special),
-              specialDetail: pr.special_detail || "",
-              inStock: true,
-            })),
-          };
-          return res.json(formatted);
-        }
-      } catch (err: any) {
-        console.warn("[Barcode] Supabase barcode query error:", err.message);
-      }
+    try {
+      const product = await getOpenFoodFactsProductByBarcode(rawCode);
+      if (product) return res.json(product);
+      return res.status(404).json({ error: "No exact product record was found for this barcode.", barcode: rawCode });
+    } catch (err: any) {
+      console.warn("[Barcode] Open Food Facts lookup failed:", err.message);
+      return res.status(503).json({ error: "The product database is temporarily unavailable.", barcode: rawCode });
     }
-
-    // 2. Query synced_products catalog
-    const match = productsList.find(
-      (p) =>
-        p.barcode === rawCode ||
-        (p.barcode && p.barcode.endsWith(rawCode)) ||
-        p.id === rawCode
-    );
-
-    if (match) {
-      return res.json(match);
-    }
-
-    // 3. Substring match fallback
-    const partialMatch = productsList.find(
-      (p) => p.barcode && p.barcode.includes(rawCode)
-    );
-    if (partialMatch) {
-      return res.json(partialMatch);
-    }
-
-    return res.status(404).json({ error: "Product not found for barcode", barcode: rawCode });
   }
 );
 
@@ -675,25 +798,21 @@ app.post("/api/ai/chat", async (req, res) => {
   }
 
   if (!ai) {
-    let replyText = "";
     const lowerMsg = message.toLowerCase();
     if (lowerMsg.includes("split")) {
-      replyText = `**Howzit!** I see you're looking to split your shopping basket for maximum savings! 🇿🇦\n\nBased on your current basket, I recommend splitting your trip between **Checkers** (for bulk and staples) and **Shoprite** (for lowest commodity prices). This split strategy typically saves you around **12% to 15%** on your basic household staples!`;
+      return res.json({ text: "I can’t calculate a trustworthy store split yet because this catalog doesn’t have current, branch-specific retailer quotes connected. I won’t guess which store is cheapest. You can still use your list to plan the items you need." });
     } else if (lowerMsg.includes("swap") || lowerMsg.includes("house")) {
-      replyText = `**Lekker!** Swapping to house-brands is the fastest way to save! 🛒\n\nTry swapping brand-name items for:\n- **Checkers House Brand** or **Simple Truth**\n- **PnP No Name** or **Smart Shopper** specials\n- **SPAR Brand** alternatives\n\nThese simple swaps can put up to **20% back in your pocket** immediately!`;
-    } else {
-      replyText = `**Howzit!** I am the chuse. Saving Wizard! 🌟\n\nI can help you optimize your grocery budget, find house-brand swaps, or suggest budget South African recipes. Try adding basic staples like bread and milk, and ask me to "split my basket" or "suggest brand swaps"!`;
+      return res.json({ text: "I can help you think through house-brand alternatives, but I can’t claim a specific swap saves money until Chuse has comparable products and current local prices. Check the pack size and ingredients before substituting." });
     }
-    return res.json({ text: replyText });
+    return res.json({ text: "I can help with grocery planning, meal ideas, and budget habits. Store-by-store price recommendations will appear when verified offers are available for your area." });
   }
 
   try {
     const systemInstruction = `You are the chuse. Saving Wizard! 🌟
-You are a personalized, Gemini-powered South African grocery budget coach and retail strategist.
-You compare prices across popular South African stores: Woolworths, Checkers, Pick n Pay, Shoprite, SPAR, and Boxer.
+You are a South African grocery planning and budget assistant. Only compare stores when a supplied offer includes a source, branch/location, and recent fetch time. The catalog may contain no verified prices; in that case say plainly that a store comparison cannot be made and never guess store rankings or savings percentages.
 
 When answering, always use friendly, objective, and professional South African slang like "Howzit!", "lekker", "banger", "chuse" or "ZAR" where appropriate.
-Provide specific, actionable grocery budget advice, split shopping tips, or smart house-brand swaps.
+Give practical advice, but never claim current prices, specials, product availability, or savings amounts unless they are present in the verified basket context. Do not infer local price rankings from store reputation.
 
 Current Shopping Basket Context:
 ${JSON.stringify(basket || [], null, 2)}

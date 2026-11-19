@@ -22,6 +22,8 @@ import { motion, AnimatePresence } from 'motion/react';
 import { generateReceiptFromBasket } from '../lib/receiptStorage';
 import { shareReceiptViaWhatsApp } from '../lib/receiptWhatsApp';
 import { RETAILER_THEMES } from '../lib/retailerTokens';
+import { getOfferFreshness } from '../lib/offerPricing';
+import { ProductPackshot } from './ProductPackshot';
 
 interface CartDrawerProps {
   isOpen: boolean;
@@ -86,7 +88,7 @@ export default function CartDrawer({
     if (!product) return null;
 
     // Find cheapest store for this item
-    const validPrices = product.prices.filter(pr => pr.inStock && pr.price > 0);
+    const validPrices = product.prices.filter(pr => pr.inStock && pr.price > 0 && getOfferFreshness(pr) === 'fresh');
     const sortedPrices = [...validPrices].sort((a, b) => a.price - b.price);
     const bestPrice = sortedPrices[0]?.price || 0;
     const bestStoreId = sortedPrices[0]?.storeId;
@@ -105,6 +107,8 @@ export default function CartDrawer({
   }).filter(Boolean);
 
   const totalItemsCount = basket.reduce((acc, item) => acc + item.quantity, 0);
+  const hasCompleteVerifiedBasket = basketDetails.length === basket.length
+    && basketDetails.every((item) => Boolean(item && item.bestPrice > 0 && item.bestStoreId));
   const totalBestPrice = basketDetails.reduce((acc, item) => acc + (item?.lineTotal || 0), 0);
   const totalPotentialSavings = basketDetails.reduce((acc, item) => acc + (item?.savingsTotal || 0), 0);
 
@@ -123,7 +127,7 @@ export default function CartDrawer({
     if (!item) return;
     const { product, quantity } = item;
     product.prices.forEach(pr => {
-      if (pr.inStock && pr.price > 0 && storeTotals[pr.storeId]) {
+      if (pr.inStock && pr.price > 0 && getOfferFreshness(pr) === 'fresh' && storeTotals[pr.storeId]) {
         storeTotals[pr.storeId].total += pr.price * quantity;
         storeTotals[pr.storeId].count += 1;
         storeTotals[pr.storeId].items.push({
@@ -171,8 +175,9 @@ export default function CartDrawer({
       if (!targetProd) return null;
 
       const targetCheapest = Math.min(
-        ...targetProd.prices.filter(p => p.inStock && p.price > 0).map(p => p.price)
+        ...targetProd.prices.filter(p => p.inStock && p.price > 0 && getOfferFreshness(p) === 'fresh').map(p => p.price)
       );
+      if (!Number.isFinite(targetCheapest)) return null;
       if (targetCheapest >= item.bestPrice) return null;
 
       const diff = (item.bestPrice - targetCheapest) * item.quantity;
@@ -188,7 +193,7 @@ export default function CartDrawer({
 
   // Generate receipt and trigger the receipt modal
   const handleGenerateAndOpenReceipt = () => {
-    if (basket.length === 0) return;
+    if (basket.length === 0 || !hasCompleteVerifiedBasket) return;
     const receipt = generateReceiptFromBasket(basket, products, province);
     if (onOpenReceiptModal) {
       onOpenReceiptModal(receipt);
@@ -197,7 +202,7 @@ export default function CartDrawer({
 
   // Direct WhatsApp share
   const handleQuickWhatsAppShare = () => {
-    if (basket.length === 0) return;
+    if (basket.length === 0 || !hasCompleteVerifiedBasket) return;
     const receipt = generateReceiptFromBasket(basket, products, province);
     shareReceiptViaWhatsApp(receipt);
   };
@@ -329,7 +334,7 @@ export default function CartDrawer({
                   {basketViewMode === 'split' ? (
                     <span className="text-emerald-800 font-bold flex items-center gap-1">
                       <TrendingDown className="w-3.5 h-3.5 text-emerald-600" />
-                      Splits across stores to save ~R{totalPotentialSavings.toFixed(2)} vs highest
+                      {hasCompleteVerifiedBasket ? `Splits across stores to save ~R${totalPotentialSavings.toFixed(2)} vs highest` : 'Verified store prices are not available for this basket yet'}
                     </span>
                   ) : (
                     <span>
@@ -348,6 +353,11 @@ export default function CartDrawer({
             )}
 
             {/* Scrollable Items List */}
+            {basketDetails.length > 0 && !hasCompleteVerifiedBasket && (
+              <div role="status" className="mx-4 mt-3 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900">
+                The catalog currently has demo prices only. Basket totals, savings, and till slips will unlock when current, branch-specific retailer offers are connected.
+              </div>
+            )}
             <div className="flex-1 overflow-y-auto p-4 space-y-4 font-sans">
               {basketDetails.length === 0 ? (
                 <div className="py-20 text-center space-y-3">
@@ -404,9 +414,10 @@ export default function CartDrawer({
                                     key={item.product.id}
                                     className="p-2 flex items-center justify-between gap-3 hover:bg-slate-50/60 rounded-lg transition-colors"
                                   >
-                                    <img
-                                      src={item.product.imageUrl || 'https://placehold.co/80x80'}
-                                      alt={item.product.name}
+                                    <ProductPackshot
+                                      imageUrl={item.product.imageUrl}
+                                      name={item.product.name}
+                                      compact
                                       className="w-11 h-11 object-contain bg-slate-50 p-1 rounded border border-slate-200 shrink-0"
                                     />
 
@@ -416,7 +427,7 @@ export default function CartDrawer({
                                       </h5>
                                       <div className="flex items-center gap-2 mt-0.5 text-[11px] font-sans">
                                         <span className="font-bold text-slate-950 tabular-nums">
-                                          R{item.bestPrice.toFixed(2)}
+                                          {item.bestPrice > 0 ? `R${item.bestPrice.toFixed(2)}` : 'No verified quote'}
                                         </span>
                                         <span className="text-[10px] text-slate-500 font-sans">
                                           • {item.product.unit}
@@ -568,7 +579,7 @@ export default function CartDrawer({
                   <div className="rounded-xl border border-slate-300 bg-white p-4 font-sans text-xs shadow-sm space-y-2.5 relative">
                     <div className="text-center border-b border-dashed border-slate-300 pb-2">
                       <span className="font-bold text-xs uppercase tracking-tight text-slate-900 block font-sans">
-                        Estimated Till Slip
+                        {hasCompleteVerifiedBasket ? 'Verified basket estimate' : 'Shopping list preview'}
                       </span>
                       <span className="text-[10px] text-slate-500 font-sans">
                         Mzansi Multi-Supermarket Index • {province}
@@ -582,12 +593,12 @@ export default function CartDrawer({
                       </div>
                       <div className="flex items-center justify-between">
                         <span>Includes 15% VAT:</span>
-                        <span className="font-bold text-slate-950">R{vat15.toFixed(2)}</span>
+                        <span className="font-bold text-slate-950">{hasCompleteVerifiedBasket ? `R${vat15.toFixed(2)}` : 'Not calculated'}</span>
                       </div>
                       <div className="flex items-center justify-between border-t border-dashed border-slate-200 pt-1.5 text-xs font-bold text-slate-950">
                         <span>Optimized Basket Total:</span>
-                        <span className="text-sm font-black font-sans text-slate-950 tabular-nums">
-                          R{totalBestPrice.toFixed(2)}
+                          <span className="text-sm font-black font-sans text-slate-950 tabular-nums">
+                          {hasCompleteVerifiedBasket ? `R${totalBestPrice.toFixed(2)}` : 'Prices pending'}
                         </span>
                       </div>
                     </div>
@@ -615,7 +626,8 @@ export default function CartDrawer({
                 <button
                   type="button"
                   onClick={handleGenerateAndOpenReceipt}
-                  className="w-full py-2.5 rounded-lg bg-[#FFE600] hover:bg-yellow-400 text-slate-950 font-bold text-xs font-sans flex items-center justify-center gap-2 cursor-pointer shadow-xs transition-colors border border-yellow-400"
+                  disabled={!hasCompleteVerifiedBasket}
+                  className="w-full py-2.5 rounded-lg bg-[#FFE600] hover:bg-yellow-400 disabled:opacity-50 disabled:cursor-not-allowed text-slate-950 font-bold text-xs font-sans flex items-center justify-center gap-2 cursor-pointer shadow-xs transition-colors border border-yellow-400"
                 >
                   <FileText className="w-4 h-4" />
                   <span>Generate Full Till Slip & PDF</span>
@@ -635,7 +647,8 @@ export default function CartDrawer({
                   <button
                     type="button"
                     onClick={handleQuickWhatsAppShare}
-                    className="py-2 px-3 rounded-lg bg-[#25D366] hover:bg-[#20ba59] text-white font-bold text-xs font-sans flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs transition-colors"
+                  disabled={!hasCompleteVerifiedBasket}
+                  className="py-2 px-3 rounded-lg bg-[#25D366] hover:bg-[#20ba59] disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold text-xs font-sans flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs transition-colors"
                   >
                     <Share2 className="w-3.5 h-3.5" />
                     <span>WhatsApp Share</span>

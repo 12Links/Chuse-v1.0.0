@@ -9,7 +9,7 @@ export const STORES: Store[] = [
     accentBg: 'bg-neutral-50 hover:bg-neutral-100',
     description: 'Premium quality grocery, known for exceptional fresh items and gourmet organic selections.',
     rating: 4.6,
-    logoUrl: '/icons/woolworths.svg'
+    logoUrl: 'https://www.woolworths.co.za/favicon.ico'
   },
   {
     id: 'checkers',
@@ -19,7 +19,7 @@ export const STORES: Store[] = [
     accentBg: 'bg-teal-50 hover:bg-teal-100',
     description: 'Dynamic range with high-quality housebrands (Simple Truth) and excellent cheese/wine cellars.',
     rating: 4.4,
-    logoUrl: '/icons/checkers.png'
+    logoUrl: 'https://www.checkers.co.za/favicon.ico'
   },
   {
     id: 'pnp',
@@ -39,7 +39,7 @@ export const STORES: Store[] = [
     accentBg: 'bg-red-50 hover:bg-red-100',
     description: 'Dedicated to offering the lowest possible prices on everyday basic items and bulk groceries.',
     rating: 4.0,
-    logoUrl: '/icons/shoprite.png'
+    logoUrl: 'https://www.shoprite.co.za/favicon.ico'
   },
   {
     id: 'foodlovers',

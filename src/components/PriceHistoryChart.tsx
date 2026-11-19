@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
 import { TrendingUp, Sparkles } from 'lucide-react';
 import { Product, StoreId } from '../types';
-import { STORES } from '../data/catalog';
 
 // Map store properties for convenience
 const STORES_MAP: { [key in StoreId]?: { name: string; color: string } } = {
@@ -18,71 +17,38 @@ interface PriceHistoryChartProps {
   product: Product;
 }
 
-// Deterministic seed-based random number generator to ensure data remains stable
-function getSeededRandom(seedStr: string) {
-  let hash = 0;
-  for (let i = 0; i < seedStr.length; i++) {
-    hash = seedStr.charCodeAt(i) + ((hash << 5) - hash);
-  }
-  return () => {
-    const x = Math.sin(hash++) * 10000;
-    return x - Math.floor(x);
-  };
-}
-
 export function generatePriceHistory(product: Product) {
-  const intervals = [30, 24, 18, 12, 6, 0]; // 30 days history across 6 intervals
-  const dataPoints: any[] = [];
-  const rand = getSeededRandom(product.id);
-  
-  // Track random walk factors for each active store
-  const storeFactors: { [storeId: string]: number[] } = {};
-  
-  product.prices.forEach(pr => {
-    if (pr.inStock && pr.price > 0) {
-      const factors: number[] = [];
-      // Set a starting multiplier between 0.93 and 1.07
-      let currentIdxVal = 0.95 + (rand() * 0.1); 
-      
-      for (let i = 0; i < intervals.length; i++) {
-        if (i === intervals.length - 1) {
-          // Today's factor must be exactly 1.0
-          factors.push(1.0);
-        } else {
-          factors.push(currentIdxVal);
-          // Gently drift the next value
-          currentIdxVal = currentIdxVal + (rand() * 0.04 - 0.02);
-        }
-      }
-      storeFactors[pr.storeId] = factors;
-    }
-  });
+  const selectedBranchByStore = new Map(
+    product.prices.filter(price => price.branchId).map(price => [price.storeId, price.branchId!])
+  );
+  const byDay = new Map<string, Record<string, number | string>>();
 
-  // Base reference date matching context
-  const today = new Date("2026-06-22T12:02:17-07:00");
-  
-  intervals.forEach((daysAgo, idx) => {
-    const d = new Date(today);
-    d.setDate(today.getDate() - daysAgo);
-    
-    const day = d.getDate();
-    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-    const month = months[d.getMonth()];
-    
-    const point: any = { date: `${day} ${month}` };
-    
-    product.prices.forEach(pr => {
-      if (pr.inStock && pr.price > 0) {
-        const factors = storeFactors[pr.storeId];
-        const factor = factors[idx];
-        point[pr.storeId] = Number((pr.price * factor).toFixed(2));
-      }
+  [...(product.priceHistory || [])]
+    .filter((observation) => {
+      const time = Date.parse(observation.observedAt);
+      const selectedBranch = selectedBranchByStore.get(observation.storeId);
+      return Number.isFinite(time)
+        && Number.isFinite(observation.price)
+        && observation.price > 0
+        && time <= Date.now()
+        && time >= Date.now() - 30 * 24 * 60 * 60 * 1000
+        && Boolean(selectedBranch)
+        && observation.branchId === selectedBranch;
+    })
+    .sort((a, b) => Date.parse(a.observedAt) - Date.parse(b.observedAt))
+    .forEach((observation) => {
+      const day = new Date(observation.observedAt).toISOString().slice(0, 10);
+      const point = byDay.get(day) || {
+        date: new Date(observation.observedAt).toLocaleDateString('en-ZA', {
+          day: 'numeric',
+          month: 'short',
+        }),
+      };
+      point[observation.storeId] = observation.price;
+      byDay.set(day, point);
     });
-    
-    dataPoints.push(point);
-  });
-  
-  return dataPoints;
+
+  return [...byDay.values()];
 }
 
 const CustomTooltip = ({ active, payload, label }: any) => {
@@ -119,8 +85,10 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 export const PriceHistoryChart: React.FC<PriceHistoryChartProps> = ({ product }) => {
   const [showChart, setShowChart] = useState(false);
   
-  // Collect all stores that have stocked pricing
-  const activePriceStores = product.prices.filter(pr => pr.inStock && pr.price > 0);
+  // Only graph stores with both a current quote and dated observations.
+  const activePriceStores = [...new Map(
+    product.prices.filter(pr => pr.inStock && pr.price > 0).map(pr => [pr.storeId, pr])
+  ).values()];
   
   if (activePriceStores.length === 0) {
     return null;
@@ -128,12 +96,31 @@ export const PriceHistoryChart: React.FC<PriceHistoryChartProps> = ({ product })
   
   const data = generatePriceHistory(product);
 
+  if (data.length < 2) {
+    return (
+      <div className="mt-3 border-t border-slate-100 pt-3">
+        <div className="rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-3">
+          <div className="flex items-center gap-2 text-xs font-bold text-slate-700">
+            <TrendingUp className="h-3.5 w-3.5 text-slate-400" />
+            Verified price history
+          </div>
+          <p className="mt-1 text-xs leading-relaxed text-slate-500">
+            Chuse needs dated store observations before it can show a price trend. No history is available for this product yet.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   // Derive mini summary metrics
-  const storeDiffs = activePriceStores.map(pr => {
-    const storeFactors = generatePriceHistory(product);
-    const startPrice = storeFactors[0][pr.storeId];
-    const endPrice = storeFactors[storeFactors.length - 1][pr.storeId];
-    const percentageChange = ((endPrice - startPrice) / startPrice) * 100;
+  const storeDiffs = activePriceStores.flatMap(pr => {
+    const points = data
+      .map(point => Number(point[pr.storeId]))
+      .filter(price => Number.isFinite(price) && price > 0);
+    if (points.length < 2) return [];
+    const startPrice = points[0];
+    const endPrice = points[points.length - 1];
+    const percentageChange = startPrice > 0 ? ((endPrice - startPrice) / startPrice) * 100 : 0;
     return {
       storeId: pr.storeId,
       change: percentageChange,

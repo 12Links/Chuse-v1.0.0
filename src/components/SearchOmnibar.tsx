@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { Product } from '../types';
 import { RETAILER_THEMES } from '../lib/retailerTokens';
+import { ProductPackshot } from './ProductPackshot';
 import { motion, AnimatePresence } from 'motion/react';
 
 interface SearchOmnibarProps {
@@ -273,9 +274,10 @@ export function SearchOmnibar({
                         className="p-2 rounded-lg bg-white border border-slate-200/80 hover:border-slate-400 flex items-center justify-between gap-3 cursor-pointer transition-all group"
                       >
                         <div className="flex items-center gap-2.5 min-w-0">
-                          <img
-                            src={p.imageUrl || 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=80'}
-                            alt={p.name}
+                          <ProductPackshot
+                            imageUrl={p.imageUrl}
+                            name={p.name}
+                            compact
                             className="w-9 h-9 object-contain bg-slate-50 rounded p-1 border border-slate-100 shrink-0"
                           />
                           <div className="min-w-0">

@@ -26,6 +26,7 @@ function generatePrices(basePrice) {
     return {
       storeId: store.id,
       price: specialPrice,
+      isDemoData: true,
       onSpecial: isSpecial,
       specialDetail: isSpecial ? store.promo : '',
       inStock: true

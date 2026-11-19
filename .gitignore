@@ -36,6 +36,7 @@ service_account.json
 firebase-applet-config.json
 
 backend/Data/
+open_prices_snapshot.json
 .vercel/
 *.pdf
 
