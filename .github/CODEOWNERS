@@ -1,0 +1,5 @@
+# Code Owners for Chuse (12Links/Chuse-v1.0.0)
+# Every pull request targeting main requires explicit approval from Jacky Mpoka (@Jackyphuti).
+# Direct pushes to main are blocked, and auto-merge is disabled.
+
+* @Jackyphuti
