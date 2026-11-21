@@ -1,23 +1,29 @@
-# 12 Links Engineering Workflow
+# 12 Links Engineering Workflow & Team Branching
 
-Welcome to the Chuse App repository. This document outlines the standard development workflow, branching strategy, and code review process for the engineering team. 
+Welcome to the Chuse App repository. This document outlines the standard development workflow, group branching strategy, and code review process for the engineering team. 
 
 Following these guidelines ensures our codebase remains stable, our commit history remains readable, and our releases go smoothly.
 
-## 1. Branching Strategy
+---
 
-We use a structured branching model to keep work organized. Never commit directly to the `main` or `develop` branches.
+## 1. Team Groups & Branching Strategy
 
-* **`main`**: The production-ready state of the app. Code only enters this branch via tested, approved Pull Requests.
-* **`develop`**: The active integration branch. All feature branches are merged here first for testing before a production release.
+Each team has a dedicated group branch on GitHub. Refer to [TEAM.md](TEAM.md) for full team roster details.
 
-### Branch Naming Conventions
-When creating a new branch, use the following format: `<type>/<ticket-number>-<short-description>`
+* **`main`**: The production-ready state of the app. Code only enters this branch via reviewed, approved Pull Requests merged by **Jacky Mpoka (@Jackyphuti)**.
+* **`group/1-data-scrapers`**: Group 1 (Tebello Mohohoma & Sello Aphane)
+* **`group/2-backend-optimizer-ai`**: Group 2 (Nkosinathi Ngwenya & Lesego Mageza)
+* **`group/3-core-shopping-ui`**: Group 3 (Savuzwa Mpayipheli & Jacky Mpoka)
+* **`group/4-mobile-auth-platform`**: Group 4 (Lwandiso George)
 
-* **Features:** `feature/CHUSE-123-user-login`
-* **Bug Fixes:** `bugfix/CHUSE-124-crash-on-launch`
-* **Hotfixes (Urgent production fixes):** `hotfix/CHUSE-125-payment-gateway-down`
-* **Chores/Maintenance:** `chore/update-dependencies`
+### Feature Branch Naming Conventions
+When branching off your group branch, use the format: `group/<group-number>/<short-description>` or `feature/<member>/<feature-name>`
+
+* **Features:** `feature/mat6577/woolies-scrapers`
+* **Bug Fixes:** `bugfix/cart-realtime-sync`
+* **Chores:** `chore/update-dependencies`
+
+---
 
 ## 2. Commit Message Guidelines
 
@@ -33,20 +39,29 @@ Structure your commits like this: `type: short description`
 * `test:` Adding missing tests or correcting existing tests
 * `chore:` Updating build tasks, package manager configs, etc.
 
-## 3. Pull Request (PR) Process
+---
 
-When your feature or bug fix is complete, follow these steps to get it merged:
+## 3. Pull Request (PR) & Review Process
 
-1. **Pull the latest `develop`:** Ensure your branch is up to date with the latest integration branch to resolve any merge conflicts locally.
-2. **Run Tests & Linters:** Ensure the app builds successfully and passes all local linting and testing checks.
-3. **Open the PR:** Target the `develop` branch (or `main` if it's a hotfix). 
-4. **Fill out the PR Template:** Provide a clear summary of what was changed, how it was tested, and link the relevant issue/ticket number.
-5. **Request a Review:** Assign at least one other developer to review your code. 
-6. **Address Feedback:** If the reviewer requests changes, make them and push the updates to your branch.
-7. **Merge:** Once approved and all CI/CD checks pass, the PR can be merged using the "Squash and merge" option to keep the commit history clean.
+All code must be merged via Pull Requests reviewed by **Jacky Mpoka (@Jackyphuti)**:
+
+1. **Pull the latest `main`:** Ensure your group/feature branch is up to date with `main` to resolve any merge conflicts locally:
+   ```bash
+   git pull origin main
+   ```
+2. **Run Tests & Builds:** Verify the app builds cleanly with zero errors:
+   ```bash
+   npm run build
+   ```
+3. **Open the PR:** Target the `main` branch on GitHub.
+4. **Assign Reviewer:** Set `@Jackyphuti` as the reviewer on GitHub.
+5. **Address Feedback:** If changes or revisions are requested, commit to your branch and update the PR.
+6. **Merge:** Once approved, Jacky will merge the PR into `main`.
+
+---
 
 ## 4. Code Quality & Formatting
 
 * **No commented-out code:** Do not leave large blocks of commented-out code. Let Git track the history.
 * **Remove console logs:** Ensure all debugging `console.log()` or `print` statements are removed before opening a PR.
-* **Keep PRs small:** Try to limit Pull Requests to a single feature or bug fix. Large PRs are difficult to review and prone to bugs.
+* **Keep PRs small & focused:** Limit Pull Requests to clear, modular milestones. Large monolithic PRs are difficult to review and prone to merge conflicts.
